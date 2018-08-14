@@ -11,3 +11,11 @@ Setup Atom:
 1. Install ide-rust
 2. Install language-rust
 3. Enable format on save (see instructions in the ide-rust package)
+
+## Executing
+
+    $ cargo run
+
+## Testing
+
+    $ cargo test
