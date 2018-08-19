@@ -3,9 +3,6 @@ pub fn add(a: i32, b: i32) -> i32 {
     a + b
 }
 
-//TODO
-/*
-pub fn interpret(s: str) -> &'static str {
-    "test"
+pub fn interpret(s: &str) -> &str {
+    s
 }
-*/

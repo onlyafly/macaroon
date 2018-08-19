@@ -25,14 +25,14 @@ fn test_suite() {
             let input_contents = read_text_contents(&path);
 
             //TODO: calculate input_result correctly
-            let input_result = input_contents.trim_right();
+            let actual_output = quivi::interpret(input_contents.trim_right());
 
             if let Some(output_file_stem) = path.file_stem() {
                 let output_path = Path::new("./testsuite")
                     .join(output_file_stem.to_str().unwrap().to_owned() + ".out");
-                let output_contents = read_text_contents(&output_path);
+                let expected_output = read_text_contents(&output_path);
 
-                assert_eq!(input_result, output_contents.trim_right());
+                assert_eq!(expected_output.trim_right(), actual_output);
             }
         }
     }
@@ -60,5 +60,5 @@ fn read_text_contents(path: &PathBuf) -> String {
 
     // `file` goes out of scope, and the "hello.txt" file gets closed
 
-    return s;
+    s
 }
