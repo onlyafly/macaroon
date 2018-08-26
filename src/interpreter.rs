@@ -1,25 +1,17 @@
 use scanner;
 
-enum Token {
+pub enum Token {
     Nil,
     Generic(String),
 }
 
-pub fn interpret(s: &str) -> String {
-    let tokens = scan(s);
-    let nodes = parse(tokens);
-    let result = eval(nodes);
-
-    result
-}
-
-fn scan(s: &str) -> Vec<Token> {
+pub fn scan(s: &str) -> Vec<Token> {
     let scanner = scanner::Scanner::new(s);
 
     vec![Token::Generic(s.to_string())]
 }
 
-fn parse(tokens: Vec<Token>) -> String {
+pub fn parse(tokens: Vec<Token>) -> String {
     let t = &tokens[0];
     match t {
         Token::Generic(s) => s.clone(),
@@ -27,6 +19,6 @@ fn parse(tokens: Vec<Token>) -> String {
     }
 }
 
-fn eval(s: String) -> String {
+pub fn eval(s: String) -> String {
     s
 }

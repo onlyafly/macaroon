@@ -10,11 +10,6 @@ use std::path::Path;
 use std::path::PathBuf;
 
 #[test]
-fn test_add() {
-    assert_eq!(quivi::add(3, 2), 5);
-}
-
-#[test]
 fn test_suite() {
     let paths = fs::read_dir("./testsuite/").unwrap();
 
