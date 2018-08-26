@@ -1,12 +1,8 @@
 use scanner;
-
-pub enum Token {
-    Nil,
-    Generic(String),
-}
+use tokens::*;
 
 pub fn scan(s: &str) -> Vec<Token> {
-    let scanner = scanner::Scanner::new(s);
+    let _scanner = scanner::Scanner::new(s);
 
     vec![Token::Generic(s.to_string())]
 }
