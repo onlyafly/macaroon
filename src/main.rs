@@ -1,6 +1,6 @@
-extern crate quivi;
+mod interpreter;
+mod scanner;
 
 fn main() {
-    println!("Hello, world!");
-    println!("Hello: {}", quivi::add(1, 2));
+    println!("Hello: {}", interpreter::interpret("1"));
 }

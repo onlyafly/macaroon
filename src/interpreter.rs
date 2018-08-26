@@ -1,7 +1,4 @@
-// Assume that crate is called adder, will have to extern it in integration test.
-pub fn add(a: i32, b: i32) -> i32 {
-    a + b
-}
+use scanner;
 
 enum Token {
     Nil,
@@ -17,6 +14,8 @@ pub fn interpret(s: &str) -> String {
 }
 
 fn scan(s: &str) -> Vec<Token> {
+    let scanner = scanner::Scanner::new(s);
+
     vec![Token::Generic(s.to_string())]
 }
 
