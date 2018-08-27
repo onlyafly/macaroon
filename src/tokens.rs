@@ -1,6 +1,14 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
+#[allow(dead_code)]
 pub enum Token {
-    #[allow(dead_code)]
-    Nil,
-    Generic(String),
+    Error,
+    EndOfFile,
+    String(String),
+    LeftParen,
+    RightParen,
+    Symbol(String),
+    Number(String),
+    Caret,
+    SingleQuote,
+    Char,
 }
