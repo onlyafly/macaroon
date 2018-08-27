@@ -23,7 +23,7 @@ impl<'a> Scanner<'a> {
             Some('-') => {
                 if let Some(&ch) = self.peek_char() {
                     if ch.is_numeric() {
-                        Token::Number(self.scan_number(ch, true))
+                        Token::Number(self.scan_number('-'))
                     } else {
                         Token::Symbol(self.scan_symbol('-'))
                     }
@@ -68,7 +68,7 @@ impl<'a> Scanner<'a> {
                     token::lookup_ident(&literal)
                 } else*/
                 if ch.is_numeric() {
-                    Token::Number(self.scan_number(ch, false))
+                    Token::Number(self.scan_number(ch))
                 } else {
                     Token::Error
                 }
@@ -79,12 +79,9 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    fn scan_number(&mut self, first: char, is_negative: bool) -> String {
+    fn scan_number(&mut self, first: char) -> String {
         let mut number = String::new();
 
-        if is_negative {
-            number.push('-');
-        }
         number.push(first);
 
         while let Some(&c) = self.peek_char() {
@@ -264,4 +261,23 @@ mod tests {
         assert_eq!(s.next(), Token::EndOfFile);
     }
 
+    #[test]
+    fn test_parens_and_numbers() {
+        let mut s = Scanner::new("((1))");
+        assert_eq!(s.next(), Token::LeftParen);
+        assert_eq!(s.next(), Token::LeftParen);
+        assert_eq!(s.next(), Token::Number("1".to_string()));
+        assert_eq!(s.next(), Token::RightParen);
+        assert_eq!(s.next(), Token::RightParen);
+        assert_eq!(s.next(), Token::EndOfFile);
+    }
+
+    #[test]
+    fn test_symbols_and_numbers_with_minus_sign() {
+        let mut s = Scanner::new("- -aa -123");
+        assert_eq!(s.next(), Token::Symbol("-".to_string()));
+        assert_eq!(s.next(), Token::Symbol("-aa".to_string()));
+        assert_eq!(s.next(), Token::Number("-123".to_string()));
+        assert_eq!(s.next(), Token::EndOfFile);
+    }
 }
