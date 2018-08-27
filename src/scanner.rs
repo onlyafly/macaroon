@@ -31,50 +31,32 @@ impl<'a> Scanner<'a> {
                     Token::Error
                 }
             }
-
-            /*
-            Some('=') => {
-                if self.peek_char_eq('=') {
-                    self.read_char();
-                    Token::Equal
-                } else {
-                    Token::Assign
-                }
-            }
-
-            Some('+') => Token::Plus,
-
-            Some('!') => {
-                if self.peek_char_eq('=') {
-                    self.read_char();
-                    Token::NotEqual
-                } else {
-                    Token::Bang
-                }
-            }
-            Some('/') => Token::Slash,
-            Some('*') => Token::Asterisk,
-            Some('<') => Token::LowerThan,
-            Some('>') => Token::GreaterThan,
-            Some(';') => Token::Semicolon,
-            Some(',') => Token::Comma,
-            Some('{') => Token::LeftBrace,
-            Some('}') => Token::RightBrace,
-            */
-            Some(ch @ _) => {
-                /*
-                if is_letter(ch) {
-                    let literal = self.read_identifier(ch);
-                    token::lookup_ident(&literal)
-                } else*/
-                if ch.is_numeric() {
-                    Token::Number(self.scan_number(ch))
+            Some('^') => Token::Caret,
+            Some('\'') => Token::SingleQuote,
+            Some('\\') => {
+                if let Some(ch) = self.read_char() {
+                    Token::Char(ch.to_string())
                 } else {
                     Token::Error
                 }
             }
 
-            // Handle EOF
+            // TODO
+            //  1. Single line comments
+            //  2. Floating point numbers
+            //  3. Multiline comments
+            //  4. String literals
+            //  5. Tracking location of errors
+            Some(ch @ _) => {
+                if ch.is_numeric() {
+                    Token::Number(self.scan_number(ch))
+                } else if is_symbolic(ch) {
+                    Token::Symbol(self.scan_symbol(ch))
+                } else {
+                    Token::Error
+                }
+            }
+
             None => Token::EndOfFile,
         }
     }
@@ -95,14 +77,14 @@ impl<'a> Scanner<'a> {
     }
 
     fn scan_symbol(&mut self, first: char) -> String {
-        let mut ident = String::new();
-        ident.push(first);
+        let mut symbol_text = String::new();
+        symbol_text.push(first);
 
         while self.peek_is_symbolic() {
-            ident.push(self.read_char().unwrap());
+            symbol_text.push(self.read_char().unwrap());
         }
 
-        ident
+        symbol_text
     }
 
     fn read_char(&mut self) -> Option<char> {
@@ -134,119 +116,22 @@ impl<'a> Scanner<'a> {
 }
 
 fn is_symbolic(ch: char) -> bool {
-    ch.is_alphabetic() || ch == '_'
+    // NOTE: Don't ever allow these characters: [ ] { } ( ) " , ' ` : ; # | \ ~
+    ch.is_alphabetic()
+        || ch.is_numeric()
+        || ch == '?'
+        || ch == '+'
+        || ch == '*'
+        || ch == '/'
+        || ch == '='
+        || ch == '<'
+        || ch == '>'
+        || ch == '!'
+        || ch == '&'
+        || ch == '.'
+        || ch == '-'
+        || ch == '_'
 }
-
-/*
-impl<'a> Lexer<'a> {
-    pub fn new(input: &str) -> Lexer {
-        Lexer {
-            input: input.chars().peekable(),
-        }
-    }
-
-    fn read_char(&mut self) -> Option<char> {
-        self.input.next()
-    }
-
-    fn peek_char(&mut self) -> Option<&char> {
-        self.input.peek()
-    }
-
-    fn peek_char_eq(&mut self, ch: char) -> bool {
-        match self.peek_char() {
-            Some(&peek_ch) => peek_ch == ch,
-            None => false,
-        }
-    }
-
-
-
-    fn peek_is_letter(&mut self) -> bool {
-        match self.peek_char() {
-            Some(&ch) => is_letter(ch),
-            None => false,
-        }
-    }
-
-    fn read_identifier(&mut self, first: char) -> String {
-        let mut ident = String::new();
-        ident.push(first);
-
-        while self.peek_is_letter() {
-            ident.push(self.read_char().unwrap()); // TODO: unwrap()
-        }
-
-        ident
-    }
-
-    fn read_number(&mut self, first: char) -> String {
-        let mut number = String::new();
-        number.push(first);
-
-        while let Some(&c) = self.peek_char() {
-            if !c.is_numeric() {
-                break;
-            }
-            number.push(self.read_char().unwrap()); // TODO: unwrap()
-        }
-
-        number
-    }
-
-    pub fn next_token(&mut self) -> Token {
-        self.skip_whitespace();
-
-        match self.read_char() {
-            Some('=') => {
-                if self.peek_char_eq('=') {
-                    self.read_char();
-                    Token::Equal
-                } else {
-                    Token::Assign
-                }
-            }
-            Some('+') => Token::Plus,
-            Some('-') => Token::Minus,
-            Some('!') => {
-                if self.peek_char_eq('=') {
-                    self.read_char();
-                    Token::NotEqual
-                } else {
-                    Token::Bang
-                }
-            }
-            Some('/') => Token::Slash,
-            Some('*') => Token::Asterisk,
-            Some('<') => Token::LowerThan,
-            Some('>') => Token::GreaterThan,
-            Some(';') => Token::Semicolon,
-            Some(',') => Token::Comma,
-            Some('{') => Token::LeftBrace,
-            Some('}') => Token::RightBrace,
-            Some('(') => Token::LeftParenthesis,
-            Some(')') => Token::RightParenthesis,
-
-            Some(ch @ _) => {
-                if is_letter(ch) {
-                    let literal = self.read_identifier(ch);
-                    token::lookup_ident(&literal)
-                } else if ch.is_numeric() {
-                    Token::Integer(self.read_number(ch))
-                } else {
-                    Token::Illegal // TODO: Maybe we need ch here, to display a nice error message later?
-                }
-            }
-
-            // Handle EOF
-            None => Token::EndOfFile,
-        }
-    }
-}
-
-// is_letter checks whether a char is a valid alphabetic character or an underscore
-
-*/
 
 #[cfg(test)]
 mod tests {
@@ -279,5 +164,48 @@ mod tests {
         assert_eq!(s.next(), Token::Symbol("-aa".to_string()));
         assert_eq!(s.next(), Token::Number("-123".to_string()));
         assert_eq!(s.next(), Token::EndOfFile);
+    }
+
+    #[test]
+    fn test_symbols() {
+        let mut s = Scanner::new("a b123 cAcZ ? + - * / = < > ! & _ . <aA1+-*/=<>!&_");
+        assert_eq!(s.next(), Token::Symbol("a".to_string()));
+        assert_eq!(s.next(), Token::Symbol("b123".to_string()));
+        assert_eq!(s.next(), Token::Symbol("cAcZ".to_string()));
+        assert_eq!(s.next(), Token::Symbol("?".to_string()));
+        assert_eq!(s.next(), Token::Symbol("+".to_string()));
+        assert_eq!(s.next(), Token::Symbol("-".to_string()));
+        assert_eq!(s.next(), Token::Symbol("*".to_string()));
+        assert_eq!(s.next(), Token::Symbol("/".to_string()));
+        assert_eq!(s.next(), Token::Symbol("=".to_string()));
+        assert_eq!(s.next(), Token::Symbol("<".to_string()));
+        assert_eq!(s.next(), Token::Symbol(">".to_string()));
+        assert_eq!(s.next(), Token::Symbol("!".to_string()));
+        assert_eq!(s.next(), Token::Symbol("&".to_string()));
+        assert_eq!(s.next(), Token::Symbol("_".to_string()));
+        assert_eq!(s.next(), Token::Symbol(".".to_string()));
+        assert_eq!(s.next(), Token::Symbol("<aA1+-*/=<>!&_".to_string()));
+        assert_eq!(s.next(), Token::EndOfFile);
+    }
+
+    #[test]
+    fn test_miscellaneous() {
+        let mut s = Scanner::new(r"^ '");
+        assert_eq!(s.next(), Token::Caret);
+        assert_eq!(s.next(), Token::SingleQuote);
+        assert_eq!(s.next(), Token::EndOfFile);
+    }
+
+    #[test]
+    fn test_chars() {
+        let mut s = Scanner::new(r"\a");
+        assert_eq!(s.next(), Token::Char("a".to_string()));
+        assert_eq!(s.next(), Token::EndOfFile);
+    }
+
+    #[test]
+    fn test_errors() {
+        let mut s = Scanner::new(r"\");
+        assert_eq!(s.next(), Token::Error);
     }
 }

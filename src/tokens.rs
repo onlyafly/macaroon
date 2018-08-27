@@ -10,5 +10,5 @@ pub enum Token {
     Number(String),
     Caret,
     SingleQuote,
-    Char,
+    Char(String),
 }
