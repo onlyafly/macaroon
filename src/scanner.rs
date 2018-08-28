@@ -208,4 +208,12 @@ mod tests {
         let mut s = Scanner::new(r"\");
         assert_eq!(s.next(), Token::Error);
     }
+
+    #[test]
+    fn test_quoting() {
+        let mut s = Scanner::new(r"'a");
+        assert_eq!(s.next(), Token::SingleQuote);
+        assert_eq!(s.next(), Token::Symbol("a".to_string()));
+        assert_eq!(s.next(), Token::EndOfFile);
+    }
 }

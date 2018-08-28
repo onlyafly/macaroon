@@ -1,5 +1,8 @@
 extern crate quivi;
 
 fn main() {
-    println!("Hello: {}", quivi::interpret("1"));
+    let result_node = quivi::interpret("1");
+    let result_display = result_node.display();
+
+    println!("Hello: {}", result_display);
 }
