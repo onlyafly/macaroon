@@ -80,6 +80,7 @@ impl<'a> Parser<'a> {
             ref t => {
                 self.syntax_errors
                     .push(format!("Unrecognized token: {:?}", t));
+                // Try to recover by pushing an error node
                 Node::Error
             }
         }

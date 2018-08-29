@@ -21,7 +21,6 @@ impl Node {
                 }
                 "(".to_string() + &v.join(" ") + ")"
             }
-
             n => format!("<unrecognized node: {:?}>", n),
         }
     }

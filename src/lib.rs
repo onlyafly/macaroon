@@ -9,34 +9,34 @@ pub fn interpret(input: &str) -> String {
     let parse_result = parser::parse(input);
 
     match parse_result {
-        Ok(nodes) => {
-            let result = eval(nodes);
-            result.display()
-        }
+        Ok(nodes) => match eval(nodes) {
+            Ok(output_node) => output_node.display(),
+            Err(message) => message,
+        },
         Err(mut syntax_errors) => {
             syntax_errors.remove(0) //TODO
         }
     }
 }
 
-fn eval(nodes: Vec<Node>) -> Node {
-    let mut result = Node::Error; // TODO: should this be nil?
+fn eval(nodes: Vec<Node>) -> Result<Node, String> {
+    let mut output_node = Node::Error; // TODO: should this be nil?
 
     for node in nodes {
         match node {
             Node::List(children) => {
-                result = eval_list(children);
+                output_node = eval_list(children);
             }
             n @ Node::Number(_) => {
-                result = n;
+                output_node = n;
             }
-            _ => {
-                result = Node::Error;
+            n => {
+                return Err(format!("Unable to eval node: {}", n.display()));
             }
         };
     }
 
-    result
+    Ok(output_node)
 }
 
 fn eval_list(mut children: Vec<Node>) -> Node {
