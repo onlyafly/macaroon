@@ -8,13 +8,13 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn display(self) -> String {
+    pub fn display(&self) -> String {
         #[allow(unreachable_patterns)]
         match self {
-            Node::Error => "<error>".to_string(),
-            Node::Number(n) => n.to_string(),
-            Node::Symbol(s) => s,
-            Node::List(children) => {
+            &Node::Error => "<error>".to_string(),
+            &Node::Number(n) => n.to_string(),
+            &Node::Symbol(ref s) => s.clone(),
+            &Node::List(ref children) => {
                 let mut v = Vec::new();
                 for child in children {
                     v.push(child.display());

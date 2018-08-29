@@ -11,6 +11,8 @@ pub fn parse(input: &str) -> Result<Vec<Node>, Vec<String>> {
         let n = p.parse_node();
         nodes.push(n);
         p.next_token();
+
+        //DEBUG println!("processing: {:?}", p.current_token);
     }
 
     if p.syntax_errors.len() > 0 {
@@ -72,8 +74,6 @@ impl<'a> Parser<'a> {
                     children.push(self.parse_node());
                     self.next_token();
                 }
-                // Skip over the right paren
-                self.next_token();
 
                 Node::List(children)
             }
