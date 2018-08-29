@@ -2,33 +2,38 @@ use ast::*;
 use scanner;
 use tokens::Token;
 
-pub struct Parser<'a> {
+pub fn parse(input: &str) -> Result<Vec<Node>, Vec<String>> {
+    let mut p = Parser::new(input);
+    let mut nodes = Vec::new();
+    p.next_token();
+
+    while p.current_token != Token::EndOfFile {
+        let n = p.parse_node();
+        nodes.push(n);
+        p.next_token();
+    }
+
+    if p.syntax_errors.len() > 0 {
+        Err(p.syntax_errors)
+    } else {
+        Ok(nodes)
+    }
+}
+
+struct Parser<'a> {
     scanner: scanner::Scanner<'a>,
     current_token: Token,
     syntax_errors: Vec<String>,
 }
 
 impl<'a> Parser<'a> {
-    pub fn new(input: &str) -> Parser {
+    fn new(input: &str) -> Parser {
         let s = scanner::Scanner::new(input);
         Parser {
             scanner: s,
             current_token: Token::Error,
             syntax_errors: Vec::<String>::new(),
         }
-    }
-
-    pub fn parse(&mut self) -> Vec<Node> {
-        let mut nodes = Vec::new();
-        self.next_token();
-
-        while self.current_token != Token::EndOfFile {
-            let n = self.parse_node();
-            nodes.push(n);
-            self.next_token();
-        }
-
-        nodes
     }
 
     fn next_token(&mut self) {

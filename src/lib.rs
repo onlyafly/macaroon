@@ -5,11 +5,18 @@ mod tokens;
 
 use ast::Node;
 
-pub fn interpret(input: &str) -> Node {
-    let mut p = parser::Parser::new(input);
-    let nodes = p.parse();
-    let result = eval(nodes);
-    result
+pub fn interpret(input: &str) -> String {
+    let parse_result = parser::parse(input);
+
+    match parse_result {
+        Ok(nodes) => {
+            let result = eval(nodes);
+            result.display()
+        }
+        Err(mut syntax_errors) => {
+            syntax_errors.remove(0) //TODO
+        }
+    }
 }
 
 fn eval(nodes: Vec<Node>) -> Node {

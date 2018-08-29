@@ -20,8 +20,7 @@ fn test_suite() {
             let input_contents = read_text_contents(&path);
 
             //TODO: calculate input_result correctly
-            let actual_output_node = quivi::interpret(input_contents.trim_right());
-            let actual_output = actual_output_node.display();
+            let actual_output = quivi::interpret(input_contents.trim_right());
 
             if let Some(output_file_stem) = path.file_stem() {
                 let output_path = Path::new("./testsuite")
