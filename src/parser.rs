@@ -1,4 +1,4 @@
-use ast::*;
+use nodes::*;
 use scanner;
 use tokens::Token;
 
@@ -54,6 +54,7 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
+            Token::Symbol(ref s) => Node::Symbol(s.clone()),
             Token::SingleQuote => {
                 self.next_token();
                 let quoted_node = self.parse_node();

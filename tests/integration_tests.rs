@@ -50,7 +50,7 @@ fn read_text_contents(path: &PathBuf) -> String {
     let mut s = String::new();
     match file.read_to_string(&mut s) {
         Err(why) => panic!("couldn't read {}: {}", display, why.description()),
-        Ok(_) => print!("{} contains:\n{}", display, s),
+        Ok(_) => {}
     }
 
     // `file` goes out of scope, and the "hello.txt" file gets closed

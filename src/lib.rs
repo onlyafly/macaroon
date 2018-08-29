@@ -1,9 +1,9 @@
-mod ast;
+mod nodes;
 mod parser;
 mod scanner;
 mod tokens;
 
-use ast::Node;
+use nodes::Node;
 
 pub fn interpret(input: &str) -> String {
     let parse_result = parser::parse(input);
