@@ -5,6 +5,7 @@ use tokens::Token;
 pub struct Parser<'a> {
     scanner: scanner::Scanner<'a>,
     current_token: Token,
+    syntax_errors: Vec<String>,
 }
 
 impl<'a> Parser<'a> {
@@ -13,6 +14,7 @@ impl<'a> Parser<'a> {
         Parser {
             scanner: s,
             current_token: Token::Error,
+            syntax_errors: Vec::<String>::new(),
         }
     }
 
@@ -35,7 +37,18 @@ impl<'a> Parser<'a> {
 
     fn parse_node(&mut self) -> Node {
         match self.current_token {
-            Token::Number(_) => Node::Number(1234), //TODO
+            Token::Number(ref s) => {
+                match s.parse::<i32>() {
+                    Ok(number) => Node::Number(number),
+                    Err(_) => {
+                        // TODO make error more valuable
+                        self.syntax_errors
+                            .push("Unable to parse number".to_string());
+                        // Recover from error by continuing with a dummy value
+                        Node::Number(0)
+                    }
+                }
+            }
             Token::SingleQuote => {
                 self.next_token();
                 let quoted_node = self.parse_node();
