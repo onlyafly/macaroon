@@ -1,5 +1,5 @@
 #[allow(dead_code)]
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum Node {
     Error,
     Number(i32),
@@ -12,7 +12,14 @@ impl Node {
         match self {
             Node::Error => "<error>".to_string(),
             Node::Number(n) => n.to_string(),
-            _ => "<unknown>".to_string(),
+            Node::List(children) => {
+                let mut v = Vec::new();
+                for child in children {
+                    v.push(child.display());
+                }
+                "(".to_string() + &v.join(" ") + ")"
+            }
+            n => format!("<unrecognized node: {:?}>", n),
         }
     }
 }

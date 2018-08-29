@@ -61,7 +61,26 @@ impl<'a> Parser<'a> {
                 let l = Node::List(child_nodes);
                 l
             }
-            _ => Node::Error,
+            Token::LeftParen => {
+                self.next_token();
+                let mut children = Vec::<Node>::new();
+
+                while self.current_token != Token::EndOfFile
+                    && self.current_token != Token::RightParen
+                {
+                    children.push(self.parse_node());
+                    self.next_token();
+                }
+                // Skip over the right paren
+                self.next_token();
+
+                Node::List(children)
+            }
+            ref t => {
+                self.syntax_errors
+                    .push(format!("Unrecognized token: {:?}", t));
+                Node::Error
+            }
         }
     }
 }
