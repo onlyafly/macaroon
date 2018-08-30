@@ -15,4 +15,8 @@ impl Env {
     pub fn insert(&mut self, k: String, v: Node) {
         self.map.insert(k, v);
     }
+
+    pub fn get(&mut self, k: &str) -> Option<&Node> {
+        self.map.get(k)
+    }
 }

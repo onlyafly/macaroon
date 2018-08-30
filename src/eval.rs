@@ -9,6 +9,14 @@ pub fn eval(env: &mut Env, nodes: Vec<Node>) -> Result<Node, String> {
             Node::List(children) => {
                 output_node = eval_list(env, children)?;
             }
+            Node::Symbol(name) => match env.get(&name) {
+                Some(&ref node) => {
+                    output_node = node.clone();
+                }
+                None => {
+                    return Err(format!("Undefined symbol: {}", name));
+                }
+            },
             n @ Node::Number(_) => {
                 output_node = n;
             }
