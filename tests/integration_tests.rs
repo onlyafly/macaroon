@@ -1,6 +1,8 @@
 // extern crate we're testing, same as any other code would do.
+extern crate colored;
 extern crate quivi;
 
+use colored::*;
 use std::error::Error;
 use std::ffi::OsStr;
 use std::fs;
@@ -12,24 +14,48 @@ use std::path::PathBuf;
 #[test]
 fn test_suite() {
     let paths = fs::read_dir("./testsuite/").unwrap();
+    let mut failures = Vec::new();
 
     for wrapped_path in paths {
         let path = wrapped_path.unwrap().path();
 
         if Some(OsStr::new("q")) == path.extension() {
             let input_contents = read_text_contents(&path);
-
-            //TODO: calculate input_result correctly
             let actual_output = quivi::interpret(input_contents.trim_right());
 
             if let Some(output_file_stem) = path.file_stem() {
-                let output_path = Path::new("./testsuite")
-                    .join(output_file_stem.to_str().unwrap().to_owned() + ".out");
+                let case: String = output_file_stem.to_str().unwrap().to_owned();
+                let output_path = Path::new("./testsuite").join(case.clone() + ".out");
                 let expected_output = read_text_contents(&output_path);
 
-                assert_eq!(expected_output.trim_right(), actual_output);
+                if expected_output.trim_right() != actual_output {
+                    failures.push((case, expected_output, actual_output));
+                }
             }
         }
+    }
+
+    if failures.len() > 0 {
+        println!("\n{}\n", "Quivi Test Suite Failures".magenta().bold());
+
+        let mut count: i32 = 1;
+        for failure in failures {
+            let (case, expected, actual) = failure;
+            println!(
+                "{}{} ({})\n\n   {}:\n\n\t{}\n\n   {}:\n\n\t{}\n\n",
+                "Failure #".magenta().bold(),
+                count.to_string().magenta().bold(),
+                case.blue(),
+                "Expected".bold(),
+                expected.trim_right().green().bold(),
+                "Actual".bold(),
+                actual.red().bold(),
+            );
+
+            count += 1;
+        }
+
+        panic!("Test cases failed.");
     }
 }
 
