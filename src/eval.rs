@@ -5,33 +5,28 @@ pub fn eval(env: &mut Env, nodes: Vec<Node>) -> Result<Node, String> {
     let mut output_node = Node::Error; // TODO: should this be nil?
 
     for node in nodes {
-        match node {
-            Node::List(children) => {
-                output_node = eval_list(env, children)?;
-            }
-            Node::Symbol(name) => match env.get(&name) {
-                Some(&ref node) => {
-                    output_node = node.clone();
-                }
-                None => {
-                    return Err(format!("Undefined symbol: {}", name));
-                }
-            },
-            n @ Node::Number(_) => {
-                output_node = n;
-            }
-            n => {
-                return Err(format!("Unable to eval node: {}", n.display()));
-            }
-        };
+        output_node = eval_node(env, node)?;
     }
 
     Ok(output_node)
 }
 
+fn eval_node(env: &mut Env, node: Node) -> Result<Node, String> {
+    match node {
+        Node::List(children) => eval_list(env, children),
+        Node::Symbol(name) => match env.get(&name) {
+            Some(&ref node) => Ok(node.clone()),
+            None => Err(format!("Undefined symbol: {}", name)),
+        },
+        n @ Node::Number(_) => Ok(n),
+        n => Err(format!("Unable to eval node: {}", n.display())),
+    }
+}
+
 fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, String> {
     match children.remove(0) {
         Node::Symbol(ref name) => match name.as_ref() {
+            "list" => eval_special_list(env, children),
             "quote" => eval_special_quote(children),
             "def" => eval_special_def(env, children),
             _ => Err(format!(
@@ -44,6 +39,16 @@ fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, String> {
             n.display()
         )),
     }
+}
+
+fn eval_special_list(env: &mut Env, children: Vec<Node>) -> Result<Node, String> {
+    let mut evaled_children = Vec::new();
+
+    for child in children {
+        let evaled_child = eval_node(env, child)?;
+        evaled_children.push(evaled_child);
+    }
+    Ok(Node::List(evaled_children))
 }
 
 fn eval_special_quote(mut children: Vec<Node>) -> Result<Node, String> {
