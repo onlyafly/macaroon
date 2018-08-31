@@ -16,24 +16,27 @@ fn test_suite() {
 
     for folder_entry in fs::read_dir("./testsuite/").unwrap() {
         let unwrapped_folder_entry = folder_entry.unwrap();
-        if unwrapped_folder_entry.file_type().unwrap().is_dir() {
-            let folder_entry_path = unwrapped_folder_entry.path();
 
-            for file_entry_result in fs::read_dir(folder_entry_path).unwrap() {
-                let path = file_entry_result.unwrap().path();
+        if !unwrapped_folder_entry.file_type().unwrap().is_dir() {
+            panic!("Found file in the root testsuite directory.");
+        }
 
-                if Some(OsStr::new("q")) == path.extension() {
-                    let input_contents = read_text_contents(&path);
-                    let actual_output = quivi::interpret(input_contents.trim_right());
+        let folder_entry_path = unwrapped_folder_entry.path();
 
-                    if let Some(output_file_stem) = path.file_stem() {
-                        let case: String = output_file_stem.to_str().unwrap().to_owned();
-                        let output_path = path.parent().unwrap().join(case.clone() + ".out");
-                        let expected_output = read_text_contents(&output_path);
+        for file_entry_result in fs::read_dir(folder_entry_path).unwrap() {
+            let path = file_entry_result.unwrap().path();
 
-                        if expected_output.trim_right() != actual_output {
-                            failures.push((case, expected_output, actual_output));
-                        }
+            if Some(OsStr::new("q")) == path.extension() {
+                let input_contents = read_text_contents(&path);
+                let actual_output = quivi::interpret(input_contents.trim_right());
+
+                if let Some(output_file_stem) = path.file_stem() {
+                    let case: String = output_file_stem.to_str().unwrap().to_owned();
+                    let output_path = path.parent().unwrap().join(case.clone() + ".out");
+                    let expected_output = read_text_contents(&output_path);
+
+                    if expected_output.trim_right() != actual_output {
+                        failures.push((case, expected_output, actual_output));
                     }
                 }
             }
