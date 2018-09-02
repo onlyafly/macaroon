@@ -25,12 +25,13 @@ impl<'a> Scanner<'a> {
         self.skip_whitespace();
 
         match self.read_char() {
+            Some(';') => self.scan_single_line_comment(),
             Some('(') => (Token::LeftParen, self.loc()),
             Some(')') => (Token::RightParen, self.loc()),
             Some('-') => {
                 if let Some(&ch) = self.peek_char() {
                     if ch.is_numeric() {
-                        (Token::Number(self.scan_number('-')), self.loc())
+                        self.scan_number('-')
                     } else {
                         (Token::Symbol(self.scan_symbol('-')), self.loc())
                     }
@@ -56,7 +57,7 @@ impl<'a> Scanner<'a> {
             //  5. Tracking loc of errors
             Some(ch @ _) => {
                 if ch.is_numeric() {
-                    (Token::Number(self.scan_number(ch)), self.loc())
+                    self.scan_number(ch)
                 } else if is_symbolic(ch) {
                     (Token::Symbol(self.scan_symbol(ch)), self.loc())
                 } else {
@@ -68,7 +69,17 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    fn scan_number(&mut self, first: char) -> String {
+    fn scan_single_line_comment(&mut self) -> (Token, Loc) {
+        while let Some(&c) = self.peek_char() {
+            if c == '\n' || c == '\r' {
+                break;
+            }
+            self.read_char();
+        }
+        self.next()
+    }
+
+    fn scan_number(&mut self, first: char) -> (Token, Loc) {
         let mut number = String::new();
 
         number.push(first);
@@ -80,7 +91,7 @@ impl<'a> Scanner<'a> {
             number.push(self.read_char().unwrap()); // TODO: unwrap()
         }
 
-        number
+        (Token::Number(number), self.loc())
     }
 
     fn scan_symbol(&mut self, first: char) -> String {
