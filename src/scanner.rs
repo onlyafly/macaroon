@@ -1,43 +1,50 @@
 use std::iter::Peekable;
 use std::str::Chars;
+use tokens::Loc;
 use tokens::Token;
 
 pub struct Scanner<'a> {
     input: Peekable<Chars<'a>>,
+    filename: String,
+    line: i32,
+    pos: i32,
 }
 
 impl<'a> Scanner<'a> {
     pub fn new(input: &str) -> Scanner {
         Scanner {
             input: input.chars().peekable(),
+            filename: "TBD".to_string(),
+            line: 0,
+            pos: 0,
         }
     }
 
     #[allow(dead_code)]
-    pub fn next(&mut self) -> Token {
+    pub fn next(&mut self) -> (Token, Loc) {
         self.skip_whitespace();
 
         match self.read_char() {
-            Some('(') => Token::LeftParen,
-            Some(')') => Token::RightParen,
+            Some('(') => (Token::LeftParen, self.loc()),
+            Some(')') => (Token::RightParen, self.loc()),
             Some('-') => {
                 if let Some(&ch) = self.peek_char() {
                     if ch.is_numeric() {
-                        Token::Number(self.scan_number('-'))
+                        (Token::Number(self.scan_number('-')), self.loc())
                     } else {
-                        Token::Symbol(self.scan_symbol('-'))
+                        (Token::Symbol(self.scan_symbol('-')), self.loc())
                     }
                 } else {
-                    Token::Error
+                    (Token::Error, self.loc())
                 }
             }
-            Some('^') => Token::Caret,
-            Some('\'') => Token::SingleQuote,
+            Some('^') => (Token::Caret, self.loc()),
+            Some('\'') => (Token::SingleQuote, self.loc()),
             Some('\\') => {
                 if let Some(ch) = self.read_char() {
-                    Token::Char(ch.to_string())
+                    (Token::Char(ch.to_string()), self.loc())
                 } else {
-                    Token::Error
+                    (Token::Error, self.loc())
                 }
             }
 
@@ -46,18 +53,18 @@ impl<'a> Scanner<'a> {
             //  2. Floating point numbers
             //  3. Multiline comments
             //  4. String literals
-            //  5. Tracking location of errors
+            //  5. Tracking loc of errors
             Some(ch @ _) => {
                 if ch.is_numeric() {
-                    Token::Number(self.scan_number(ch))
+                    (Token::Number(self.scan_number(ch)), self.loc())
                 } else if is_symbolic(ch) {
-                    Token::Symbol(self.scan_symbol(ch))
+                    (Token::Symbol(self.scan_symbol(ch)), self.loc())
                 } else {
-                    Token::Error
+                    (Token::Error, self.loc())
                 }
             }
 
-            None => Token::EndOfFile,
+            None => (Token::EndOfFile, self.loc()),
         }
     }
 
@@ -102,6 +109,14 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    fn loc(&self) -> Loc {
+        Loc {
+            filename: self.filename.clone(),
+            line: self.line,
+            pos: self.pos,
+        }
+    }
+
     fn skip_whitespace(&mut self) {
         while let Some(&c) = self.peek_char() {
             if !c.is_whitespace() {
@@ -140,80 +155,82 @@ mod tests {
     #[test]
     fn test_simple_numbers() {
         let mut s = Scanner::new("1 2 3");
-        assert_eq!(s.next(), Token::Number("1".to_string()));
-        assert_eq!(s.next(), Token::Number("2".to_string()));
-        assert_eq!(s.next(), Token::Number("3".to_string()));
-        assert_eq!(s.next(), Token::EndOfFile);
+
+        assert_eq!(s.next().0, Token::Number("1".to_string()));
+        assert_eq!(s.next().0, Token::Number("2".to_string()));
+        assert_eq!(s.next().0, Token::Number("3".to_string()));
+        assert_eq!(s.next().0, Token::EndOfFile);
     }
 
     #[test]
     fn test_parens_and_numbers() {
         let mut s = Scanner::new("((1))");
-        assert_eq!(s.next(), Token::LeftParen);
-        assert_eq!(s.next(), Token::LeftParen);
-        assert_eq!(s.next(), Token::Number("1".to_string()));
-        assert_eq!(s.next(), Token::RightParen);
-        assert_eq!(s.next(), Token::RightParen);
-        assert_eq!(s.next(), Token::EndOfFile);
+
+        assert_eq!(s.next().0, Token::LeftParen);
+        assert_eq!(s.next().0, Token::LeftParen);
+        assert_eq!(s.next().0, Token::Number("1".to_string()));
+        assert_eq!(s.next().0, Token::RightParen);
+        assert_eq!(s.next().0, Token::RightParen);
+        assert_eq!(s.next().0, Token::EndOfFile);
     }
 
     #[test]
     fn test_symbols_and_numbers_with_minus_sign() {
         let mut s = Scanner::new("- -aa -123");
-        assert_eq!(s.next(), Token::Symbol("-".to_string()));
-        assert_eq!(s.next(), Token::Symbol("-aa".to_string()));
-        assert_eq!(s.next(), Token::Number("-123".to_string()));
-        assert_eq!(s.next(), Token::EndOfFile);
+        assert_eq!(s.next().0, Token::Symbol("-".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("-aa".to_string()));
+        assert_eq!(s.next().0, Token::Number("-123".to_string()));
+        assert_eq!(s.next().0, Token::EndOfFile);
     }
 
     #[test]
     fn test_symbols() {
         let mut s = Scanner::new("a b123 cAcZ ? + - * / = < > ! & _ . <aA1+-*/=<>!&_");
-        assert_eq!(s.next(), Token::Symbol("a".to_string()));
-        assert_eq!(s.next(), Token::Symbol("b123".to_string()));
-        assert_eq!(s.next(), Token::Symbol("cAcZ".to_string()));
-        assert_eq!(s.next(), Token::Symbol("?".to_string()));
-        assert_eq!(s.next(), Token::Symbol("+".to_string()));
-        assert_eq!(s.next(), Token::Symbol("-".to_string()));
-        assert_eq!(s.next(), Token::Symbol("*".to_string()));
-        assert_eq!(s.next(), Token::Symbol("/".to_string()));
-        assert_eq!(s.next(), Token::Symbol("=".to_string()));
-        assert_eq!(s.next(), Token::Symbol("<".to_string()));
-        assert_eq!(s.next(), Token::Symbol(">".to_string()));
-        assert_eq!(s.next(), Token::Symbol("!".to_string()));
-        assert_eq!(s.next(), Token::Symbol("&".to_string()));
-        assert_eq!(s.next(), Token::Symbol("_".to_string()));
-        assert_eq!(s.next(), Token::Symbol(".".to_string()));
-        assert_eq!(s.next(), Token::Symbol("<aA1+-*/=<>!&_".to_string()));
-        assert_eq!(s.next(), Token::EndOfFile);
+        assert_eq!(s.next().0, Token::Symbol("a".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("b123".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("cAcZ".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("?".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("+".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("-".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("*".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("/".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("=".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("<".to_string()));
+        assert_eq!(s.next().0, Token::Symbol(">".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("!".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("&".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("_".to_string()));
+        assert_eq!(s.next().0, Token::Symbol(".".to_string()));
+        assert_eq!(s.next().0, Token::Symbol("<aA1+-*/=<>!&_".to_string()));
+        assert_eq!(s.next().0, Token::EndOfFile);
     }
 
     #[test]
     fn test_miscellaneous() {
         let mut s = Scanner::new(r"^ '");
-        assert_eq!(s.next(), Token::Caret);
-        assert_eq!(s.next(), Token::SingleQuote);
-        assert_eq!(s.next(), Token::EndOfFile);
+        assert_eq!(s.next().0, Token::Caret);
+        assert_eq!(s.next().0, Token::SingleQuote);
+        assert_eq!(s.next().0, Token::EndOfFile);
     }
 
     #[test]
     fn test_chars() {
         let mut s = Scanner::new(r"\a");
-        assert_eq!(s.next(), Token::Char("a".to_string()));
-        assert_eq!(s.next(), Token::EndOfFile);
+        assert_eq!(s.next().0, Token::Char("a".to_string()));
+        assert_eq!(s.next().0, Token::EndOfFile);
     }
 
     #[test]
     fn test_errors() {
         let mut s = Scanner::new(r"\");
-        assert_eq!(s.next(), Token::Error);
+        assert_eq!(s.next().0, Token::Error);
     }
 
     #[test]
     fn test_quoting() {
         let mut s = Scanner::new(r"'a");
-        assert_eq!(s.next(), Token::SingleQuote);
-        assert_eq!(s.next(), Token::Symbol("a".to_string()));
-        assert_eq!(s.next(), Token::EndOfFile);
+        assert_eq!(s.next().0, Token::SingleQuote);
+        assert_eq!(s.next().0, Token::Symbol("a".to_string()));
+        assert_eq!(s.next().0, Token::EndOfFile);
     }
 }

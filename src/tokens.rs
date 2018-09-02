@@ -12,3 +12,11 @@ pub enum Token {
     SingleQuote,
     Char(String),
 }
+
+#[derive(Debug, PartialEq)]
+#[allow(dead_code)]
+pub struct Loc {
+    pub filename: String,
+    pub pos: i32,
+    pub line: i32,
+}

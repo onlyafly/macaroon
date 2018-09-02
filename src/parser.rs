@@ -1,5 +1,6 @@
 use nodes::*;
 use scanner;
+use tokens::Loc;
 use tokens::Token;
 
 pub fn parse(input: &str) -> Result<Vec<Node>, Vec<String>> {
@@ -11,7 +12,6 @@ pub fn parse(input: &str) -> Result<Vec<Node>, Vec<String>> {
         let n = p.parse_node();
         nodes.push(n);
         p.next_token();
-
         //DEBUG println!("processing: {:?}", p.current_token);
     }
 
@@ -25,6 +25,7 @@ pub fn parse(input: &str) -> Result<Vec<Node>, Vec<String>> {
 struct Parser<'a> {
     scanner: scanner::Scanner<'a>,
     current_token: Token,
+    current_loc: Loc,
     syntax_errors: Vec<String>,
 }
 
@@ -34,12 +35,19 @@ impl<'a> Parser<'a> {
         Parser {
             scanner: s,
             current_token: Token::Error,
+            current_loc: Loc {
+                filename: "<start>".to_string(),
+                line: 0,
+                pos: 0,
+            },
             syntax_errors: Vec::<String>::new(),
         }
     }
 
     fn next_token(&mut self) {
-        self.current_token = self.scanner.next();
+        let (t, l) = self.scanner.next();
+        self.current_token = t;
+        self.current_loc = l;
     }
 
     fn parse_node(&mut self) -> Node {
