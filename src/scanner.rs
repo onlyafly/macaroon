@@ -20,12 +20,29 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    //TODO: Change return type to Result
     #[allow(dead_code)]
     pub fn next(&mut self) -> (Token, Loc) {
         self.skip_whitespace();
 
         match self.read_char() {
             Some(';') => self.scan_single_line_comment(),
+            Some('#') => {
+                if let Some(&ch) = self.peek_char() {
+                    if ch == '|' {
+                        self.scan_multiline_comment()
+                    } else {
+                        (
+                            //TODO: Change return type to Result
+                            Token::Error(format!("Unrecognized character sequence: #{}", ch)),
+                            self.loc(),
+                        )
+                    }
+                } else {
+                    //TODO: Change return type to Result
+                    (Token::Error("END-OF-INPUT".to_string()), self.loc())
+                }
+            }
             Some('(') => (Token::LeftParen, self.loc()),
             Some(')') => (Token::RightParen, self.loc()),
             Some('-') => {
@@ -36,6 +53,7 @@ impl<'a> Scanner<'a> {
                         (Token::Symbol(self.scan_symbol('-')), self.loc())
                     }
                 } else {
+                    //TODO: Change return type to Result
                     (Token::Error("END-OF-INPUT".to_string()), self.loc())
                 }
             }
@@ -45,6 +63,7 @@ impl<'a> Scanner<'a> {
                 if let Some(ch) = self.read_char() {
                     (Token::Char(ch.to_string()), self.loc())
                 } else {
+                    //TODO: Change return type to Result
                     (Token::Error("END-OF-INPUT".to_string()), self.loc())
                 }
             }
@@ -61,6 +80,7 @@ impl<'a> Scanner<'a> {
                 } else if is_symbolic(ch) {
                     (Token::Symbol(self.scan_symbol(ch)), self.loc())
                 } else {
+                    //TODO: Change return type to Result
                     (Token::Error(ch.to_string()), self.loc())
                 }
             }
@@ -77,6 +97,27 @@ impl<'a> Scanner<'a> {
             self.read_char();
         }
         self.next()
+    }
+
+    fn scan_multiline_comment(&mut self) -> (Token, Loc) {
+        self.read_char(); // Skip '|'
+
+        while let Some(ch) = self.read_char() {
+            if ch == '|' {
+                if let Some(&chnext) = self.peek_char() {
+                    if chnext == '#' {
+                        self.read_char(); // Consume '#'
+                        return self.next();
+                    }
+                }
+            }
+        }
+
+        //TODO: Change return type to Result
+        (
+            Token::Error("Unterminated multiline comment".to_string()),
+            self.loc(),
+        )
     }
 
     fn scan_number(&mut self, first: char) -> (Token, Loc) {
