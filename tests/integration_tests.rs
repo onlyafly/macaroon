@@ -28,7 +28,8 @@ fn test_suite() {
 
             if Some(OsStr::new("q")) == path.extension() {
                 let input_contents = read_text_contents(&path);
-                let actual_output = quivi::interpret(input_contents.trim_right());
+                let actual_output =
+                    quivi::interpret(path.to_str().unwrap(), input_contents.trim_right());
 
                 if let Some(output_file_stem) = path.file_stem() {
                     let case: String = output_file_stem.to_str().unwrap().to_owned();

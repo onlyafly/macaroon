@@ -1,7 +1,7 @@
 #[allow(dead_code)]
 #[derive(PartialEq, Debug, Clone)]
 pub enum Node {
-    Error,
+    Error(String),
     Number(i32),
     Symbol(String),
     List(Vec<Node>),
@@ -11,7 +11,7 @@ impl Node {
     pub fn display(&self) -> String {
         #[allow(unreachable_patterns)]
         match self {
-            &Node::Error => "<error>".to_string(),
+            &Node::Error(ref s) => format!("<error: {}>", s),
             &Node::Number(n) => n.to_string(),
             &Node::Symbol(ref s) => s.clone(),
             &Node::List(ref children) => {

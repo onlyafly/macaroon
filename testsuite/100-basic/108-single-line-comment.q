@@ -1,3 +1,7 @@
+0
+1 
+2 
+3 
 ;test
 (def x 42);test(def x 9)
 ; test

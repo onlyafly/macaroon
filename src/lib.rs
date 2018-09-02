@@ -7,8 +7,8 @@ mod tokens;
 
 use env::Env;
 
-pub fn interpret(input: &str) -> String {
-    let parse_result = parser::parse(input);
+pub fn interpret(filename: &str, input: &str) -> String {
+    let parse_result = parser::parse(filename, input);
 
     match parse_result {
         Ok(nodes) => {
@@ -26,7 +26,8 @@ pub fn interpret(input: &str) -> String {
             }
         }
         Err(mut syntax_errors) => {
-            syntax_errors.remove(0) //TODO
+            let (loc, msg) = syntax_errors.remove(0); //TODO: handle more than one
+            format!("Syntax error ({}:{}): {}", loc.filename, loc.line, msg)
         }
     }
 }

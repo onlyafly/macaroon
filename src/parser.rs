@@ -3,8 +3,8 @@ use scanner;
 use tokens::Loc;
 use tokens::Token;
 
-pub fn parse(input: &str) -> Result<Vec<Node>, Vec<String>> {
-    let mut p = Parser::new(input);
+pub fn parse(filename: &str, input: &str) -> Result<Vec<Node>, Vec<(Loc, String)>> {
+    let mut p = Parser::new(filename, input);
     let mut nodes = Vec::new();
     p.next_token();
 
@@ -26,21 +26,21 @@ struct Parser<'a> {
     scanner: scanner::Scanner<'a>,
     current_token: Token,
     current_loc: Loc,
-    syntax_errors: Vec<String>,
+    syntax_errors: Vec<(Loc, String)>,
 }
 
 impl<'a> Parser<'a> {
-    fn new(input: &str) -> Parser {
-        let s = scanner::Scanner::new(input);
+    fn new(filename: &'a str, input: &'a str) -> Parser<'a> {
+        let s = scanner::Scanner::new(filename, input);
         Parser {
             scanner: s,
-            current_token: Token::Error,
+            current_token: Token::Error("START".to_string()),
             current_loc: Loc {
                 filename: "<start>".to_string(),
                 line: 0,
                 pos: 0,
             },
-            syntax_errors: Vec::<String>::new(),
+            syntax_errors: Vec::new(),
         }
     }
 
@@ -57,8 +57,10 @@ impl<'a> Parser<'a> {
                     Ok(number) => Node::Number(number),
                     Err(_) => {
                         // TODO make error more valuable
-                        self.syntax_errors
-                            .push("Unable to parse number".to_string());
+                        self.syntax_errors.push((
+                            self.current_loc.clone(),
+                            format!("Unable to parse number: {}", s),
+                        ));
                         // Recover from error by continuing with a dummy value
                         Node::Number(0)
                     }
@@ -86,10 +88,12 @@ impl<'a> Parser<'a> {
                 Node::List(children)
             }
             ref t => {
-                self.syntax_errors
-                    .push(format!("Unrecognized token: {:?}", t));
+                self.syntax_errors.push((
+                    self.current_loc.clone(),
+                    format!("Unrecognized token: {}", t.display()),
+                ));
                 // Try to recover by pushing an error node
-                Node::Error
+                Node::Error(t.display())
             }
         }
     }

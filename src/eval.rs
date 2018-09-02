@@ -2,7 +2,7 @@ use env::Env;
 use nodes::Node;
 
 pub fn eval(env: &mut Env, nodes: Vec<Node>) -> Result<Node, String> {
-    let mut output_node = Node::Error; // TODO: should this be nil?
+    let mut output_node = Node::Error("NO-INPUT".to_string()); // TODO: should this be nil?
 
     for node in nodes {
         output_node = eval_node(env, node)?;
