@@ -25,9 +25,15 @@ pub fn interpret(filename: &str, input: &str) -> String {
                 Err(message) => message,
             }
         }
-        Err(mut syntax_errors) => {
-            let (loc, msg) = syntax_errors.remove(0); //TODO: handle more than one
-            format!("Syntax error ({}:{}): {}", loc.filename, loc.line, msg)
+        Err(syntax_errors) => {
+            let mut output = String::new();
+            for (loc, msg) in syntax_errors {
+                output.push_str(&format!(
+                    "Syntax error ({}:{}): {}\n\n",
+                    loc.filename, loc.line, msg
+                ));
+            }
+            output
         }
     }
 }

@@ -45,10 +45,16 @@ impl<'a> Parser<'a> {
     }
 
     fn next_token(&mut self) {
-        let (t, l) = self.scanner.next();
-        self.current_token = t;
-        self.current_loc = l;
+        self.current_token = self.scanner.next();
+        self.current_loc = self.scanner.loc();
     }
+
+    /* FIXME
+    fn register_error(&mut self, msg: &str) {
+        self.syntax_errors
+            .push((self.current_loc.clone(), msg.to_string()));
+    }
+    */
 
     fn parse_node(&mut self) -> Node {
         match self.current_token {
@@ -57,15 +63,20 @@ impl<'a> Parser<'a> {
                     Ok(number) => Node::Number(number),
                     Err(_) => {
                         // TODO make error more valuable
+
                         self.syntax_errors.push((
                             self.current_loc.clone(),
                             format!("Unable to parse number: {}", s),
                         ));
+
+                        //FIXMEself.register_error(&format!("Unable to parse number: {}", s));
+
                         // Recover from error by continuing with a dummy value
                         Node::Number(0)
                     }
                 }
             }
+
             Token::Symbol(ref s) => Node::Symbol(s.clone()),
             Token::SingleQuote => {
                 self.next_token();

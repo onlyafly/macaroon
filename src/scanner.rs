@@ -20,9 +20,17 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    pub fn loc(&self) -> Loc {
+        Loc {
+            filename: self.filename.to_string(),
+            line: self.line,
+            pos: self.pos,
+        }
+    }
+
     //TODO: Change return type to Result
     #[allow(dead_code)]
-    pub fn next(&mut self) -> (Token, Loc) {
+    pub fn next(&mut self) -> Token {
         self.skip_whitespace();
 
         match self.read_char() {
@@ -32,39 +40,36 @@ impl<'a> Scanner<'a> {
                     if ch == '|' {
                         self.scan_multiline_comment()
                     } else {
-                        (
-                            //TODO: Change return type to Result
-                            Token::Error(format!("Unrecognized character sequence: #{}", ch)),
-                            self.loc(),
-                        )
+                        //TODO: Change return type to Result
+                        Token::Error(format!("Unrecognized character sequence: #{}", ch))
                     }
                 } else {
                     //TODO: Change return type to Result
-                    (Token::Error("END-OF-INPUT".to_string()), self.loc())
+                    Token::Error("END-OF-INPUT".to_string())
                 }
             }
-            Some('(') => (Token::LeftParen, self.loc()),
-            Some(')') => (Token::RightParen, self.loc()),
+            Some('(') => Token::LeftParen,
+            Some(')') => Token::RightParen,
             Some('-') => {
                 if let Some(&ch) = self.peek_char() {
                     if ch.is_numeric() {
                         self.scan_number('-')
                     } else {
-                        (Token::Symbol(self.scan_symbol('-')), self.loc())
+                        Token::Symbol(self.scan_symbol('-'))
                     }
                 } else {
                     //TODO: Change return type to Result
-                    (Token::Error("END-OF-INPUT".to_string()), self.loc())
+                    Token::Error("END-OF-INPUT".to_string())
                 }
             }
-            Some('^') => (Token::Caret, self.loc()),
-            Some('\'') => (Token::SingleQuote, self.loc()),
+            Some('^') => Token::Caret,
+            Some('\'') => Token::SingleQuote,
             Some('\\') => {
                 if let Some(ch) = self.read_char() {
-                    (Token::Char(ch.to_string()), self.loc())
+                    Token::Char(ch.to_string())
                 } else {
                     //TODO: Change return type to Result
-                    (Token::Error("END-OF-INPUT".to_string()), self.loc())
+                    Token::Error("END-OF-INPUT".to_string())
                 }
             }
 
@@ -78,18 +83,18 @@ impl<'a> Scanner<'a> {
                 if ch.is_numeric() {
                     self.scan_number(ch)
                 } else if is_symbolic(ch) {
-                    (Token::Symbol(self.scan_symbol(ch)), self.loc())
+                    Token::Symbol(self.scan_symbol(ch))
                 } else {
                     //TODO: Change return type to Result
-                    (Token::Error(ch.to_string()), self.loc())
+                    Token::Error(ch.to_string())
                 }
             }
 
-            None => (Token::EndOfFile, self.loc()),
+            None => Token::EndOfFile,
         }
     }
 
-    fn scan_single_line_comment(&mut self) -> (Token, Loc) {
+    fn scan_single_line_comment(&mut self) -> Token {
         while let Some(&c) = self.peek_char() {
             if c == '\n' || c == '\r' {
                 break;
@@ -99,7 +104,7 @@ impl<'a> Scanner<'a> {
         self.next()
     }
 
-    fn scan_multiline_comment(&mut self) -> (Token, Loc) {
+    fn scan_multiline_comment(&mut self) -> Token {
         self.read_char(); // Skip '|'
 
         while let Some(ch) = self.read_char() {
@@ -114,13 +119,10 @@ impl<'a> Scanner<'a> {
         }
 
         //TODO: Change return type to Result
-        (
-            Token::Error("Unterminated multiline comment".to_string()),
-            self.loc(),
-        )
+        Token::Error("Unterminated multiline comment".to_string())
     }
 
-    fn scan_number(&mut self, first: char) -> (Token, Loc) {
+    fn scan_number(&mut self, first: char) -> Token {
         let mut number = String::new();
 
         number.push(first);
@@ -132,7 +134,7 @@ impl<'a> Scanner<'a> {
             number.push(self.read_char().unwrap()); // TODO: unwrap()
         }
 
-        (Token::Number(number), self.loc())
+        Token::Number(number)
     }
 
     fn scan_symbol(&mut self, first: char) -> String {
@@ -158,14 +160,6 @@ impl<'a> Scanner<'a> {
         match self.peek_char() {
             Some(&ch) => is_symbolic(ch),
             None => false,
-        }
-    }
-
-    fn loc(&self) -> Loc {
-        Loc {
-            filename: self.filename.to_string(),
-            line: self.line,
-            pos: self.pos,
         }
     }
 
@@ -213,81 +207,81 @@ mod tests {
     fn test_simple_numbers() {
         let mut s = Scanner::new("", "1 2 3");
 
-        assert_eq!(s.next().0, Token::Number("1".to_string()));
-        assert_eq!(s.next().0, Token::Number("2".to_string()));
-        assert_eq!(s.next().0, Token::Number("3".to_string()));
-        assert_eq!(s.next().0, Token::EndOfFile);
+        assert_eq!(s.next(), Token::Number("1".to_string()));
+        assert_eq!(s.next(), Token::Number("2".to_string()));
+        assert_eq!(s.next(), Token::Number("3".to_string()));
+        assert_eq!(s.next(), Token::EndOfFile);
     }
 
     #[test]
     fn test_parens_and_numbers() {
         let mut s = Scanner::new("", "((1))");
 
-        assert_eq!(s.next().0, Token::LeftParen);
-        assert_eq!(s.next().0, Token::LeftParen);
-        assert_eq!(s.next().0, Token::Number("1".to_string()));
-        assert_eq!(s.next().0, Token::RightParen);
-        assert_eq!(s.next().0, Token::RightParen);
-        assert_eq!(s.next().0, Token::EndOfFile);
+        assert_eq!(s.next(), Token::LeftParen);
+        assert_eq!(s.next(), Token::LeftParen);
+        assert_eq!(s.next(), Token::Number("1".to_string()));
+        assert_eq!(s.next(), Token::RightParen);
+        assert_eq!(s.next(), Token::RightParen);
+        assert_eq!(s.next(), Token::EndOfFile);
     }
 
     #[test]
     fn test_symbols_and_numbers_with_minus_sign() {
         let mut s = Scanner::new("", "- -aa -123");
-        assert_eq!(s.next().0, Token::Symbol("-".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("-aa".to_string()));
-        assert_eq!(s.next().0, Token::Number("-123".to_string()));
-        assert_eq!(s.next().0, Token::EndOfFile);
+        assert_eq!(s.next(), Token::Symbol("-".to_string()));
+        assert_eq!(s.next(), Token::Symbol("-aa".to_string()));
+        assert_eq!(s.next(), Token::Number("-123".to_string()));
+        assert_eq!(s.next(), Token::EndOfFile);
     }
 
     #[test]
     fn test_symbols() {
         let mut s = Scanner::new("", "a b123 cAcZ ? + - * / = < > ! & _ . <aA1+-*/=<>!&_");
-        assert_eq!(s.next().0, Token::Symbol("a".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("b123".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("cAcZ".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("?".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("+".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("-".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("*".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("/".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("=".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("<".to_string()));
-        assert_eq!(s.next().0, Token::Symbol(">".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("!".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("&".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("_".to_string()));
-        assert_eq!(s.next().0, Token::Symbol(".".to_string()));
-        assert_eq!(s.next().0, Token::Symbol("<aA1+-*/=<>!&_".to_string()));
-        assert_eq!(s.next().0, Token::EndOfFile);
+        assert_eq!(s.next(), Token::Symbol("a".to_string()));
+        assert_eq!(s.next(), Token::Symbol("b123".to_string()));
+        assert_eq!(s.next(), Token::Symbol("cAcZ".to_string()));
+        assert_eq!(s.next(), Token::Symbol("?".to_string()));
+        assert_eq!(s.next(), Token::Symbol("+".to_string()));
+        assert_eq!(s.next(), Token::Symbol("-".to_string()));
+        assert_eq!(s.next(), Token::Symbol("*".to_string()));
+        assert_eq!(s.next(), Token::Symbol("/".to_string()));
+        assert_eq!(s.next(), Token::Symbol("=".to_string()));
+        assert_eq!(s.next(), Token::Symbol("<".to_string()));
+        assert_eq!(s.next(), Token::Symbol(">".to_string()));
+        assert_eq!(s.next(), Token::Symbol("!".to_string()));
+        assert_eq!(s.next(), Token::Symbol("&".to_string()));
+        assert_eq!(s.next(), Token::Symbol("_".to_string()));
+        assert_eq!(s.next(), Token::Symbol(".".to_string()));
+        assert_eq!(s.next(), Token::Symbol("<aA1+-*/=<>!&_".to_string()));
+        assert_eq!(s.next(), Token::EndOfFile);
     }
 
     #[test]
     fn test_miscellaneous() {
         let mut s = Scanner::new("", r"^ '");
-        assert_eq!(s.next().0, Token::Caret);
-        assert_eq!(s.next().0, Token::SingleQuote);
-        assert_eq!(s.next().0, Token::EndOfFile);
+        assert_eq!(s.next(), Token::Caret);
+        assert_eq!(s.next(), Token::SingleQuote);
+        assert_eq!(s.next(), Token::EndOfFile);
     }
 
     #[test]
     fn test_chars() {
         let mut s = Scanner::new("", r"\a");
-        assert_eq!(s.next().0, Token::Char("a".to_string()));
-        assert_eq!(s.next().0, Token::EndOfFile);
+        assert_eq!(s.next(), Token::Char("a".to_string()));
+        assert_eq!(s.next(), Token::EndOfFile);
     }
 
     #[test]
     fn test_errors() {
         let mut s = Scanner::new("", r"\");
-        assert_eq!(s.next().0, Token::Error("END-OF-INPUT".to_string()));
+        assert_eq!(s.next(), Token::Error("END-OF-INPUT".to_string()));
     }
 
     #[test]
     fn test_quoting() {
         let mut s = Scanner::new("", r"'a");
-        assert_eq!(s.next().0, Token::SingleQuote);
-        assert_eq!(s.next().0, Token::Symbol("a".to_string()));
-        assert_eq!(s.next().0, Token::EndOfFile);
+        assert_eq!(s.next(), Token::SingleQuote);
+        assert_eq!(s.next(), Token::Symbol("a".to_string()));
+        assert_eq!(s.next(), Token::EndOfFile);
     }
 }

@@ -36,7 +36,7 @@ fn test_suite() {
                     let output_path = path.parent().unwrap().join(case.clone() + ".out");
                     let expected_output = read_text_contents(&output_path);
 
-                    if expected_output.trim_right() != actual_output {
+                    if expected_output.trim_right() != actual_output.trim_right() {
                         failures.push((case, expected_output, actual_output));
                     }
                 }
