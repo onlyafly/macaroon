@@ -3,20 +3,23 @@ use scanner;
 use tokens::Loc;
 use tokens::Token;
 
-pub fn parse(filename: &str, input: &str) -> Result<Vec<Node>, Vec<(Loc, String)>> {
+type SyntaxErrors = Vec<(Loc, String)>;
+
+pub fn parse(filename: &str, input: &str) -> Result<Vec<Node>, SyntaxErrors> {
     let mut p = Parser::new(filename, input);
     let mut nodes = Vec::new();
+    let mut errors = Vec::<(Loc, String)>::new();
     p.next_token();
 
     while p.current_token != Token::EndOfFile {
-        let n = p.parse_node();
+        let n = p.parse_node(&mut errors);
         nodes.push(n);
         p.next_token();
         //DEBUG println!("processing: {:?}", p.current_token);
     }
 
-    if p.syntax_errors.len() > 0 {
-        Err(p.syntax_errors)
+    if errors.len() > 0 {
+        Err(errors)
     } else {
         Ok(nodes)
     }
@@ -26,7 +29,6 @@ struct Parser<'a> {
     scanner: scanner::Scanner<'a>,
     current_token: Token,
     current_loc: Loc,
-    syntax_errors: Vec<(Loc, String)>,
 }
 
 impl<'a> Parser<'a> {
@@ -40,7 +42,6 @@ impl<'a> Parser<'a> {
                 line: 0,
                 pos: 0,
             },
-            syntax_errors: Vec::new(),
         }
     }
 
@@ -49,27 +50,17 @@ impl<'a> Parser<'a> {
         self.current_loc = self.scanner.loc();
     }
 
-    /* FIXME
-    fn register_error(&mut self, msg: &str) {
-        self.syntax_errors
-            .push((self.current_loc.clone(), msg.to_string()));
+    fn register_error(&self, errors: &mut SyntaxErrors, msg: &str) {
+        errors.push((self.current_loc.clone(), msg.to_string()));
     }
-    */
 
-    fn parse_node(&mut self) -> Node {
+    fn parse_node(&mut self, errors: &mut SyntaxErrors) -> Node {
         match self.current_token {
             Token::Number(ref s) => {
                 match s.parse::<i32>() {
                     Ok(number) => Node::Number(number),
                     Err(_) => {
-                        // TODO make error more valuable
-
-                        self.syntax_errors.push((
-                            self.current_loc.clone(),
-                            format!("Unable to parse number: {}", s),
-                        ));
-
-                        //FIXMEself.register_error(&format!("Unable to parse number: {}", s));
+                        self.register_error(errors, &format!("Unable to parse number: {}", s));
 
                         // Recover from error by continuing with a dummy value
                         Node::Number(0)
@@ -80,7 +71,7 @@ impl<'a> Parser<'a> {
             Token::Symbol(ref s) => Node::Symbol(s.clone()),
             Token::SingleQuote => {
                 self.next_token();
-                let quoted_node = self.parse_node();
+                let quoted_node = self.parse_node(errors);
                 let child_nodes = vec![Node::Symbol("quote".to_string()), quoted_node];
                 let l = Node::List(child_nodes);
                 l
@@ -92,17 +83,14 @@ impl<'a> Parser<'a> {
                 while self.current_token != Token::EndOfFile
                     && self.current_token != Token::RightParen
                 {
-                    children.push(self.parse_node());
+                    children.push(self.parse_node(errors));
                     self.next_token();
                 }
 
                 Node::List(children)
             }
             ref t => {
-                self.syntax_errors.push((
-                    self.current_loc.clone(),
-                    format!("Unrecognized token: {}", t.display()),
-                ));
+                self.register_error(errors, &format!("Unrecognized token: {}", t.display()));
                 // Try to recover by pushing an error node
                 Node::Error(t.display())
             }
