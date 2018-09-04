@@ -1,7 +1,15 @@
-pub mod env;
+mod env;
+mod primitives;
+mod specials;
 
 use self::env::Env;
 use nodes::Node;
+
+pub fn create_root_env() -> Env {
+    let env = Env::new();
+    primitives::init_env_with_primitives(&env);
+    env
+}
 
 pub fn eval(env: &mut Env, nodes: Vec<Node>) -> Result<Node, String> {
     let mut output_node = Node::Error("NO-INPUT".to_string()); // TODO: should this be nil?
@@ -28,62 +36,29 @@ fn eval_node(env: &mut Env, node: Node) -> Result<Node, String> {
 fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, String> {
     match children.remove(0) {
         Node::Symbol(ref name) => match name.as_ref() {
-            "list" => eval_special_list(env, children),
-            "quote" => eval_special_quote(children),
-            "def" => eval_special_def(env, children),
-            "update!" => eval_special_update(env, children),
+            "list" => specials::eval_special_list(env, children),
+            "quote" => specials::eval_special_quote(children),
+            "def" => specials::eval_special_def(env, children),
+            "fn" => specials::eval_special_fn(env, children),
+            "update!" => specials::eval_special_update(env, children),
             _ => Err(format!(
                 "Don't know what to do with list starting with: {}",
                 name
             )),
         },
-        n => Err(format!(
-            "Don't know what to do with list starting with: {}",
-            n.display()
-        )),
-    }
-}
+        n => {
+            let evaluated_head = eval_node(env, n)?;
 
-fn eval_special_list(env: &mut Env, children: Vec<Node>) -> Result<Node, String> {
-    let mut evaled_children = Vec::new();
-
-    for child in children {
-        let evaled_child = eval_node(env, child)?;
-        evaled_children.push(evaled_child);
-    }
-    Ok(Node::List(evaled_children))
-}
-
-fn eval_special_quote(mut children: Vec<Node>) -> Result<Node, String> {
-    Ok(children.remove(0))
-}
-
-fn eval_special_def(env: &mut Env, mut children: Vec<Node>) -> Result<Node, String> {
-    let name_node = children.remove(0);
-
-    if let Node::Symbol(name) = name_node {
-        if env.exists(&name) {
-            return Err(format!("Cannot redefine a name: {}", name));
+            match evaluated_head {
+                Node::Procedure {
+                    params: _p,
+                    body: mut b,
+                } => Ok(b.remove(0)), // TODO: we currently just return the first item in the body
+                _ => Err(format!(
+                    "Don't know what to do with list starting with: {}",
+                    evaluated_head.display()
+                )),
+            }
         }
-        let value = children.remove(0);
-        env.insert(name, value);
-        Ok(Node::Number(0)) // TODO: should be nil
-    } else {
-        Err(format!("Expected symbol, got {}", name_node.display()))
-    }
-}
-
-fn eval_special_update(env: &mut Env, mut children: Vec<Node>) -> Result<Node, String> {
-    let name_node = children.remove(0);
-
-    if let Node::Symbol(name) = name_node {
-        if !env.exists(&name) {
-            return Err(format!("Cannot update an undefined name: {}", name));
-        }
-        let value = children.remove(0);
-        env.insert(name, value);
-        Ok(Node::Number(0)) // TODO: should be nil
-    } else {
-        Err(format!("Expected symbol, got {}", name_node.display()))
     }
 }

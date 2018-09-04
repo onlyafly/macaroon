@@ -4,6 +4,7 @@ pub enum Node {
     Error(String),
     Number(i32),
     Symbol(String),
+    Procedure { params: Vec<Node>, body: Vec<Node> },
     List(Vec<Node>),
 }
 

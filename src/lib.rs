@@ -4,14 +4,12 @@ mod parser;
 mod scanner;
 mod tokens;
 
-use eval::env::Env;
-
 pub fn interpret(filename: &str, input: &str) -> String {
     let parse_result = parser::parse(filename, input);
 
     match parse_result {
         Ok(nodes) => {
-            let mut env = Env::new();
+            let mut env = eval::create_root_env();
 
             /* DEBUG
             for node in &nodes {
