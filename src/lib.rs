@@ -1,11 +1,10 @@
-mod env;
 mod eval;
 mod nodes;
 mod parser;
 mod scanner;
 mod tokens;
 
-use env::Env;
+use eval::env::Env;
 
 pub fn interpret(filename: &str, input: &str) -> String {
     let parse_result = parser::parse(filename, input);

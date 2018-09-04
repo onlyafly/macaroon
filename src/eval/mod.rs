@@ -1,4 +1,6 @@
-use env::Env;
+pub mod env;
+
+use self::env::Env;
 use nodes::Node;
 
 pub fn eval(env: &mut Env, nodes: Vec<Node>) -> Result<Node, String> {
