@@ -16,6 +16,10 @@ impl Env {
         self.map.insert(k, v);
     }
 
+    pub fn exists(&mut self, k: &str) -> bool {
+        self.map.contains_key(k)
+    }
+
     pub fn get(&mut self, k: &str) -> Option<&Node> {
         self.map.get(k)
     }

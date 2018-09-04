@@ -29,6 +29,7 @@ fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, String> {
             "list" => eval_special_list(env, children),
             "quote" => eval_special_quote(children),
             "def" => eval_special_def(env, children),
+            "update!" => eval_special_update(env, children),
             _ => Err(format!(
                 "Don't know what to do with list starting with: {}",
                 name
@@ -59,6 +60,24 @@ fn eval_special_def(env: &mut Env, mut children: Vec<Node>) -> Result<Node, Stri
     let name_node = children.remove(0);
 
     if let Node::Symbol(name) = name_node {
+        if env.exists(&name) {
+            return Err(format!("Cannot redefine a name: {}", name));
+        }
+        let value = children.remove(0);
+        env.insert(name, value);
+        Ok(Node::Number(0)) // TODO: should be nil
+    } else {
+        Err(format!("Expected symbol, got {}", name_node.display()))
+    }
+}
+
+fn eval_special_update(env: &mut Env, mut children: Vec<Node>) -> Result<Node, String> {
+    let name_node = children.remove(0);
+
+    if let Node::Symbol(name) = name_node {
+        if !env.exists(&name) {
+            return Err(format!("Cannot update an undefined name: {}", name));
+        }
         let value = children.remove(0);
         env.insert(name, value);
         Ok(Node::Number(0)) // TODO: should be nil
