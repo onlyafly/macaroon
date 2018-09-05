@@ -1,4 +1,4 @@
-use nodes::Node;
+use ast::Node;
 use std::collections::HashMap;
 
 pub struct Env {

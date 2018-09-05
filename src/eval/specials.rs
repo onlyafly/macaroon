@@ -1,6 +1,6 @@
+use ast::*;
 use eval;
 use eval::env::Env;
-use nodes::Node;
 
 pub fn eval_special_list(env: &mut Env, children: Vec<Node>) -> Result<Node, String> {
     let mut evaled_children = Vec::new();
@@ -9,7 +9,10 @@ pub fn eval_special_list(env: &mut Env, children: Vec<Node>) -> Result<Node, Str
         let evaled_child = eval::eval_node(env, child)?;
         evaled_children.push(evaled_child);
     }
-    Ok(Node::List(evaled_children))
+
+    Ok(Node::List(Box::new(ListNode {
+        children: evaled_children,
+    })))
 }
 
 pub fn eval_special_quote(mut children: Vec<Node>) -> Result<Node, String> {
@@ -51,10 +54,10 @@ pub fn eval_special_fn(_env: &mut Env, mut children: Vec<Node>) -> Result<Node, 
     let body = children;
 
     match param_list {
-        Node::List(params) => Ok(Node::Procedure {
-            params: params,
+        Node::List(list_node) => Ok(Node::Proc(Box::new(ProcNode {
+            params: list_node.children,
             body: body,
-        }),
+        }))),
         _ => Err(format!(
             "Expected list of paramters, got {}",
             param_list.display()

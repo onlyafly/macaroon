@@ -1,4 +1,4 @@
-use nodes::*;
+use ast::*;
 use scanner;
 use tokens::Loc;
 use tokens::Token;
@@ -72,9 +72,8 @@ impl<'a> Parser<'a> {
             Token::SingleQuote => {
                 self.next_token();
                 let quoted_node = self.parse_node(errors);
-                let child_nodes = vec![Node::Symbol("quote".to_string()), quoted_node];
-                let l = Node::List(child_nodes);
-                l
+                let children = vec![Node::Symbol("quote".to_string()), quoted_node];
+                Node::List(Box::new(ListNode { children: children }))
             }
             Token::LeftParen => {
                 self.next_token();
@@ -87,7 +86,7 @@ impl<'a> Parser<'a> {
                     self.next_token();
                 }
 
-                Node::List(children)
+                Node::List(Box::new(ListNode { children: children }))
             }
             ref t => {
                 self.register_error(errors, &format!("Unrecognized token: {}", t.display()));

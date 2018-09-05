@@ -1,5 +1,5 @@
+mod ast;
 mod eval;
-mod nodes;
 mod parser;
 mod scanner;
 mod tokens;

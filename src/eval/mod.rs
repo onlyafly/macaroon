@@ -3,7 +3,7 @@ mod primitives;
 mod specials;
 
 use self::env::Env;
-use nodes::Node;
+use ast::Node;
 
 pub fn create_root_env() -> Env {
     let env = Env::new();
@@ -23,7 +23,7 @@ pub fn eval(env: &mut Env, nodes: Vec<Node>) -> Result<Node, String> {
 
 fn eval_node(env: &mut Env, node: Node) -> Result<Node, String> {
     match node {
-        Node::List(children) => eval_list(env, children),
+        Node::List(list_node) => eval_list(env, list_node.children),
         Node::Symbol(name) => match env.get(&name) {
             Some(&ref node) => Ok(node.clone()),
             None => Err(format!("Undefined symbol: {}", name)),
@@ -50,10 +50,10 @@ fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, String> {
             let evaluated_head = eval_node(env, n)?;
 
             match evaluated_head {
-                Node::Procedure {
-                    params: _p,
-                    body: mut b,
-                } => Ok(b.remove(0)), // TODO: we currently just return the first item in the body
+                Node::Proc(proc_node) => {
+                    let mut body = proc_node.body;
+                    Ok(body.remove(0)) // TODO: we currently just return the first item in the body
+                }
                 _ => Err(format!(
                     "Don't know what to do with list starting with: {}",
                     evaluated_head.display()
