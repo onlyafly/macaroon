@@ -26,7 +26,7 @@ fn eval_node(env: &mut Env, node: Node) -> Result<Node, String> {
         Node::List(list_node) => eval_list(env, list_node.children),
         Node::Symbol(name) => match env.get(&name) {
             Some(&ref node) => Ok(node.clone()),
-            None => Err(format!("Undefined symbol: {}", name)),
+            None => Err(format!("Undefined name: {}", name)),
         },
         n @ Node::Number(_) => Ok(n),
         n => Err(format!("Unable to eval node: {}", n.display())),
