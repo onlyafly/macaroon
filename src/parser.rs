@@ -73,7 +73,7 @@ impl<'a> Parser<'a> {
                 self.next_token();
                 let quoted_node = self.parse_node(errors);
                 let children = vec![Node::Symbol("quote".to_string()), quoted_node];
-                Node::List(Box::new(ListNode { children: children }))
+                Node::List(Box::new(ListObj { children: children }))
             }
             Token::LeftParen => {
                 self.next_token();
@@ -86,7 +86,7 @@ impl<'a> Parser<'a> {
                     self.next_token();
                 }
 
-                Node::List(Box::new(ListNode { children: children }))
+                Node::List(Box::new(ListObj { children: children }))
             }
             ref t => {
                 self.register_error(errors, &format!("Unrecognized token: {}", t.display()));

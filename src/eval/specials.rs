@@ -10,7 +10,7 @@ pub fn eval_special_list(env: &mut Env, children: Vec<Node>) -> Result<Node, Str
         evaled_children.push(evaled_child);
     }
 
-    Ok(Node::List(Box::new(ListNode {
+    Ok(Node::List(Box::new(ListObj {
         children: evaled_children,
     })))
 }
@@ -49,12 +49,47 @@ pub fn eval_special_update(env: &mut Env, mut children: Vec<Node>) -> Result<Nod
     }
 }
 
+pub fn eval_special_update_element(env: &mut Env, mut args: Vec<Node>) -> Result<Node, String> {
+    let name_node = args.remove(0);
+
+    if let Node::Symbol(name) = name_node {
+        if !env.exists(&name) {
+            return Err(format!("Cannot update an undefined name: {}", name));
+        }
+
+        let _index_node = args.remove(0);
+        let _value_node = super::eval_node(env, args.remove(0))?;
+
+        /* TODO
+        if let Some(ref entry) = env.get(&name) {
+            match entry {
+                Node::List(mut list_node) => {
+                    //TODO: get num from index_node instead of using zero
+                    list_node.children[0] = value_node;
+                    env.insert(name, entry);
+                }
+                _ => {
+                    return Err(format!(
+                        "Tried to update an element in a non-list: {}",
+                        entry.display()
+                    ));
+                }
+            }
+        }
+        */
+
+        Ok(Node::Number(0)) // TODO: should be nil
+    } else {
+        Err(format!("Expected symbol, got {}", name_node.display()))
+    }
+}
+
 pub fn eval_special_fn(_env: &mut Env, mut children: Vec<Node>) -> Result<Node, String> {
     let param_list = children.remove(0);
     let body = children;
 
     match param_list {
-        Node::List(list_node) => Ok(Node::Proc(Box::new(ProcNode {
+        Node::List(list_node) => Ok(Node::Proc(Box::new(ProcObj {
             params: list_node.children,
             body: body,
         }))),

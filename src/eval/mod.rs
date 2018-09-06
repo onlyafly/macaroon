@@ -41,6 +41,7 @@ fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, String> {
             "def" => specials::eval_special_def(env, children),
             "fn" => specials::eval_special_fn(env, children),
             "update!" => specials::eval_special_update(env, children),
+            "update-element!" => specials::eval_special_update_element(env, children),
             _ => Err(format!(
                 "Don't know what to do with list starting with: {}",
                 name
