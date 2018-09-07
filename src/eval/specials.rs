@@ -58,25 +58,23 @@ pub fn eval_special_update_element(env: &mut Env, mut args: Vec<Node>) -> Result
         }
 
         let _index_node = args.remove(0);
-        let _value_node = super::eval_node(env, args.remove(0))?;
+        let value_node = super::eval_node(env, args.remove(0))?;
 
-        /* TODO
-        if let Some(ref entry) = env.get(&name) {
-            match entry {
-                Node::List(mut list_node) => {
+        if let Some(entry_node) = env.remove(&name) {
+            match entry_node {
+                Node::List(mut list_obj) => {
                     //TODO: get num from index_node instead of using zero
-                    list_node.children[0] = value_node;
-                    env.insert(name, entry);
+                    list_obj.children[0] = value_node;
+                    env.insert(name, Node::List(list_obj));
                 }
                 _ => {
                     return Err(format!(
                         "Tried to update an element in a non-list: {}",
-                        entry.display()
+                        entry_node.display()
                     ));
                 }
             }
         }
-        */
 
         Ok(Node::Number(0)) // TODO: should be nil
     } else {

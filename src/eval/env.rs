@@ -23,4 +23,8 @@ impl Env {
     pub fn get(&mut self, k: &str) -> Option<&Node> {
         self.map.get(k)
     }
+
+    pub fn remove(&mut self, k: &str) -> Option<Node> {
+        self.map.remove(k)
+    }
 }
