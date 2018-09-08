@@ -1,8 +1,9 @@
 use ast::*;
 use eval;
 use eval::env::Env;
+use eval::RuntimeError;
 
-pub fn eval_special_list(env: &mut Env, args: Vec<Node>) -> Result<Node, String> {
+pub fn eval_special_list(env: &mut Env, args: Vec<Node>) -> Result<Node, RuntimeError> {
     let mut evaled_args = Vec::new();
 
     for child in args {
@@ -10,21 +11,24 @@ pub fn eval_special_list(env: &mut Env, args: Vec<Node>) -> Result<Node, String>
         evaled_args.push(evaled_child);
     }
 
-    Ok(Node::List(Box::new(ListObj {
+    Ok(Node::List(ListObj {
         children: evaled_args,
-    })))
+    }))
 }
 
-pub fn eval_special_quote(mut args: Vec<Node>) -> Result<Node, String> {
+pub fn eval_special_quote(mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     Ok(args.remove(0))
 }
 
-pub fn eval_special_def(env: &mut Env, mut args: Vec<Node>) -> Result<Node, String> {
+pub fn eval_special_def(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let name_node = args.remove(0);
 
     if let Node::Symbol(name) = name_node {
         if env.exists(&name) {
-            return Err(format!("Cannot redefine a name: {}", name));
+            return Err(RuntimeError::Simple(format!(
+                "Cannot redefine a name: {}",
+                name
+            )));
         }
 
         let value_node = super::eval_node(env, args.remove(0))?;
@@ -32,31 +36,46 @@ pub fn eval_special_def(env: &mut Env, mut args: Vec<Node>) -> Result<Node, Stri
         env.insert(name, value_node);
         Ok(Node::Number(0)) // TODO: should be nil
     } else {
-        Err(format!("Expected symbol, got {}", name_node.display()))
+        Err(RuntimeError::Simple(format!(
+            "Expected symbol, got {}",
+            name_node.display()
+        )))
     }
 }
 
-pub fn eval_special_update(env: &mut Env, mut args: Vec<Node>) -> Result<Node, String> {
+pub fn eval_special_update(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let name_node = args.remove(0);
 
     if let Node::Symbol(name) = name_node {
         if !env.exists(&name) {
-            return Err(format!("Cannot update an undefined name: {}", name));
+            return Err(RuntimeError::Simple(format!(
+                "Cannot update an undefined name: {}",
+                name
+            )));
         }
         let value = args.remove(0);
         env.insert(name, value);
         Ok(Node::Number(0)) // TODO: should be nil
     } else {
-        Err(format!("Expected symbol, got {}", name_node.display()))
+        Err(RuntimeError::Simple(format!(
+            "Expected symbol, got {}",
+            name_node.display()
+        )))
     }
 }
 
-pub fn eval_special_update_element(env: &mut Env, mut args: Vec<Node>) -> Result<Node, String> {
+pub fn eval_special_update_element(
+    env: &mut Env,
+    mut args: Vec<Node>,
+) -> Result<Node, RuntimeError> {
     let name_node = args.remove(0);
 
     if let Node::Symbol(name) = name_node {
         if !env.exists(&name) {
-            return Err(format!("Cannot update an undefined name: {}", name));
+            return Err(RuntimeError::Simple(format!(
+                "Cannot update an undefined name: {}",
+                name
+            )));
         }
 
         let _index_node = args.remove(0);
@@ -70,32 +89,35 @@ pub fn eval_special_update_element(env: &mut Env, mut args: Vec<Node>) -> Result
                     env.insert(name, Node::List(list_obj));
                 }
                 _ => {
-                    return Err(format!(
+                    return Err(RuntimeError::Simple(format!(
                         "Tried to update an element in a non-list: {}",
                         entry_node.display()
-                    ));
+                    )));
                 }
             }
         }
 
         Ok(Node::Number(0)) // TODO: should be nil
     } else {
-        Err(format!("Expected symbol, got {}", name_node.display()))
+        Err(RuntimeError::Simple(format!(
+            "Expected symbol, got {}",
+            name_node.display()
+        )))
     }
 }
 
-pub fn eval_special_fn(_env: &mut Env, mut args: Vec<Node>) -> Result<Node, String> {
+pub fn eval_special_fn(_env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let param_list = args.remove(0);
     let body = args;
 
     match param_list {
-        Node::List(list_node) => Ok(Node::Proc(Box::new(ProcObj {
+        Node::List(list_node) => Ok(Node::Proc(ProcObj {
             params: list_node.children,
             body: body,
-        }))),
-        _ => Err(format!(
+        })),
+        _ => Err(RuntimeError::Simple(format!(
             "Expected list of paramters, got {}",
             param_list.display()
-        )),
+        ))),
     }
 }

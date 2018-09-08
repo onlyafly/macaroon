@@ -4,6 +4,8 @@ mod parser;
 mod scanner;
 mod tokens;
 
+use eval::RuntimeError;
+
 pub fn interpret(filename: &str, input: &str) -> String {
     let parse_result = parser::parse(filename, input);
 
@@ -19,7 +21,10 @@ pub fn interpret(filename: &str, input: &str) -> String {
 
             match eval::eval(&mut env, nodes) {
                 Ok(output_node) => output_node.display(),
-                Err(message) => message,
+                Err(RuntimeError::Rich(loc, msg)) => {
+                    format!("Runtime error ({}:{}): {}\n\n", loc.filename, loc.line, msg)
+                }
+                Err(RuntimeError::Simple(msg)) => format!("Runtime error: {}\n\n", msg),
             }
         }
         Err(syntax_errors) => {
