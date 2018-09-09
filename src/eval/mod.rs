@@ -3,7 +3,7 @@ mod primitives;
 mod specials;
 
 use self::env::Env;
-use ast::Node;
+use ast::{Node, WrappedNode};
 use loc::Loc;
 
 #[allow(dead_code)]
@@ -18,24 +18,25 @@ pub fn create_root_env() -> Env {
     env
 }
 
-pub fn eval(env: &mut Env, nodes: Vec<Node>) -> Result<Node, RuntimeError> {
-    let mut output_node = Node::Error("NO-INPUT".to_string()); // TODO: should this be nil?
+pub fn eval(env: &mut Env, nodes: Vec<WrappedNode>) -> Result<WrappedNode, RuntimeError> {
+    let mut output = WrappedNode::new(Node::Error("NO-INPUT".to_string()), Loc::empty()); // TODO: should this be nil?
 
     for node in nodes {
-        output_node = eval_node(env, node)?;
+        output = eval_node(env, node)?;
     }
 
-    Ok(output_node)
+    Ok(output)
 }
 
-fn eval_node(env: &mut Env, node: Node) -> Result<Node, RuntimeError> {
-    match node {
+fn eval_node(env: &mut Env, wrapped_node: WrappedNode) -> Result<WrappedNode, RuntimeError> {
+    let loc = wrapped_node.loc;
+    match wrapped_node.node {
         Node::List { children } => eval_list(env, children),
         Node::Symbol(name) => match env.get(&name) {
-            Some(&ref node) => Ok(node.clone()),
+            Some(&ref wrapped_node) => Ok(WrappedNode::new(wrapped_node.node.clone(), loc)),
             None => Err(RuntimeError::Simple(format!("Undefined name: {}", name))),
         },
-        n @ Node::Number(_) => Ok(n),
+        n @ Node::Number(_) => Ok(WrappedNode::new(n, loc)),
         n => Err(RuntimeError::Simple(format!(
             "Unable to eval node: {}",
             n.display()
@@ -43,10 +44,14 @@ fn eval_node(env: &mut Env, node: Node) -> Result<Node, RuntimeError> {
     }
 }
 
-fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, RuntimeError> {
-    match children.remove(0) {
+fn eval_list(env: &mut Env, mut children: Vec<WrappedNode>) -> Result<WrappedNode, RuntimeError> {
+    let wrapped_node = children.remove(0);
+    let node = wrapped_node.node;
+    let loc = wrapped_node.loc;
+
+    match node {
         Node::Symbol(ref name) => match name.as_ref() {
-            "list" => specials::eval_special_list(env, children),
+            "list" => specials::eval_special_list(env, loc, children),
             "quote" => specials::eval_special_quote(children),
             "def" => specials::eval_special_def(env, children),
             "fn" => specials::eval_special_fn(env, children),
@@ -58,9 +63,9 @@ fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, RuntimeErro
             ))),
         },
         n => {
-            let evaluated_head = eval_node(env, n)?;
+            let evaluated_head = eval_node(env, WrappedNode::new(n, loc))?;
 
-            match evaluated_head {
+            match evaluated_head.node {
                 Node::Proc { mut body, .. } => {
                     Ok(body.remove(0)) // TODO: we currently just return the first item in the body
                 }

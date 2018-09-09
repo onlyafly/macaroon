@@ -5,7 +5,7 @@ use tokens::Token;
 
 type SyntaxErrors = Vec<(Loc, String)>;
 
-pub fn parse(filename: &str, input: &str) -> Result<Vec<Node>, SyntaxErrors> {
+pub fn parse(filename: &str, input: &str) -> Result<Vec<WrappedNode>, SyntaxErrors> {
     let mut p = Parser::new(filename, input);
     let mut nodes = Vec::new();
     let mut errors = Vec::<(Loc, String)>::new();
@@ -54,8 +54,12 @@ impl<'a> Parser<'a> {
         errors.push((self.current_loc.clone(), msg.to_string()));
     }
 
-    fn parse_node(&mut self, errors: &mut SyntaxErrors) -> Node {
-        match self.current_token {
+    fn wrap(&self, n: Node) -> WrappedNode {
+        WrappedNode::new(n, self.current_loc.clone())
+    }
+
+    fn parse_node(&mut self, errors: &mut SyntaxErrors) -> WrappedNode {
+        let node = match self.current_token {
             Token::Number(ref s) => {
                 match s.parse::<i32>() {
                     Ok(number) => Node::Number(number),
@@ -72,12 +76,12 @@ impl<'a> Parser<'a> {
             Token::SingleQuote => {
                 self.next_token();
                 let quoted_node = self.parse_node(errors);
-                let children = vec![Node::Symbol("quote".to_string()), quoted_node];
+                let children = vec![self.wrap(Node::Symbol("quote".to_string())), quoted_node];
                 Node::List { children }
             }
             Token::LeftParen => {
                 self.next_token();
-                let mut children = Vec::<Node>::new();
+                let mut children = Vec::<WrappedNode>::new();
 
                 while self.current_token != Token::EndOfFile
                     && self.current_token != Token::RightParen
@@ -93,6 +97,8 @@ impl<'a> Parser<'a> {
                 // Try to recover by pushing an error node
                 Node::Error(t.display())
             }
-        }
+        };
+
+        self.wrap(node)
     }
 }

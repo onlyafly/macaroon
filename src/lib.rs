@@ -11,7 +11,7 @@ pub fn interpret(filename: &str, input: &str) -> String {
     let parse_result = parser::parse(filename, input);
 
     match parse_result {
-        Ok(nodes) => {
+        Ok(wrapped_nodes) => {
             let mut env = eval::create_root_env();
 
             /* DEBUG
@@ -20,7 +20,7 @@ pub fn interpret(filename: &str, input: &str) -> String {
             }
             */
 
-            match eval::eval(&mut env, nodes) {
+            match eval::eval(&mut env, wrapped_nodes) {
                 Ok(output_node) => output_node.display(),
                 Err(RuntimeError::Rich(loc, msg)) => {
                     format!("Runtime error ({}:{}): {}\n\n", loc.filename, loc.line, msg)

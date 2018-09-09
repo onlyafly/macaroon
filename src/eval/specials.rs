@@ -1,9 +1,14 @@
-use ast::*;
+use ast::{Node, WrappedNode};
 use eval;
 use eval::env::Env;
 use eval::RuntimeError;
+use loc::Loc;
 
-pub fn eval_special_list(env: &mut Env, args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_list(
+    env: &mut Env,
+    loc: Loc,
+    args: Vec<WrappedNode>,
+) -> Result<WrappedNode, RuntimeError> {
     let mut evaled_args = Vec::new();
 
     for child in args {
@@ -11,19 +16,25 @@ pub fn eval_special_list(env: &mut Env, args: Vec<Node>) -> Result<Node, Runtime
         evaled_args.push(evaled_child);
     }
 
-    Ok(Node::List {
-        children: evaled_args,
-    })
+    Ok(WrappedNode::new(
+        Node::List {
+            children: evaled_args,
+        },
+        loc,
+    ))
 }
 
-pub fn eval_special_quote(mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_quote(mut args: Vec<WrappedNode>) -> Result<WrappedNode, RuntimeError> {
     Ok(args.remove(0))
 }
 
-pub fn eval_special_def(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
-    let name_node = args.remove(0);
+pub fn eval_special_def(
+    env: &mut Env,
+    mut args: Vec<WrappedNode>,
+) -> Result<WrappedNode, RuntimeError> {
+    let name_wrapped_node = args.remove(0);
 
-    if let Node::Symbol(name) = name_node {
+    if let Node::Symbol(name) = name_wrapped_node.node {
         if env.exists(&name) {
             return Err(RuntimeError::Simple(format!(
                 "Cannot redefine a name: {}",
@@ -31,22 +42,25 @@ pub fn eval_special_def(env: &mut Env, mut args: Vec<Node>) -> Result<Node, Runt
             )));
         }
 
-        let value_node = super::eval_node(env, args.remove(0))?;
+        let value_wrapped_node = super::eval_node(env, args.remove(0))?;
 
-        env.insert(name, value_node);
-        Ok(Node::Number(0)) // TODO: should be nil
+        env.insert(name, value_wrapped_node);
+        Ok(WrappedNode::new(Node::Number(0), name_wrapped_node.loc)) // TODO: should be nil
     } else {
         Err(RuntimeError::Simple(format!(
             "Expected symbol, got {}",
-            name_node.display()
+            name_wrapped_node.display()
         )))
     }
 }
 
-pub fn eval_special_update(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
-    let name_node = args.remove(0);
+pub fn eval_special_update(
+    env: &mut Env,
+    mut args: Vec<WrappedNode>,
+) -> Result<WrappedNode, RuntimeError> {
+    let name_wrapped_node = args.remove(0);
 
-    if let Node::Symbol(name) = name_node {
+    if let Node::Symbol(name) = name_wrapped_node.node {
         if !env.exists(&name) {
             return Err(RuntimeError::Simple(format!(
                 "Cannot update an undefined name: {}",
@@ -55,22 +69,24 @@ pub fn eval_special_update(env: &mut Env, mut args: Vec<Node>) -> Result<Node, R
         }
         let value = args.remove(0);
         env.insert(name, value);
-        Ok(Node::Number(0)) // TODO: should be nil
+        Ok(WrappedNode::new(Node::Number(0), name_wrapped_node.loc)) // TODO: should be nil
     } else {
         Err(RuntimeError::Simple(format!(
             "Expected symbol, got {}",
-            name_node.display()
+            name_wrapped_node.display()
         )))
     }
 }
 
 pub fn eval_special_update_element(
     env: &mut Env,
-    mut args: Vec<Node>,
-) -> Result<Node, RuntimeError> {
-    let name_node = args.remove(0);
+    mut args: Vec<WrappedNode>,
+) -> Result<WrappedNode, RuntimeError> {
+    let name_wrapped_node = args.remove(0);
+    let node = name_wrapped_node.node;
+    let loc = name_wrapped_node.loc;
 
-    if let Node::Symbol(name) = name_node {
+    if let Node::Symbol(name) = node {
         if !env.exists(&name) {
             return Err(RuntimeError::Simple(format!(
                 "Cannot update an undefined name: {}",
@@ -81,40 +97,46 @@ pub fn eval_special_update_element(
         let _index_node = args.remove(0);
         let value_node = super::eval_node(env, args.remove(0))?;
 
-        if let Some(entry_node) = env.remove(&name) {
-            match entry_node {
+        if let Some(entry) = env.remove(&name) {
+            match entry.node {
                 Node::List { mut children } => {
                     //TODO: get num from index_node instead of using zero
                     children[0] = value_node;
-                    env.insert(name, Node::List { children });
+                    env.insert(name, WrappedNode::new(Node::List { children }, loc.clone()));
                 }
                 _ => {
                     return Err(RuntimeError::Simple(format!(
                         "Tried to update an element in a non-list: {}",
-                        entry_node.display()
+                        entry.display()
                     )));
                 }
             }
         }
 
-        Ok(Node::Number(0)) // TODO: should be nil
+        Ok(WrappedNode::new(Node::Number(0), loc)) // TODO: should be nil
     } else {
         Err(RuntimeError::Simple(format!(
             "Expected symbol, got {}",
-            name_node.display()
+            node.display()
         )))
     }
 }
 
-pub fn eval_special_fn(_env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_fn(
+    _env: &mut Env,
+    mut args: Vec<WrappedNode>,
+) -> Result<WrappedNode, RuntimeError> {
     let param_list = args.remove(0);
     let body = args;
 
-    match param_list {
-        Node::List { children } => Ok(Node::Proc {
-            params: children,
-            body: body,
-        }),
+    match param_list.node {
+        Node::List { children } => Ok(WrappedNode::new(
+            Node::Proc {
+                params: children,
+                body: body,
+            },
+            param_list.loc,
+        )),
         _ => Err(RuntimeError::Simple(format!(
             "Expected list of paramters, got {}",
             param_list.display()

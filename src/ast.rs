@@ -1,4 +1,5 @@
 use loc::Loc;
+use std::ops::Deref;
 
 #[allow(dead_code)]
 #[derive(PartialEq, Debug, Clone)]
@@ -6,16 +7,34 @@ pub enum Node {
     Error(String),
     Number(i32),
     Symbol(String),
-    Proc { params: Vec<Node>, body: Vec<Node> },
-    List { children: Vec<Node> }, // NOTE: you might need to box the interior object
+    Proc {
+        params: Vec<WrappedNode>,
+        body: Vec<WrappedNode>,
+    },
+    List {
+        children: Vec<WrappedNode>,
+    },
 }
 
-/*
-pub struct NodeWithLoc {
-    node: Node,
-    loc: Loc,
+#[derive(PartialEq, Debug, Clone)]
+pub struct WrappedNode {
+    pub node: Node,
+    pub loc: Loc,
 }
-*/
+
+impl WrappedNode {
+    pub fn new(node: Node, loc: Loc) -> Self {
+        WrappedNode { node, loc }
+    }
+}
+
+impl Deref for WrappedNode {
+    type Target = Node;
+
+    fn deref(&self) -> &Node {
+        &self.node
+    }
+}
 
 // TODO: add loc: Option<Loc>
 
