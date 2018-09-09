@@ -30,10 +30,12 @@ pub fn interpret(filename: &str, input: &str) -> String {
         }
         Err(syntax_errors) => {
             let mut output = String::new();
-            for (loc, msg) in syntax_errors {
+            for (loc, syntax_error) in syntax_errors {
                 output.push_str(&format!(
                     "Syntax error ({}:{}): {}\n\n",
-                    loc.filename, loc.line, msg
+                    loc.filename,
+                    loc.line,
+                    syntax_error.display(),
                 ));
             }
             output
