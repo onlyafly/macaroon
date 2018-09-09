@@ -11,9 +11,9 @@ pub fn eval_special_list(env: &mut Env, args: Vec<Node>) -> Result<Node, Runtime
         evaled_args.push(evaled_child);
     }
 
-    Ok(Node::List(ListObj {
+    Ok(Node::List {
         children: evaled_args,
-    }))
+    })
 }
 
 pub fn eval_special_quote(mut args: Vec<Node>) -> Result<Node, RuntimeError> {
@@ -83,10 +83,10 @@ pub fn eval_special_update_element(
 
         if let Some(entry_node) = env.remove(&name) {
             match entry_node {
-                Node::List(mut list_obj) => {
+                Node::List { mut children } => {
                     //TODO: get num from index_node instead of using zero
-                    list_obj.children[0] = value_node;
-                    env.insert(name, Node::List(list_obj));
+                    children[0] = value_node;
+                    env.insert(name, Node::List { children });
                 }
                 _ => {
                     return Err(RuntimeError::Simple(format!(
@@ -111,10 +111,10 @@ pub fn eval_special_fn(_env: &mut Env, mut args: Vec<Node>) -> Result<Node, Runt
     let body = args;
 
     match param_list {
-        Node::List(list_node) => Ok(Node::Proc(ProcObj {
-            params: list_node.children,
+        Node::List { children } => Ok(Node::Proc {
+            params: children,
             body: body,
-        })),
+        }),
         _ => Err(RuntimeError::Simple(format!(
             "Expected list of paramters, got {}",
             param_list.display()

@@ -1,6 +1,6 @@
 use ast::*;
+use loc::Loc;
 use scanner;
-use tokens::Loc;
 use tokens::Token;
 
 type SyntaxErrors = Vec<(Loc, String)>;
@@ -73,7 +73,7 @@ impl<'a> Parser<'a> {
                 self.next_token();
                 let quoted_node = self.parse_node(errors);
                 let children = vec![Node::Symbol("quote".to_string()), quoted_node];
-                Node::List(ListObj { children: children })
+                Node::List { children }
             }
             Token::LeftParen => {
                 self.next_token();
@@ -86,7 +86,7 @@ impl<'a> Parser<'a> {
                     self.next_token();
                 }
 
-                Node::List(ListObj { children: children })
+                Node::List { children }
             }
             ref t => {
                 self.register_error(errors, &format!("Unrecognized token: {}", t.display()));

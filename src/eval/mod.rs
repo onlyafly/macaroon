@@ -4,8 +4,9 @@ mod specials;
 
 use self::env::Env;
 use ast::Node;
-use tokens::Loc;
+use loc::Loc;
 
+#[allow(dead_code)]
 pub enum RuntimeError {
     Rich(Loc, String),
     Simple(String),
@@ -29,7 +30,7 @@ pub fn eval(env: &mut Env, nodes: Vec<Node>) -> Result<Node, RuntimeError> {
 
 fn eval_node(env: &mut Env, node: Node) -> Result<Node, RuntimeError> {
     match node {
-        Node::List(list_node) => eval_list(env, list_node.children),
+        Node::List { children } => eval_list(env, children),
         Node::Symbol(name) => match env.get(&name) {
             Some(&ref node) => Ok(node.clone()),
             None => Err(RuntimeError::Simple(format!("Undefined name: {}", name))),
@@ -60,8 +61,7 @@ fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, RuntimeErro
             let evaluated_head = eval_node(env, n)?;
 
             match evaluated_head {
-                Node::Proc(proc_node) => {
-                    let mut body = proc_node.body;
+                Node::Proc { mut body, .. } => {
                     Ok(body.remove(0)) // TODO: we currently just return the first item in the body
                 }
                 _ => Err(RuntimeError::Simple(format!(

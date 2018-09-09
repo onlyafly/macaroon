@@ -1,6 +1,6 @@
+use loc::Loc;
 use std::iter::Peekable;
 use std::str::Chars;
-use tokens::Loc;
 use tokens::Token;
 
 pub struct Scanner<'a> {

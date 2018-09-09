@@ -13,14 +13,6 @@ pub enum Token {
     Char(String),
 }
 
-#[derive(Debug, PartialEq, Clone)]
-#[allow(dead_code)]
-pub struct Loc {
-    pub filename: String,
-    pub pos: i32,
-    pub line: i32,
-}
-
 impl Token {
     pub fn display(&self) -> String {
         #[allow(unreachable_patterns)]

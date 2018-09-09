@@ -1,5 +1,6 @@
 mod ast;
 mod eval;
+mod loc;
 mod parser;
 mod scanner;
 mod tokens;
