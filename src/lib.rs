@@ -22,7 +22,7 @@ pub fn interpret(filename: &str, input: &str) -> String {
 
             match eval::eval(&mut env, wrapped_nodes) {
                 Ok(output_node) => output_node.display(),
-                Err(RuntimeError::Rich(loc, msg)) => {
+                Err(RuntimeError::Rich(msg, loc)) => {
                     format!("Runtime error ({}:{}): {}\n\n", loc.filename, loc.line, msg)
                 }
                 Err(RuntimeError::Simple(msg)) => format!("Runtime error: {}\n\n", msg),

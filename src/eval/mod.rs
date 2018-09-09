@@ -8,7 +8,7 @@ use loc::Loc;
 
 #[allow(dead_code)]
 pub enum RuntimeError {
-    Rich(Loc, String),
+    Rich(String, Loc),
     Simple(String),
 }
 
@@ -57,22 +57,25 @@ fn eval_list(env: &mut Env, mut children: Vec<WrappedNode>) -> Result<WrappedNod
             "fn" => specials::eval_special_fn(env, children),
             "update!" => specials::eval_special_update(env, children),
             "update-element!" => specials::eval_special_update_element(env, children),
-            _ => Err(RuntimeError::Simple(format!(
-                "Don't know what to do with list starting with: {}",
-                name
-            ))),
+            _ => Err(RuntimeError::Rich(
+                format!("Don't know what to do with list starting with: {}", name),
+                loc,
+            )),
         },
         n => {
-            let evaluated_head = eval_node(env, WrappedNode::new(n, loc))?;
+            let evaluated_head = eval_node(env, WrappedNode::new(n, loc.clone()))?;
 
             match evaluated_head.node {
                 Node::Proc { mut body, .. } => {
                     Ok(body.remove(0)) // TODO: we currently just return the first item in the body
                 }
-                _ => Err(RuntimeError::Simple(format!(
-                    "Don't know what to do with list starting with: {}",
-                    evaluated_head.display()
-                ))),
+                _ => Err(RuntimeError::Rich(
+                    format!(
+                        "Don't know what to do with list starting with: {}",
+                        evaluated_head.display()
+                    ),
+                    loc,
+                )),
             }
         }
     }
