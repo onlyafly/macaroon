@@ -1,1 +1,1 @@
-Runtime error (./testsuite/100-basic/109-multiline-comment-1.q:3): Don't know what to do with list starting with: foo
+Runtime error (./testsuite/100-basic/109-multiline-comment-1.q:3): Unable to eval list starting with: foo

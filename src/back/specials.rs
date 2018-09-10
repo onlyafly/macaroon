@@ -1,7 +1,7 @@
 use ast::{Node, WrappedNode};
-use eval;
-use eval::env::Env;
-use eval::RuntimeError;
+use back::env::Env;
+use back::eval;
+use back::runtime_error::RuntimeError;
 use loc::Loc;
 
 pub fn eval_special_list(
@@ -36,21 +36,19 @@ pub fn eval_special_def(
 
     if let Node::Symbol(name) = name_wrapped_node.node {
         if env.exists(&name) {
-            return Err(RuntimeError::Simple(format!(
-                "Cannot redefine a name: {}",
-                name
-            )));
+            return Err(RuntimeError::CannotRedefine(name, name_wrapped_node.loc));
         }
 
-        let value_wrapped_node = super::eval_node(env, args.remove(0))?;
+        let value_wrapped_node = eval::eval_node(env, args.remove(0))?;
 
         env.insert(name, value_wrapped_node);
         Ok(WrappedNode::new(Node::Number(0), name_wrapped_node.loc)) // TODO: should be nil
     } else {
-        Err(RuntimeError::Simple(format!(
-            "Expected symbol, got {}",
-            name_wrapped_node.display()
-        )))
+        Err(RuntimeError::UnexpectedNode(
+            "symbol".to_string(),
+            name_wrapped_node.node,
+            name_wrapped_node.loc,
+        ))
     }
 }
 
@@ -59,22 +57,22 @@ pub fn eval_special_update(
     mut args: Vec<WrappedNode>,
 ) -> Result<WrappedNode, RuntimeError> {
     let name_wrapped_node = args.remove(0);
+    let node = name_wrapped_node.node;
+    let loc = name_wrapped_node.loc;
 
-    if let Node::Symbol(name) = name_wrapped_node.node {
+    if let Node::Symbol(name) = node {
         if !env.exists(&name) {
-            return Err(RuntimeError::Simple(format!(
-                "Cannot update an undefined name: {}",
-                name
-            )));
+            return Err(RuntimeError::CannotUpdateUndefinedName(name, loc));
         }
         let value = args.remove(0);
         env.insert(name, value);
-        Ok(WrappedNode::new(Node::Number(0), name_wrapped_node.loc)) // TODO: should be nil
+        Ok(WrappedNode::new(Node::Number(0), loc)) // TODO: should be nil
     } else {
-        Err(RuntimeError::Simple(format!(
-            "Expected symbol, got {}",
-            name_wrapped_node.display()
-        )))
+        Err(RuntimeError::UnexpectedNode(
+            "symbol".to_string(),
+            node,
+            loc,
+        ))
     }
 }
 
@@ -88,14 +86,11 @@ pub fn eval_special_update_element(
 
     if let Node::Symbol(name) = node {
         if !env.exists(&name) {
-            return Err(RuntimeError::Simple(format!(
-                "Cannot update an undefined name: {}",
-                name
-            )));
+            return Err(RuntimeError::CannotUpdateUndefinedName(name, loc));
         }
 
         let _index_node = args.remove(0);
-        let value_node = super::eval_node(env, args.remove(0))?;
+        let value_node = eval::eval_node(env, args.remove(0))?;
 
         if let Some(entry) = env.remove(&name) {
             match entry.node {
@@ -105,20 +100,18 @@ pub fn eval_special_update_element(
                     env.insert(name, WrappedNode::new(Node::List { children }, loc.clone()));
                 }
                 _ => {
-                    return Err(RuntimeError::Simple(format!(
-                        "Tried to update an element in a non-list: {}",
-                        entry.display()
-                    )));
+                    return Err(RuntimeError::CannotUpdateElementInNode(entry.node, loc));
                 }
             }
         }
 
         Ok(WrappedNode::new(Node::Number(0), loc)) // TODO: should be nil
     } else {
-        Err(RuntimeError::Simple(format!(
-            "Expected symbol, got {}",
-            node.display()
-        )))
+        Err(RuntimeError::UnexpectedNode(
+            "symbol".to_string(),
+            node,
+            loc,
+        ))
     }
 }
 
@@ -137,9 +130,10 @@ pub fn eval_special_fn(
             },
             param_list.loc,
         )),
-        _ => Err(RuntimeError::Simple(format!(
-            "Expected list of paramters, got {}",
-            param_list.display()
-        ))),
+        _ => Err(RuntimeError::UnexpectedNode(
+            "list of parameters".to_string(),
+            param_list.node,
+            param_list.loc,
+        )),
     }
 }

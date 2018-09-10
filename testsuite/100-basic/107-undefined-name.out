@@ -1,1 +1,1 @@
-Runtime error: Undefined name: x
+Runtime error (./testsuite/100-basic/107-undefined-name.q:1): Undefined name: x

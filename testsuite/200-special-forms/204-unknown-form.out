@@ -1,1 +1,1 @@
-Runtime error (./testsuite/200-special-forms/204-unknown-form.q:2): Don't know what to do with list starting with: this-is-unknown
+Runtime error (./testsuite/200-special-forms/204-unknown-form.q:2): Unable to eval list starting with: this-is-unknown

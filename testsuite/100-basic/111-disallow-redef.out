@@ -1,1 +1,1 @@
-Runtime error: Cannot redefine a name: x
+Runtime error (./testsuite/100-basic/111-disallow-redef.q:2): Cannot redefine a name: x

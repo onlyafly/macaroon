@@ -1,7 +1,7 @@
+use front::tokens::Token;
 use loc::Loc;
 use std::iter::Peekable;
 use std::str::Chars;
-use tokens::Token;
 
 pub struct Scanner<'a> {
     input: Peekable<Chars<'a>>,
@@ -21,7 +21,7 @@ impl<'a> Scanner<'a> {
     }
 
     pub fn loc(&self) -> Loc {
-        Loc {
+        Loc::File {
             filename: self.filename.to_string(),
             line: self.line,
             pos: self.pos,
