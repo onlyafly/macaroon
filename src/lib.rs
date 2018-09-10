@@ -9,18 +9,18 @@ pub fn interpret(filename: &str, input: &str) -> String {
     let parse_result = front::parse(filename, input);
 
     match parse_result {
-        Ok(wrapped_nodes) => {
+        Ok(nodes) => {
             let mut env = back::create_root_env();
 
             /* DEBUG
-            for node in &nodes {
-                println!("{}", node.display())
+            for Value in &Values {
+                println!("{}", Value.display())
             }
             */
 
-            let eval_result = back::eval(&mut env, wrapped_nodes);
+            let eval_result = back::eval(&mut env, nodes);
             match eval_result {
-                Ok(output_node) => output_node.display(),
+                Ok(output_value) => output_value.display(),
                 Err(runtime_error) => match runtime_error.loc() {
                     Loc::File { filename, line, .. } => format!(
                         "Runtime error ({}:{}): {}\n\n",

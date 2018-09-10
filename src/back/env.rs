@@ -1,8 +1,8 @@
-use ast::WrappedNode;
+use ast::Node;
 use std::collections::HashMap;
 
 pub struct Env {
-    pub map: HashMap<String, WrappedNode>,
+    pub map: HashMap<String, Node>,
 }
 
 impl Env {
@@ -12,7 +12,7 @@ impl Env {
         }
     }
 
-    pub fn insert(&mut self, k: String, v: WrappedNode) {
+    pub fn insert(&mut self, k: String, v: Node) {
         self.map.insert(k, v);
     }
 
@@ -20,11 +20,11 @@ impl Env {
         self.map.contains_key(k)
     }
 
-    pub fn get(&mut self, k: &str) -> Option<&WrappedNode> {
+    pub fn get(&mut self, k: &str) -> Option<&Node> {
         self.map.get(k)
     }
 
-    pub fn remove(&mut self, k: &str) -> Option<WrappedNode> {
+    pub fn remove(&mut self, k: &str) -> Option<Node> {
         self.map.remove(k)
     }
 }

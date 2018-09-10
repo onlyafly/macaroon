@@ -2,15 +2,15 @@ Read -> Eval -> Print
 
 Read:
 
-* Scan() -> tokens -> Parse() -> AST nodes
+* Scan() -> tokens -> Parse() -> AST Values
 
 Eval:
 
-* AST nodes -> Eval() -> nodes
+* AST Values -> Eval() -> Values
 
 Print:
 
-* nodes -> Print()
+* Values -> Print()
 
 ## Options for creating a AST
 
@@ -39,14 +39,14 @@ https://github.com/jDomantas/plank/blob/master/plank-syntax/src/position.rs
 https://github.com/antoyo/tiger-rs/blob/master/tiger/src/position.rs <-- CLEAN!
 https://github.com/antoyo/tiger-rs/blob/master/tiger/src/ast.rs
 
-D. Each node is a struct first, containing a position and an enum, witht the remaining fields. See below and: https://github.com/wu-lang/wu/blob/master/src/wu/parser/ast.rs
+D. Each Value is a struct first, containing a position and an enum, witht the remaining fields. See below and: https://github.com/wu-lang/wu/blob/master/src/wu/parser/ast.rs
 
     pub struct Expression {
-        pub node: ExpressionNode,
+        pub value: ExpressionValue,
         pub pos:  Pos
     }
 
-https://stackoverflow.com/questions/45024211/menhir-associate-ast-nodes-with-token-locations-in-source-file
+https://stackoverflow.com/questions/45024211/menhir-associate-ast-Values-with-token-locations-in-source-file
 
 Position can be an enum with None,Full(filename, line, char)... Use match patterns well
 
@@ -68,20 +68,20 @@ A. https://github.com/matklad/miniml/blob/master/ast/src/exprs.rs
 
 Parse tree:
 
-    struct NodeType(u32);
+    struct ValueType(u32);
 
-    struct Node {
-        type: NodeType,  
+    struct Value {
+        type: ValueType,  
         text_range: (usize, usize),
-        children: Vec<Node>
+        children: Vec<Value>
     }
 
 Type Layer on Top:
 
     struct BinaryExpression {
-        node: Node
+        value: Value
     }
 
     impl BinaryExpression {
-        fn lhs(&self) -> Expression { Expression { node:  self.children[0] } }
+        fn lhs(&self) -> Expression { Expression { value:  self.children[0] } }
     }

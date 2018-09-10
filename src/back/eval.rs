@@ -1,28 +1,28 @@
-use ast::{Node, WrappedNode};
+use ast::{Node, Value};
 use back::env::Env;
 use back::runtime_error::RuntimeError;
 use back::specials;
 
-pub fn eval_node(env: &mut Env, wrapped_node: WrappedNode) -> Result<WrappedNode, RuntimeError> {
-    let loc = wrapped_node.loc;
-    match wrapped_node.node {
-        Node::List { children } => eval_list(env, children),
-        Node::Symbol(name) => match env.get(&name) {
-            Some(&ref wrapped_node) => Ok(WrappedNode::new(wrapped_node.node.clone(), loc)),
+pub fn eval_value(env: &mut Env, node: Node) -> Result<Node, RuntimeError> {
+    let loc = node.loc;
+    match node.value {
+        Value::List { children } => eval_list(env, children),
+        Value::Symbol(name) => match env.get(&name) {
+            Some(&ref node) => Ok(Node::new(node.value.clone(), loc)),
             None => Err(RuntimeError::UndefinedName(name, loc)),
         },
-        n @ Node::Number(_) => Ok(WrappedNode::new(n, loc)),
-        n => Err(RuntimeError::UnableToEvalNode(n, loc)),
+        n @ Value::Number(_) => Ok(Node::new(n, loc)),
+        n => Err(RuntimeError::UnableToEvalValue(n, loc)),
     }
 }
 
-fn eval_list(env: &mut Env, mut children: Vec<WrappedNode>) -> Result<WrappedNode, RuntimeError> {
-    let wrapped_node = children.remove(0);
-    let node = wrapped_node.node;
-    let loc = wrapped_node.loc;
+fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, RuntimeError> {
+    let node = children.remove(0);
+    let value = node.value;
+    let loc = node.loc;
 
-    match node {
-        Node::Symbol(ref name) => match name.as_ref() {
+    match value {
+        Value::Symbol(ref name) => match name.as_ref() {
             "list" => specials::eval_special_list(env, loc, children),
             "quote" => specials::eval_special_quote(children),
             "def" => specials::eval_special_def(env, children),
@@ -35,10 +35,10 @@ fn eval_list(env: &mut Env, mut children: Vec<WrappedNode>) -> Result<WrappedNod
             )),
         },
         n => {
-            let evaluated_head = eval_node(env, WrappedNode::new(n, loc.clone()))?;
+            let evaluated_head = eval_value(env, Node::new(n, loc.clone()))?;
 
-            match evaluated_head.node {
-                Node::Proc { mut body, .. } => {
+            match evaluated_head.value {
+                Value::Proc { mut body, .. } => {
                     Ok(body.remove(0)) // TODO: we currently just return the first item in the body
                 }
                 _ => Err(RuntimeError::UnableToEvalListStartingWith(

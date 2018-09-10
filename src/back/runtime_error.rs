@@ -1,14 +1,14 @@
-use ast::Node;
+use ast::Value;
 use loc::Loc;
 
 pub enum RuntimeError {
     UndefinedName(String, Loc),
     CannotRedefine(String, Loc),
     CannotUpdateUndefinedName(String, Loc),
-    UnableToEvalNode(Node, Loc),
+    UnableToEvalValue(Value, Loc),
     UnableToEvalListStartingWith(String, Loc),
-    UnexpectedNode(String, Node, Loc),
-    CannotUpdateElementInNode(Node, Loc),
+    UnexpectedValue(String, Value, Loc),
+    CannotUpdateElementInValue(Value, Loc),
 }
 
 impl RuntimeError {
@@ -19,19 +19,19 @@ impl RuntimeError {
             RuntimeError::CannotUpdateUndefinedName(name, _) => {
                 format!("Cannot update an undefined name: {}", name)
             }
-            RuntimeError::UnableToEvalNode(node, _) => {
-                format!("Unable to eval node: {}", node.display())
+            RuntimeError::UnableToEvalValue(value, _) => {
+                format!("Unable to eval value: {}", value.display())
             }
             RuntimeError::UnableToEvalListStartingWith(name, _) => {
                 format!("Unable to eval list starting with: {}", name)
             }
-            RuntimeError::UnexpectedNode(expected_string, got_node, _) => format!(
-                "Unexpected node. Expected {} but got: {}",
+            RuntimeError::UnexpectedValue(expected_string, got_value, _) => format!(
+                "Unexpected value. Expected {} but got: {}",
                 expected_string,
-                got_node.display(),
+                got_value.display(),
             ),
-            RuntimeError::CannotUpdateElementInNode(node, _) => {
-                format!("Cannot update an element in: {}", node.display())
+            RuntimeError::CannotUpdateElementInValue(value, _) => {
+                format!("Cannot update an element in: {}", value.display())
             }
         }
     }
@@ -41,10 +41,10 @@ impl RuntimeError {
             RuntimeError::UndefinedName(_, l) => l.clone(),
             RuntimeError::CannotRedefine(_, l) => l.clone(),
             RuntimeError::CannotUpdateUndefinedName(_, l) => l.clone(),
-            RuntimeError::UnableToEvalNode(_, l) => l.clone(),
+            RuntimeError::UnableToEvalValue(_, l) => l.clone(),
             RuntimeError::UnableToEvalListStartingWith(_, l) => l.clone(),
-            RuntimeError::UnexpectedNode(_, _, l) => l.clone(),
-            RuntimeError::CannotUpdateElementInNode(_, l) => l.clone(),
+            RuntimeError::UnexpectedValue(_, _, l) => l.clone(),
+            RuntimeError::CannotUpdateElementInValue(_, l) => l.clone(),
         }
     }
 }

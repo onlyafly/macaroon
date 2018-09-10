@@ -29,55 +29,58 @@ impl<'a> Parser<'a> {
         self.current_loc = self.scanner.loc();
     }
 
-    pub fn parse_node(&mut self, errors: &mut WrappedSyntaxErrors) -> WrappedNode {
-        let node = match self.current_token {
+    pub fn parse_value(&mut self, errors: &mut WrappedSyntaxErrors) -> Node {
+        let value = match self.current_token {
             Token::Number(ref s) => {
                 match s.parse::<i32>() {
-                    Ok(number) => Node::Number(number),
+                    Ok(number) => Value::Number(number),
                     Err(_) => {
                         self.register_error(errors, SyntaxError::UnparsableNumber(s.to_string()));
 
                         // Recover from error by continuing with a dummy value
-                        Node::Number(0)
+                        Value::Number(0)
                     }
                 }
             }
 
-            Token::Symbol(ref s) => Node::Symbol(s.clone()),
+            Token::Symbol(ref s) => Value::Symbol(s.clone()),
             Token::SingleQuote => {
                 self.next_token();
-                let quoted_node = self.parse_node(errors);
-                let children = vec![self.wrap(Node::Symbol("quote".to_string())), quoted_node];
-                Node::List { children }
+                let quoted_value = self.parse_value(errors);
+                let children = vec![
+                    self.make_node(Value::Symbol("quote".to_string())),
+                    quoted_value,
+                ];
+                Value::List { children }
             }
             Token::LeftParen => {
                 self.next_token();
-                let mut children = Vec::<WrappedNode>::new();
+                let mut children = Vec::<Node>::new();
 
                 while self.current_token != Token::EndOfFile
                     && self.current_token != Token::RightParen
                 {
-                    children.push(self.parse_node(errors));
+                    children.push(self.parse_value(errors));
                     self.next_token();
                 }
 
-                Node::List { children }
+                Value::List { children }
             }
             ref t => {
                 self.register_error(errors, SyntaxError::UnrecognizedToken(t.clone()));
-                // Try to recover by pushing an error node
-                Node::Error(t.display())
+                // Try to recover by pushing an error Value
+                Value::Error(t.display())
             }
         };
 
-        self.wrap(node)
+        self.make_node(value)
     }
 
     fn register_error(&self, errors: &mut WrappedSyntaxErrors, e: SyntaxError) {
         errors.push((self.current_loc.clone(), e));
     }
 
-    fn wrap(&self, n: Node) -> WrappedNode {
-        WrappedNode::new(n, self.current_loc.clone())
+    fn make_node(&self, n: Value) -> Node {
+        Node::new(n, self.current_loc.clone())
     }
 }
