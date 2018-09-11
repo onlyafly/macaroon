@@ -8,7 +8,7 @@ pub fn eval_special_list(env: &mut Env, loc: Loc, args: Vec<Node>) -> Result<Nod
     let mut evaled_args = Vec::new();
 
     for child in args {
-        let evaled_child = eval::eval_value(env, child)?;
+        let evaled_child = eval::eval_node(env, child)?;
         evaled_args.push(evaled_child);
     }
 
@@ -32,7 +32,7 @@ pub fn eval_special_def(env: &mut Env, mut args: Vec<Node>) -> Result<Node, Runt
             return Err(RuntimeError::CannotRedefine(name, name_node.loc));
         }
 
-        let value_node = eval::eval_value(env, args.remove(0))?;
+        let value_node = eval::eval_node(env, args.remove(0))?;
 
         env.insert(name, value_node);
         Ok(Node::new(Value::Number(0), name_node.loc)) // TODO: should be nil
@@ -79,14 +79,26 @@ pub fn eval_special_update_element(
             return Err(RuntimeError::CannotUpdateUndefinedName(name, loc));
         }
 
-        let _index_value = args.remove(0);
-        let value_value = eval::eval_value(env, args.remove(0))?;
+        let mut index_node = eval::eval_node(env, args.remove(0))?;
+        let index_i32 = index_node.value.as_number_value()?;
+        let index = index_i32 as usize;
+
+        let value_node = eval::eval_node(env, args.remove(0))?;
 
         if let Some(entry) = env.remove(&name) {
             match entry.value {
                 Value::List { mut children } => {
                     //TODO: get num from index_value instead of using zero
-                    children[0] = value_value;
+
+                    if index >= children.len() {
+                        return Err(RuntimeError::IndexOutOfBounds {
+                            index: index,
+                            len: children.len(),
+                            loc: loc,
+                        });
+                    }
+
+                    children[index] = value_node;
                     env.insert(name, Node::new(Value::List { children }, loc.clone()));
                 }
                 _ => {

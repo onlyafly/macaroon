@@ -1,7 +1,7 @@
 mod env;
 mod eval;
 mod primitives;
-mod runtime_error;
+pub mod runtime_error;
 mod specials;
 
 use ast::{Node, Value};
@@ -19,7 +19,7 @@ pub fn eval(env: &mut Env, values: Vec<Node>) -> Result<Node, RuntimeError> {
     let mut output = Node::new(Value::Error("NO-INPUT".to_string()), Loc::Unknown); // TODO: should this be nil?
 
     for value in values {
-        output = eval::eval_value(env, value)?;
+        output = eval::eval_node(env, value)?;
     }
 
     Ok(output)

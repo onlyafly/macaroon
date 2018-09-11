@@ -1,3 +1,4 @@
+use back::runtime_error::RuntimeError;
 use loc::Loc;
 use std::ops::Deref;
 
@@ -48,6 +49,17 @@ impl Value {
                 "(".to_string() + &v.join(" ") + ")"
             }
             n => format!("<unrecognized value: {:?}>", n),
+        }
+    }
+
+    pub fn as_number_value(&self) -> Result<i32, RuntimeError> {
+        match self {
+            &Value::Number(i) => Ok(i),
+            _ => Err(RuntimeError::UnexpectedValue(
+                "number".to_string(),
+                self.clone(),
+                Loc::Unknown,
+            )),
         }
     }
 }

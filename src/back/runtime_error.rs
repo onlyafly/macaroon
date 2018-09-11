@@ -9,6 +9,7 @@ pub enum RuntimeError {
     UnableToEvalListStartingWith(String, Loc),
     UnexpectedValue(String, Value, Loc),
     CannotUpdateElementInValue(Value, Loc),
+    IndexOutOfBounds { index: usize, len: usize, loc: Loc },
 }
 
 impl RuntimeError {
@@ -33,6 +34,9 @@ impl RuntimeError {
             RuntimeError::CannotUpdateElementInValue(value, _) => {
                 format!("Cannot update an element in: {}", value.display())
             }
+            RuntimeError::IndexOutOfBounds { index, len, .. } => {
+                format!("Index of {} is out of bounds of length {}", index, len,)
+            }
         }
     }
 
@@ -45,6 +49,7 @@ impl RuntimeError {
             RuntimeError::UnableToEvalListStartingWith(_, l) => l.clone(),
             RuntimeError::UnexpectedValue(_, _, l) => l.clone(),
             RuntimeError::CannotUpdateElementInValue(_, l) => l.clone(),
+            RuntimeError::IndexOutOfBounds { loc, .. } => loc.clone(),
         }
     }
 }

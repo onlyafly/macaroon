@@ -3,7 +3,7 @@ use back::env::Env;
 use back::runtime_error::RuntimeError;
 use back::specials;
 
-pub fn eval_value(env: &mut Env, node: Node) -> Result<Node, RuntimeError> {
+pub fn eval_node(env: &mut Env, node: Node) -> Result<Node, RuntimeError> {
     let loc = node.loc;
     match node.value {
         Value::List { children } => eval_list(env, children),
@@ -35,7 +35,7 @@ fn eval_list(env: &mut Env, mut children: Vec<Node>) -> Result<Node, RuntimeErro
             )),
         },
         n => {
-            let evaluated_head = eval_value(env, Node::new(n, loc.clone()))?;
+            let evaluated_head = eval_node(env, Node::new(n, loc.clone()))?;
 
             match evaluated_head.value {
                 Value::Proc { mut body, .. } => {
