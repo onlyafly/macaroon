@@ -1,6 +1,7 @@
 use ast::Value;
 use loc::Loc;
 
+#[derive(Debug, PartialEq)]
 pub enum RuntimeError {
     UndefinedName(String, Loc),
     CannotRedefine(String, Loc),
@@ -10,46 +11,52 @@ pub enum RuntimeError {
     UnexpectedValue(String, Value, Loc),
     CannotUpdateElementInValue(Value, Loc),
     IndexOutOfBounds { index: usize, len: usize, loc: Loc },
+    NotEnoughArgs(String, isize, usize, Loc),
 }
 
 impl RuntimeError {
     pub fn display(&self) -> String {
+        use self::RuntimeError::*;
         match self {
-            RuntimeError::UndefinedName(name, _) => format!("Undefined name: {}", name),
-            RuntimeError::CannotRedefine(name, _) => format!("Cannot redefine a name: {}", name),
-            RuntimeError::CannotUpdateUndefinedName(name, _) => {
+            UndefinedName(name, _) => format!("Undefined name: {}", name),
+            CannotRedefine(name, _) => format!("Cannot redefine a name: {}", name),
+            CannotUpdateUndefinedName(name, _) => {
                 format!("Cannot update an undefined name: {}", name)
             }
-            RuntimeError::UnableToEvalValue(value, _) => {
-                format!("Unable to eval value: {}", value.display())
-            }
-            RuntimeError::UnableToEvalListStartingWith(name, _) => {
+            UnableToEvalValue(value, _) => format!("Unable to eval value: {}", value.display()),
+            UnableToEvalListStartingWith(name, _) => {
                 format!("Unable to eval list starting with: {}", name)
             }
-            RuntimeError::UnexpectedValue(expected_string, got_value, _) => format!(
+            UnexpectedValue(expected_string, got_value, _) => format!(
                 "Unexpected value. Expected {} but got: {}",
                 expected_string,
                 got_value.display(),
             ),
-            RuntimeError::CannotUpdateElementInValue(value, _) => {
+            CannotUpdateElementInValue(value, _) => {
                 format!("Cannot update an element in: {}", value.display())
             }
-            RuntimeError::IndexOutOfBounds { index, len, .. } => {
-                format!("Index of {} is out of bounds of length {}", index, len,)
+            IndexOutOfBounds { index, len, .. } => {
+                format!("Index of {} is out of bounds of length {}", index, len)
             }
+            NotEnoughArgs(name, min, actual, _) => format!(
+                "'{}' expects at least {} args, but got {}",
+                name, min, actual
+            ),
         }
     }
 
     pub fn loc(&self) -> Loc {
+        use self::RuntimeError::*;
         match self {
-            RuntimeError::UndefinedName(_, l) => l.clone(),
-            RuntimeError::CannotRedefine(_, l) => l.clone(),
-            RuntimeError::CannotUpdateUndefinedName(_, l) => l.clone(),
-            RuntimeError::UnableToEvalValue(_, l) => l.clone(),
-            RuntimeError::UnableToEvalListStartingWith(_, l) => l.clone(),
-            RuntimeError::UnexpectedValue(_, _, l) => l.clone(),
-            RuntimeError::CannotUpdateElementInValue(_, l) => l.clone(),
-            RuntimeError::IndexOutOfBounds { loc, .. } => loc.clone(),
+            UndefinedName(_, l) => l.clone(),
+            CannotRedefine(_, l) => l.clone(),
+            CannotUpdateUndefinedName(_, l) => l.clone(),
+            UnableToEvalValue(_, l) => l.clone(),
+            UnableToEvalListStartingWith(_, l) => l.clone(),
+            UnexpectedValue(_, _, l) => l.clone(),
+            CannotUpdateElementInValue(_, l) => l.clone(),
+            IndexOutOfBounds { loc, .. } => loc.clone(),
+            NotEnoughArgs(.., loc) => loc.clone(),
         }
     }
 }

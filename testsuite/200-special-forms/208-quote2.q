@@ -1,0 +1,1 @@
+(list (quote 1) (quote 2 3 4 5 6) (quote (7 8 9)) (quote (quote (quote 1))))
