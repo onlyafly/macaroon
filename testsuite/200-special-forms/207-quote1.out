@@ -1,1 +1,1 @@
-Runtime error (./testsuite/200-special-forms/207-quote1.q:1): 'quote' expects at least 1 args, but got 0
+Runtime error (./testsuite/200-special-forms/207-quote1.q:1): 'quote' expects at least 1 arg(s), but got 0

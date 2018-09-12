@@ -12,6 +12,8 @@ pub enum RuntimeError {
     CannotUpdateElementInValue(Value, Loc),
     IndexOutOfBounds { index: usize, len: usize, loc: Loc },
     NotEnoughArgs(String, isize, usize, Loc),
+    WrongNumberOfArgs(String, isize, usize, Loc),
+    ArgCountOutOfRange(String, isize, isize, usize, Loc),
 }
 
 impl RuntimeError {
@@ -39,8 +41,15 @@ impl RuntimeError {
                 format!("Index of {} is out of bounds of length {}", index, len)
             }
             NotEnoughArgs(name, min, actual, _) => format!(
-                "'{}' expects at least {} args, but got {}",
+                "'{}' expects at least {} arg(s), but got {}",
                 name, min, actual
+            ),
+            WrongNumberOfArgs(name, expected, actual, _) => {
+                format!("'{}' expects {} arg(s), but got {}", name, expected, actual)
+            }
+            ArgCountOutOfRange(name, min, max, actual, _) => format!(
+                "'{}' expects between {} and {} arg(s), but got {}",
+                name, min, max, actual
             ),
         }
     }
@@ -57,6 +66,8 @@ impl RuntimeError {
             CannotUpdateElementInValue(_, l) => l.clone(),
             IndexOutOfBounds { loc, .. } => loc.clone(),
             NotEnoughArgs(.., loc) => loc.clone(),
+            WrongNumberOfArgs(.., loc) => loc.clone(),
+            ArgCountOutOfRange(.., loc) => loc.clone(),
         }
     }
 }

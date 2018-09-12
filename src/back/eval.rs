@@ -32,10 +32,22 @@ fn eval_list(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
                 check_builtin_args("quote", &loc, &args, 1, -1)?;
                 specials::eval_special_quote(args)
             }
-            "def" => specials::eval_special_def(env, args),
-            "fn" => specials::eval_special_fn(env, args),
-            "update!" => specials::eval_special_update(env, args),
-            "update-element!" => specials::eval_special_update_element(env, args),
+            "def" => {
+                check_builtin_args("def", &loc, &args, 2, 2)?;
+                specials::eval_special_def(env, args)
+            }
+            "fn" => {
+                check_builtin_args("fn", &loc, &args, 2, 2)?;
+                specials::eval_special_fn(env, args)
+            }
+            "update!" => {
+                check_builtin_args("update!", &loc, &args, 2, 2)?;
+                specials::eval_special_update(env, args)
+            }
+            "update-element!" => {
+                check_builtin_args("update-element!", &loc, &args, 3, 3)?;
+                specials::eval_special_update_element(env, args)
+            }
             _ => Err(RuntimeError::UnableToEvalListStartingWith(
                 name.clone(),
                 loc,
@@ -84,32 +96,23 @@ fn check_builtin_args(
                 loc.clone(),
             ));
         }
+    } else if (min_params == max_params) && (min_params != args.len() as isize) {
+        return Err(RuntimeError::WrongNumberOfArgs(
+            name.to_string(),
+            min_params,
+            args.len(),
+            loc.clone(),
+        ));
+    } else if ((args.len() as isize) < min_params) || ((args.len() as isize) > max_params) {
+        return Err(RuntimeError::ArgCountOutOfRange(
+            name.to_string(),
+            min_params,
+            max_params,
+            args.len(),
+            loc.clone(),
+        ));
     }
-    /*
-	switch {
-	case paramCountMax == -1:
-		
-	case paramCountMin == paramCountMax:
-		if !(paramCountMin == len(args)) {
-			panicEvalError(head, fmt.Sprintf(
-				"%v '%v' expects %v argument(s), but was given %v",
-				builtinType,
-				name,
-				paramCountMin,
-				len(args)))
-		}
-	default:
-		if !(paramCountMin <= len(args) && len(args) <= paramCountMax) {
-			panicEvalError(head, fmt.Sprintf(
-				"%v '%v' expects between %v and %v arguments, but was given %v",
-				builtinType,
-				name,
-				paramCountMin,
-				paramCountMax,
-				len(args)))
-		}
-	}
-    */
+
     Ok(())
 }
 
