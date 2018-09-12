@@ -48,6 +48,10 @@ fn eval_list(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
                 check_builtin_args("update-element!", &loc, &args, 3, 3)?;
                 specials::eval_special_update_element(env, args)
             }
+            "if" => {
+                check_builtin_args("if", &loc, &args, 3, 3)?;
+                specials::eval_special_if(env, args)
+            }
             _ => Err(RuntimeError::UnableToEvalListStartingWith(
                 name.clone(),
                 loc,
@@ -68,16 +72,6 @@ fn eval_list(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
         }
     }
 }
-
-/*
-func checkSpecialArgs(name string, head ast.Node, args []ast.Node, paramCountMin int, paramCountMax int) {
-	checkBuiltinArgs("Special form", name, head, args, paramCountMin, paramCountMax)
-}
-
-func checkPrimitiveArgs(name string, head ast.Node, args []ast.Node, paramCountMin int, paramCountMax int) {
-	checkBuiltinArgs("Primitive", name, head, args, paramCountMin, paramCountMax)
-}
-*/
 
 #[allow(dead_code, unused_variables)]
 fn check_builtin_args(

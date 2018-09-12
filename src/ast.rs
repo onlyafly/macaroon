@@ -8,6 +8,7 @@ pub enum Value {
     Error(String),
     Number(i32),
     Symbol(String),
+    Boolean(bool),
     Proc { params: Vec<Node>, body: Vec<Node> },
     List { children: Vec<Node> },
 }
@@ -57,6 +58,17 @@ impl Value {
             &Value::Number(i) => Ok(i),
             _ => Err(RuntimeError::UnexpectedValue(
                 "number".to_string(),
+                self.clone(),
+                Loc::Unknown,
+            )),
+        }
+    }
+
+    pub fn as_boolean_value(&self) -> Result<bool, RuntimeError> {
+        match self {
+            &Value::Boolean(b) => Ok(b),
+            _ => Err(RuntimeError::UnexpectedValue(
+                "boolean".to_string(),
                 self.clone(),
                 Loc::Unknown,
             )),

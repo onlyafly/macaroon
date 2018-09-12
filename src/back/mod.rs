@@ -10,8 +10,8 @@ use back::runtime_error::RuntimeError;
 use loc::Loc;
 
 pub fn create_root_env() -> Env {
-    let env = Env::new();
-    primitives::init_env_with_primitives(&env);
+    let mut env = Env::new();
+    primitives::init_env_with_primitives(&mut env);
     env
 }
 

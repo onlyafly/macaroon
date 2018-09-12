@@ -117,6 +117,20 @@ pub fn eval_special_update_element(
     }
 }
 
+pub fn eval_special_if(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let predicate = eval::eval_node(env, args.remove(0))?;
+    let true_branch = args.remove(0);
+    let false_branch = args.remove(0);
+
+    let branch = match predicate.as_boolean_value()? {
+        true => true_branch,
+        false => false_branch,
+    };
+
+    let result = eval::eval_node(env, branch)?;
+    Ok(result)
+}
+
 pub fn eval_special_fn(_env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let param_list = args.remove(0);
     let body = args;
