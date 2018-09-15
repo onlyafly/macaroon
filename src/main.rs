@@ -1,7 +1,36 @@
 extern crate quivi;
+extern crate rustyline;
 
-// TODO: see https://mgattozzi.com/scheme-parser for how to write a good input line
+use rustyline::error::ReadlineError;
+use rustyline::Editor;
+
 fn main() {
-    let output = quivi::interpret("command-line", "1");
-    println!("Hello: {}", output);
+    // `()` can be used when no completer is required
+    let mut rl = Editor::<()>::new();
+    if rl.load_history("history.txt").is_err() {
+        println!("No previous history.");
+    }
+    loop {
+        let readline = rl.readline("> ");
+        match readline {
+            Ok(line) => {
+                rl.add_history_entry(line.as_ref());
+                let output = quivi::interpret("REPL", &line);
+                println!("{}", output);
+            }
+            Err(ReadlineError::Interrupted) => {
+                println!("CTRL-C");
+                break;
+            }
+            Err(ReadlineError::Eof) => {
+                println!("CTRL-D");
+                break;
+            }
+            Err(err) => {
+                println!("Error: {:?}", err);
+                break;
+            }
+        }
+    }
+    //TODO rl.save_history("history.txt").unwrap();
 }

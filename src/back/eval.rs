@@ -52,6 +52,10 @@ fn eval_list(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
                 check_builtin_args("if", &loc, &args, 3, 3)?;
                 specials::eval_special_if(env, args)
             }
+            "let" => {
+                check_builtin_args("let", &loc, &args, 2, -1)?;
+                specials::eval_special_let(env, args)
+            }
             _ => Err(RuntimeError::UnableToEvalListStartingWith(
                 name.clone(),
                 loc,

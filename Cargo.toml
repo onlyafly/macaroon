@@ -5,3 +5,4 @@ authors = ["Kevin Albrecht <onlyafly@gmail.com>"]
 
 [dependencies]
 colored = "1.6"
+rustyline = "2.1.0"

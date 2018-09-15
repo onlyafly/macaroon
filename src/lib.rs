@@ -3,6 +3,7 @@ mod back;
 mod front;
 mod loc;
 
+use back::env::Env;
 use loc::Loc;
 
 pub fn interpret(filename: &str, input: &str) -> String {
@@ -10,7 +11,12 @@ pub fn interpret(filename: &str, input: &str) -> String {
 
     match parse_result {
         Ok(nodes) => {
-            let mut env = back::create_root_env();
+            let mut env: Env;
+            let root_env_result = back::create_root_env();
+            match root_env_result {
+                Ok(root_env) => env = root_env,
+                Err(_) => return "Problem creating root environment".to_string(),
+            }
 
             /* DEBUG
             for Value in &Values {

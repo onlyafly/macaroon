@@ -28,13 +28,8 @@ pub fn eval_special_def(env: &mut Env, mut args: Vec<Node>) -> Result<Node, Runt
     let name_node = args.remove(0);
 
     if let Value::Symbol(name) = name_node.value {
-        if env.exists(&name) {
-            return Err(RuntimeError::CannotRedefine(name, name_node.loc));
-        }
-
         let value_node = eval::eval_node(env, args.remove(0))?;
-
-        env.insert(name, value_node);
+        env.define(&name, value_node)?;
         Ok(Node::new(Value::Number(0), name_node.loc)) // TODO: should be nil
     } else {
         Err(RuntimeError::UnexpectedValue(
@@ -45,17 +40,40 @@ pub fn eval_special_def(env: &mut Env, mut args: Vec<Node>) -> Result<Node, Runt
     }
 }
 
+pub fn eval_special_let(_env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let bindings_node = args.remove(0);
+
+    match bindings_node.value {
+        Value::List {
+            children: _bindings_vec,
+        } => {
+            /*
+            if env.exists(&name) {
+                return Err(RuntimeError::CannotRedefine(name, name_node.loc));
+            }
+
+            let value_node = eval::eval_node(env, args.remove(0))?;
+
+            env.insert(name, value_node);
+            */
+            Ok(Node::new(Value::Number(0), Loc::Unknown)) // TODO: should be nil
+        }
+        _ => Err(RuntimeError::UnexpectedValue(
+            "list".to_string(),
+            bindings_node.value,
+            bindings_node.loc,
+        )),
+    }
+}
+
 pub fn eval_special_update(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let name_node = args.remove(0);
     let value = name_node.value;
     let loc = name_node.loc;
 
     if let Value::Symbol(name) = value {
-        if !env.exists(&name) {
-            return Err(RuntimeError::CannotUpdateUndefinedName(name, loc));
-        }
-        let value = args.remove(0);
-        env.insert(name, value);
+        let value = eval::eval_node(env, args.remove(0))?;
+        env.update(&name, value)?;
         Ok(Node::new(Value::Number(0), loc)) // TODO: should be nil
     } else {
         Err(RuntimeError::UnexpectedValue(
@@ -71,19 +89,13 @@ pub fn eval_special_update_element(
     mut args: Vec<Node>,
 ) -> Result<Node, RuntimeError> {
     let name_node = args.remove(0);
-    let value = name_node.value;
     let loc = name_node.loc;
 
-    if let Value::Symbol(name) = value {
-        if !env.exists(&name) {
-            return Err(RuntimeError::CannotUpdateUndefinedName(name, loc));
-        }
-
+    if let Value::Symbol(name) = name_node.value {
         let mut index_node = eval::eval_node(env, args.remove(0))?;
-        let index_i32 = index_node.value.as_number_value()?;
-        let index = index_i32 as usize;
+        let index = index_node.value.as_number_value()? as usize;
 
-        let value_node = eval::eval_node(env, args.remove(0))?;
+        let newval_node = eval::eval_node(env, args.remove(0))?;
 
         if let Some(entry) = env.remove(&name) {
             match entry.value {
@@ -98,8 +110,8 @@ pub fn eval_special_update_element(
                         });
                     }
 
-                    children[index] = value_node;
-                    env.insert(name, Node::new(Value::List { children }, loc.clone()));
+                    children[index] = newval_node;
+                    env.update(&name, Node::new(Value::List { children }, loc.clone()))?;
                 }
                 _ => {
                     return Err(RuntimeError::CannotUpdateElementInValue(entry.value, loc));
@@ -111,7 +123,7 @@ pub fn eval_special_update_element(
     } else {
         Err(RuntimeError::UnexpectedValue(
             "symbol".to_string(),
-            value,
+            name_node.value,
             loc,
         ))
     }

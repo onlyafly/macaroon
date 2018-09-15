@@ -1,4 +1,4 @@
-mod env;
+pub mod env;
 mod eval;
 mod primitives;
 pub mod runtime_error;
@@ -9,10 +9,10 @@ use back::env::Env;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 
-pub fn create_root_env() -> Env {
+pub fn create_root_env() -> Result<Env, RuntimeError> {
     let mut env = Env::new();
-    primitives::init_env_with_primitives(&mut env);
-    env
+    primitives::init_env_with_primitives(&mut env)?;
+    Ok(env)
 }
 
 pub fn eval(env: &mut Env, values: Vec<Node>) -> Result<Node, RuntimeError> {
