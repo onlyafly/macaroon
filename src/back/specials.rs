@@ -4,6 +4,7 @@ use back::env::{Env, SmartEnv};
 use back::eval;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
+use std::rc::Rc;
 
 pub fn eval_special_list(env: &SmartEnv, loc: Loc, args: Vec<Node>) -> Result<Node, RuntimeError> {
     let mut evaled_args = Vec::new();
@@ -41,20 +42,32 @@ pub fn eval_special_def(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, Run
     }
 }
 
-pub fn eval_special_let(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_let(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let bindings_node = args.remove(0);
 
     match bindings_node.value {
         Value::List {
-            children: _bindings_vec,
+            children: mut bindings_vec,
         } => {
-            /*
-            let bindings_env = Env::new(Some(Box::new(env)));
-            bindings_env.define("test", Node::new(Value::Boolean(true), Loc::Unknown));
+            let bindings_env = Env::new(Some(Rc::clone(env)));
 
-            let body_node = eval::eval_node(bindings_env, args.remove(0))?;
-            Ok(body_node)*/
-            Ok(Node::new(Value::Number(0), Loc::Unknown)) // TODO: REMOVE THIS
+            let mut index = 0;
+            while index < bindings_vec.len() {
+                let name_node = bindings_vec.remove(0);
+                let value_node = eval::eval_node(env, bindings_vec.remove(0))?;
+
+                let name = match name_node.value {
+                    Value::Symbol(name_node) => name_node,
+                    _ => "".to_string(), // TODO: probably should throw error here
+                };
+
+                bindings_env.borrow_mut().define(&name, value_node)?;
+
+                index += 2;
+            }
+
+            let body_node = eval::eval_node(&bindings_env, args.remove(0))?;
+            Ok(body_node)
         }
         _ => Err(RuntimeError::UnexpectedValue(
             "let".to_string(),
