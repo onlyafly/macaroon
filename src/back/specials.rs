@@ -1,10 +1,11 @@
 use ast::{Node, Value};
-use back::env::Env;
+#[allow(unused_imports)]
+use back::env::{Env, SmartEnv};
 use back::eval;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 
-pub fn eval_special_list(env: &mut Env, loc: Loc, args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_list(env: &SmartEnv, loc: Loc, args: Vec<Node>) -> Result<Node, RuntimeError> {
     let mut evaled_args = Vec::new();
 
     for child in args {
@@ -24,12 +25,12 @@ pub fn eval_special_quote(mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     Ok(args.remove(0))
 }
 
-pub fn eval_special_def(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_def(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let name_node = args.remove(0);
 
     if let Value::Symbol(name) = name_node.value {
         let value_node = eval::eval_node(env, args.remove(0))?;
-        env.define(&name, value_node)?;
+        env.borrow_mut().define(&name, value_node)?;
         Ok(Node::new(Value::Number(0), name_node.loc)) // TODO: should be nil
     } else {
         Err(RuntimeError::UnexpectedValue(
@@ -40,7 +41,7 @@ pub fn eval_special_def(env: &mut Env, mut args: Vec<Node>) -> Result<Node, Runt
     }
 }
 
-pub fn eval_special_let(_env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_let(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let bindings_node = args.remove(0);
 
     match bindings_node.value {
@@ -48,32 +49,29 @@ pub fn eval_special_let(_env: &mut Env, mut args: Vec<Node>) -> Result<Node, Run
             children: _bindings_vec,
         } => {
             /*
-            if env.exists(&name) {
-                return Err(RuntimeError::CannotRedefine(name, name_node.loc));
-            }
+            let bindings_env = Env::new(Some(Box::new(env)));
+            bindings_env.define("test", Node::new(Value::Boolean(true), Loc::Unknown));
 
-            let value_node = eval::eval_node(env, args.remove(0))?;
-
-            env.insert(name, value_node);
-            */
-            Ok(Node::new(Value::Number(0), Loc::Unknown)) // TODO: should be nil
+            let body_node = eval::eval_node(bindings_env, args.remove(0))?;
+            Ok(body_node)*/
+            Ok(Node::new(Value::Number(0), Loc::Unknown)) // TODO: REMOVE THIS
         }
         _ => Err(RuntimeError::UnexpectedValue(
-            "list".to_string(),
+            "let".to_string(),
             bindings_node.value,
             bindings_node.loc,
         )),
     }
 }
 
-pub fn eval_special_update(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_update(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let name_node = args.remove(0);
     let value = name_node.value;
     let loc = name_node.loc;
 
     if let Value::Symbol(name) = value {
         let value = eval::eval_node(env, args.remove(0))?;
-        env.update(&name, value)?;
+        env.borrow_mut().update(&name, value)?;
         Ok(Node::new(Value::Number(0), loc)) // TODO: should be nil
     } else {
         Err(RuntimeError::UnexpectedValue(
@@ -85,7 +83,7 @@ pub fn eval_special_update(env: &mut Env, mut args: Vec<Node>) -> Result<Node, R
 }
 
 pub fn eval_special_update_element(
-    env: &mut Env,
+    env: &SmartEnv,
     mut args: Vec<Node>,
 ) -> Result<Node, RuntimeError> {
     let name_node = args.remove(0);
@@ -97,7 +95,9 @@ pub fn eval_special_update_element(
 
         let newval_node = eval::eval_node(env, args.remove(0))?;
 
-        if let Some(entry) = env.remove(&name) {
+        let mut mutable_env = env.borrow_mut();
+
+        if let Some(entry) = mutable_env.remove(&name) {
             match entry.value {
                 Value::List { mut children } => {
                     //TODO: get num from index_value instead of using zero
@@ -111,7 +111,7 @@ pub fn eval_special_update_element(
                     }
 
                     children[index] = newval_node;
-                    env.update(&name, Node::new(Value::List { children }, loc.clone()))?;
+                    mutable_env.update(&name, Node::new(Value::List { children }, loc.clone()))?;
                 }
                 _ => {
                     return Err(RuntimeError::CannotUpdateElementInValue(entry.value, loc));
@@ -129,7 +129,7 @@ pub fn eval_special_update_element(
     }
 }
 
-pub fn eval_special_if(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_if(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let predicate = eval::eval_node(env, args.remove(0))?;
     let true_branch = args.remove(0);
     let false_branch = args.remove(0);
@@ -143,7 +143,7 @@ pub fn eval_special_if(env: &mut Env, mut args: Vec<Node>) -> Result<Node, Runti
     Ok(result)
 }
 
-pub fn eval_special_fn(_env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_fn(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let param_list = args.remove(0);
     let body = args;
 

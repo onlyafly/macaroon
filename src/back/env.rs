@@ -1,19 +1,26 @@
 use ast::{Node, Value};
 use back::runtime_error::RuntimeError;
 use loc::Loc;
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
+
+pub type SmartEnv = Rc<RefCell<Env>>;
 
 pub struct Env {
+    pub name: String,
     pub map: HashMap<String, Node>,
-    pub parent: Option<Box<Env>>,
+    pub parent: Option<SmartEnv>,
 }
 
 impl Env {
-    pub fn new() -> Env {
-        Env {
+    pub fn new(parent: Option<SmartEnv>) -> SmartEnv {
+        let e = Env {
+            name: "NONAME".to_string(),
             map: HashMap::new(),
-            parent: None,
-        }
+            parent,
+        };
+        Rc::new(RefCell::new(e))
     }
 
     pub fn define(&mut self, k: &str, v: Node) -> Result<(), RuntimeError> {

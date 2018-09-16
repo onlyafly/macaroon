@@ -3,7 +3,8 @@ mod back;
 mod front;
 mod loc;
 
-use back::env::Env;
+#[allow(unused_imports)]
+use back::env::{Env, SmartEnv};
 use loc::Loc;
 
 pub fn interpret(filename: &str, input: &str) -> String {
@@ -11,7 +12,7 @@ pub fn interpret(filename: &str, input: &str) -> String {
 
     match parse_result {
         Ok(nodes) => {
-            let mut env: Env;
+            let mut env: SmartEnv;
             let root_env_result = back::create_root_env();
             match root_env_result {
                 Ok(root_env) => env = root_env,
@@ -24,7 +25,7 @@ pub fn interpret(filename: &str, input: &str) -> String {
             }
             */
 
-            let eval_result = back::eval(&mut env, nodes);
+            let eval_result = back::eval(&env, nodes);
             match eval_result {
                 Ok(output_value) => output_value.display(),
                 Err(runtime_error) => match runtime_error.loc() {

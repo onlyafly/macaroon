@@ -1,14 +1,15 @@
 use ast::{Node, Value};
-use back::env::Env;
+#[allow(unused_imports)]
+use back::env::{Env, SmartEnv};
 use back::runtime_error::RuntimeError;
 use back::specials;
 use loc::Loc;
 
-pub fn eval_node(env: &mut Env, node: Node) -> Result<Node, RuntimeError> {
+pub fn eval_node(env: &SmartEnv, node: Node) -> Result<Node, RuntimeError> {
     let loc = node.loc;
     match node.value {
         Value::List { children } => eval_list(env, children),
-        Value::Symbol(name) => match env.get(&name) {
+        Value::Symbol(name) => match env.borrow_mut().get(&name) {
             Some(&ref node) => Ok(Node::new(node.value.clone(), loc)),
             None => Err(RuntimeError::UndefinedName(name, loc)),
         },
@@ -17,7 +18,7 @@ pub fn eval_node(env: &mut Env, node: Node) -> Result<Node, RuntimeError> {
     }
 }
 
-fn eval_list(env: &mut Env, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_list(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let node = args.remove(0);
     let value = node.value;
     let loc = node.loc;
