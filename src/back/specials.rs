@@ -51,8 +51,7 @@ pub fn eval_special_let(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, Run
         } => {
             let bindings_env = Env::new(Some(Rc::clone(env)));
 
-            let mut index = 0;
-            while index < bindings_vec.len() {
+            while bindings_vec.len() > 1 {
                 let name_node = bindings_vec.remove(0);
                 let value_node = eval::eval_node(env, bindings_vec.remove(0))?;
 
@@ -62,8 +61,6 @@ pub fn eval_special_let(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, Run
                 };
 
                 bindings_env.borrow_mut().define(&name, value_node)?;
-
-                index += 2;
             }
 
             let body_node = eval::eval_node(&bindings_env, args.remove(0))?;
