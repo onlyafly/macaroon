@@ -49,6 +49,8 @@ impl Value {
                 }
                 "(".to_string() + &v.join(" ") + ")"
             }
+            &Value::Boolean(false) => "false".to_string(),
+            &Value::Boolean(true) => "true".to_string(),
             n => format!("<unrecognized value: {:?}>", n),
         }
     }

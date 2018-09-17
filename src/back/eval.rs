@@ -19,63 +19,72 @@ pub fn eval_node(env: &SmartEnv, node: Node) -> Result<Node, RuntimeError> {
 }
 
 fn eval_list(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
-    let node = args.remove(0);
-    let value = node.value;
-    let loc = node.loc;
+    let head_node = args.remove(0);
+    let head_value = head_node.value;
+    let loc = head_node.loc;
 
-    match value {
+    match head_value {
         Value::Symbol(ref name) => match name.as_ref() {
             "list" => {
                 check_builtin_args("list", &loc, &args, 0, -1)?;
-                specials::eval_special_list(env, loc, args)
+                return specials::eval_special_list(env, loc, args);
             }
             "quote" => {
                 check_builtin_args("quote", &loc, &args, 1, -1)?;
-                specials::eval_special_quote(args)
+                return specials::eval_special_quote(args);
             }
             "def" => {
                 check_builtin_args("def", &loc, &args, 2, 2)?;
-                specials::eval_special_def(env, args)
+                return specials::eval_special_def(env, args);
             }
             "fn" => {
                 check_builtin_args("fn", &loc, &args, 2, 2)?;
-                specials::eval_special_fn(env, args)
+                return specials::eval_special_fn(env, args);
             }
             "update!" => {
                 check_builtin_args("update!", &loc, &args, 2, 2)?;
-                specials::eval_special_update(env, args)
+                return specials::eval_special_update(env, args);
             }
             "update-element!" => {
                 check_builtin_args("update-element!", &loc, &args, 3, 3)?;
-                specials::eval_special_update_element(env, args)
+                return specials::eval_special_update_element(env, args);
             }
             "if" => {
                 check_builtin_args("if", &loc, &args, 3, 3)?;
-                specials::eval_special_if(env, args)
+                return specials::eval_special_if(env, args);
             }
             "let" => {
                 check_builtin_args("let", &loc, &args, 2, -1)?;
-                specials::eval_special_let(env, args)
+                return specials::eval_special_let(env, args);
             }
-            _ => Err(RuntimeError::UnableToEvalListStartingWith(
-                name.clone(),
-                loc,
-            )),
+            _ => {}
         },
-        n => {
-            let evaluated_head = eval_node(env, Node::new(n, loc.clone()))?;
-
-            match evaluated_head.value {
-                Value::Proc { mut body, .. } => {
-                    Ok(body.remove(0)) // TODO: we currently just return the first item in the body
-                }
-                _ => Err(RuntimeError::UnableToEvalListStartingWith(
-                    evaluated_head.display(),
-                    loc,
-                )),
-            }
-        }
+        _ => {}
     }
+
+    let evaled_head = eval_node(env, Node::new(head_value, loc.clone()))?;
+
+    match evaled_head.value {
+        Value::Proc { .. } => eval_invoke_proc(env, evaled_head, args),
+        _ => Err(RuntimeError::UnableToEvalListStartingWith(
+            evaled_head.display(),
+            loc,
+        )),
+    }
+}
+
+fn eval_invoke_proc(env: &SmartEnv, proc: Node, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    /* TODO
+    if let Value::Proc { params, body } = proc.value {
+        
+    } else {
+        Err(RuntimeError::UnableToEvalListStartingWith(
+            evaled_head.display(),
+            loc,
+        ))
+    }*/
+
+    Ok(Node::new(Value::Boolean(false), Loc::Unknown))
 }
 
 #[allow(dead_code, unused_variables)]

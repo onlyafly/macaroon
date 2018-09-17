@@ -4,7 +4,7 @@
 
 Install Rustup:
 
-    $ curl https://sh.rustup.rs -sSf | sh
+    curl https://sh.rustup.rs -sSf | sh
 
 Install Rust:
 
@@ -24,8 +24,8 @@ Instructions for using the environment:
 
 ## Executing
 
-    $ cargo run
+    cargo run
 
 ## Testing
 
-    $ cargo test
+    cargo test

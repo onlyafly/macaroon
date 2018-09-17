@@ -159,6 +159,7 @@ pub fn eval_special_fn(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, Run
 
     match param_list.value {
         Value::List { children } => Ok(Node::new(
+            // TODO: need to include env in the proc
             Value::Proc {
                 params: children,
                 body: body,
