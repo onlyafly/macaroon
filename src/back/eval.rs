@@ -10,7 +10,7 @@ pub fn eval_node(env: &SmartEnv, node: Node) -> Result<Node, RuntimeError> {
     match node.value {
         Value::List { children } => eval_list(env, children),
         Value::Symbol(name) => match env.borrow_mut().get(&name) {
-            Some(&ref node) => Ok(Node::new(node.value.clone(), loc)),
+            Some(node) => Ok(node),
             None => Err(RuntimeError::UndefinedName(name, loc)),
         },
         n @ Value::Number(_) => Ok(Node::new(n, loc)),

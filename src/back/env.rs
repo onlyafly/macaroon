@@ -47,8 +47,14 @@ impl Env {
         self.map.contains_key(k)
     }
 
-    pub fn get(&mut self, k: &str) -> Option<&Node> {
-        self.map.get(k)
+    pub fn get(&self, name: &str) -> Option<Node> {
+        match self.map.get(name) {
+            Some(node) => Some(node.clone()),
+            None => match self.parent {
+                Some(ref parent_env) => parent_env.borrow().get(name),
+                None => None,
+            },
+        }
     }
 
     pub fn remove(&mut self, k: &str) -> Option<Node> {
