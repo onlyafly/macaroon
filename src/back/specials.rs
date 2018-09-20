@@ -153,16 +153,16 @@ pub fn eval_special_if(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, Runt
     Ok(result)
 }
 
-pub fn eval_special_fn(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval_special_fn(lexical_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let param_list = args.remove(0);
-    let body = args;
+    let body = args.remove(0); // TODO: note that the body is only one node currently
 
     match param_list.value {
         Value::List { children } => Ok(Node::new(
-            // TODO: need to include env in the proc
             Value::Proc {
                 params: children,
-                body: body,
+                body: Box::new(body),
+                lexical_env: Rc::clone(lexical_env),
             },
             param_list.loc,
         )),

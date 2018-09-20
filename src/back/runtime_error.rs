@@ -3,6 +3,7 @@ use loc::Loc;
 
 #[derive(Debug, PartialEq)]
 pub enum RuntimeError {
+    Unknown(String, Loc),
     UndefinedName(String, Loc),
     CannotRedefine(String, Loc),
     CannotUpdateUndefinedName(String, Loc),
@@ -14,12 +15,14 @@ pub enum RuntimeError {
     NotEnoughArgs(String, isize, usize, Loc),
     WrongNumberOfArgs(String, isize, usize, Loc),
     ArgCountOutOfRange(String, isize, isize, usize, Loc),
+    ProcArgsDoNotMatchParams(String, Loc),
 }
 
 impl RuntimeError {
     pub fn display(&self) -> String {
         use self::RuntimeError::*;
         match self {
+            Unknown(name, _) => format!("Unknown error: {}", name),
             UndefinedName(name, _) => format!("Undefined name: {}", name),
             CannotRedefine(name, _) => format!("Cannot redefine a name: {}", name),
             CannotUpdateUndefinedName(name, _) => {
@@ -51,12 +54,16 @@ impl RuntimeError {
                 "'{}' expects between {} and {} arg(s), but got {}",
                 name, min, max, actual
             ),
+            ProcArgsDoNotMatchParams(_, _) => {
+                format!("Arguments passed to procedure do not match parameter list")
+            }
         }
     }
 
     pub fn loc(&self) -> Loc {
         use self::RuntimeError::*;
         match self {
+            Unknown(_, l) => l.clone(),
             UndefinedName(_, l) => l.clone(),
             CannotRedefine(_, l) => l.clone(),
             CannotUpdateUndefinedName(_, l) => l.clone(),
@@ -68,6 +75,7 @@ impl RuntimeError {
             NotEnoughArgs(.., loc) => loc.clone(),
             WrongNumberOfArgs(.., loc) => loc.clone(),
             ArgCountOutOfRange(.., loc) => loc.clone(),
+            ProcArgsDoNotMatchParams(.., loc) => loc.clone(),
         }
     }
 }

@@ -5,7 +5,9 @@ use back::runtime_error::RuntimeError;
 use back::specials;
 use loc::Loc;
 
-pub fn eval_node(env: &SmartEnv, node: Node) -> Result<Node, RuntimeError> {
+type EvalResult = Result<Node, RuntimeError>;
+
+pub fn eval_node(env: &SmartEnv, node: Node) -> EvalResult {
     let loc = node.loc;
     match node.value {
         Value::List { children } => eval_list(env, children),
@@ -18,7 +20,16 @@ pub fn eval_node(env: &SmartEnv, node: Node) -> Result<Node, RuntimeError> {
     }
 }
 
-fn eval_list(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_each_node(env: &SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, RuntimeError> {
+    let mut outputs = Vec::new();
+    for node in nodes {
+        let output = eval_node(env, node)?;
+        outputs.push(output);
+    }
+    Ok(outputs)
+}
+
+fn eval_list(env: &SmartEnv, mut args: Vec<Node>) -> EvalResult {
     let head_node = args.remove(0);
     let head_value = head_node.value;
     let loc = head_node.loc;
@@ -73,18 +84,83 @@ fn eval_list(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> 
     }
 }
 
-fn eval_invoke_proc(env: &SmartEnv, proc: Node, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
-    /* TODO
-    if let Value::Proc { params, body } = proc.value {
-        
-    } else {
-        Err(RuntimeError::UnableToEvalListStartingWith(
-            evaled_head.display(),
-            loc,
-        ))
-    }*/
+fn eval_invoke_proc(dynamic_env: &SmartEnv, proc: Node, unevaled_args: Vec<Node>) -> EvalResult {
+    let loc = proc.loc;
+    match proc.value {
+        Value::Proc {
+            params,
+            body,
+            lexical_env: parent_lexical_env,
+        } => {
+            // Validate params
+            if unevaled_args.len() != params.len() {
+                return Err(RuntimeError::ProcArgsDoNotMatchParams(String::new(), loc));
+            }
 
-    Ok(Node::new(Value::Boolean(false), Loc::Unknown))
+            // Create the lexical environment based on the procedure's lexical parent
+            let lexical_env = Env::new(Some(parent_lexical_env));
+
+            // Prepare the arguments for evaluation
+            let mut evaled_args = eval_each_node(dynamic_env, unevaled_args)?;
+
+            // Map arguments to parameters
+            for param in params {
+                let evaled_arg = match evaled_args.pop() {
+                    None => return Err(RuntimeError::Unknown("not enough args".to_string(), loc)),
+                    Some(n) => n,
+                };
+
+                match param.value {
+                    Value::Symbol(name) => {
+                        lexical_env.borrow_mut().define(&name, evaled_arg)?;
+                    }
+                    _ => return Err(RuntimeError::Unknown("param not a symbol".to_string(), loc)),
+                }
+            }
+
+            // Evaluate the application of the procedure
+            eval_node(&lexical_env, *body)
+        }
+        _ => panic!("Cannot invoke a non-procedure"),
+    }
+
+    /*
+
+	if f.IsMacro {
+		expandedMacro := trampoline(func() packet {
+			return evalNode(lexicalEnv, f.Body)
+		})
+
+		if shouldEvalMacros {
+			return bounce(func() packet {
+				// This is executed in the environment of its application, not the
+				// environment of its definition
+				return evalNode(dynamicEnv, expandedMacro)
+			})
+		} else {
+			return respond(expandedMacro)
+		}
+	} else {
+		// Evaluate the body in the new lexical environment
+		return bounce(func() packet {
+			return evalNode(lexicalEnv, f.Body)
+		})
+	}
+    */
+
+    /* TODO
+    defer func() {
+		if e := recover(); e != nil {
+			switch errorValue := e.(type) {
+			case *EvalError:
+				fmt.Printf("TRACE: (%v: %v): call to %v\n", head.Loc().Filename, head.Loc().Line, f.Name)
+				panic(errorValue)
+			default:
+				panic(errorValue)
+			}
+		}
+	}()
+    */
 }
 
 #[allow(dead_code, unused_variables)]

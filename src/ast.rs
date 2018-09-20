@@ -1,3 +1,4 @@
+use back::env::SmartEnv;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 use std::ops::Deref;
@@ -9,8 +10,14 @@ pub enum Value {
     Number(i32),
     Symbol(String),
     Boolean(bool),
-    Proc { params: Vec<Node>, body: Vec<Node> },
-    List { children: Vec<Node> },
+    Proc {
+        params: Vec<Node>,
+        body: Box<Node>,
+        lexical_env: SmartEnv,
+    },
+    List {
+        children: Vec<Node>,
+    },
 }
 
 #[derive(PartialEq, Debug, Clone)]

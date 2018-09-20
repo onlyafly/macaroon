@@ -7,6 +7,7 @@ use std::rc::Rc;
 
 pub type SmartEnv = Rc<RefCell<Env>>;
 
+#[derive(PartialEq, Debug)]
 pub struct Env {
     pub name: String,
     pub map: HashMap<String, Node>,
