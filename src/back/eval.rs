@@ -124,30 +124,6 @@ fn eval_invoke_proc(dynamic_env: &SmartEnv, proc: Node, unevaled_args: Vec<Node>
         _ => panic!("Cannot invoke a non-procedure"),
     }
 
-    /*
-
-	if f.IsMacro {
-		expandedMacro := trampoline(func() packet {
-			return evalNode(lexicalEnv, f.Body)
-		})
-
-		if shouldEvalMacros {
-			return bounce(func() packet {
-				// This is executed in the environment of its application, not the
-				// environment of its definition
-				return evalNode(dynamicEnv, expandedMacro)
-			})
-		} else {
-			return respond(expandedMacro)
-		}
-	} else {
-		// Evaluate the body in the new lexical environment
-		return bounce(func() packet {
-			return evalNode(lexicalEnv, f.Body)
-		})
-	}
-    */
-
     /* TODO
     defer func() {
 		if e := recover(); e != nil {
