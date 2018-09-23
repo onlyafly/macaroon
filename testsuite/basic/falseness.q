@@ -1,0 +1,1 @@
+(list (not 0) (not 1) (not true) (not false) (not '()) (not nil))

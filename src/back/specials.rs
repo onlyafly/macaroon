@@ -101,7 +101,7 @@ pub fn eval_special_update_element(
 
     if let Value::Symbol(name) = name_node.value {
         let mut index_node = eval::eval_node(env, args.remove(0))?;
-        let index = index_node.value.as_number_value()? as usize;
+        let index = index_node.value.as_host_number()? as usize;
 
         let newval_node = eval::eval_node(env, args.remove(0))?;
 
@@ -144,7 +144,7 @@ pub fn eval_special_if(env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, Runt
     let true_branch = args.remove(0);
     let false_branch = args.remove(0);
 
-    let branch = match predicate.as_boolean_value()? {
+    let branch = match predicate.as_host_boolean()? {
         true => true_branch,
         false => false_branch,
     };
@@ -159,7 +159,7 @@ pub fn eval_special_fn(lexical_env: &SmartEnv, mut args: Vec<Node>) -> Result<No
 
     match param_list.value {
         Value::List { children } => Ok(Node::new(
-            Value::Proc {
+            Value::Function {
                 params: children,
                 body: Box::new(body),
                 lexical_env: Rc::clone(lexical_env),

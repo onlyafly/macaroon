@@ -1,1 +1,0 @@
-(def addem (proc (a b) (+ a b)))

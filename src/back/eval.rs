@@ -1,6 +1,7 @@
 use ast::{Node, Value};
 #[allow(unused_imports)]
 use back::env::{Env, SmartEnv};
+use back::primitives::eval_primitive_by_name;
 use back::runtime_error::RuntimeError;
 use back::specials;
 use loc::Loc;
@@ -76,7 +77,8 @@ fn eval_list(env: &SmartEnv, mut args: Vec<Node>) -> EvalResult {
     let evaled_head = eval_node(env, Node::new(head_value, loc.clone()))?;
 
     match evaled_head.value {
-        Value::Proc { .. } => eval_invoke_proc(env, evaled_head, args),
+        Value::Function { .. } => eval_invoke_proc(env, evaled_head, args),
+        Value::Primitive { primitive_name, .. } => eval_invoke_primitive(primitive_name, env, args),
         _ => Err(RuntimeError::UnableToEvalListStartingWith(
             evaled_head.display(),
             loc,
@@ -84,10 +86,19 @@ fn eval_list(env: &SmartEnv, mut args: Vec<Node>) -> EvalResult {
     }
 }
 
+fn eval_invoke_primitive(
+    primitive_name: String,
+    dynamic_env: &SmartEnv,
+    unevaled_args: Vec<Node>,
+) -> EvalResult {
+    let evaled_args = eval_each_node(dynamic_env, unevaled_args)?;
+    eval_primitive_by_name(primitive_name, dynamic_env, evaled_args)
+}
+
 fn eval_invoke_proc(dynamic_env: &SmartEnv, proc: Node, unevaled_args: Vec<Node>) -> EvalResult {
     let loc = proc.loc;
     match proc.value {
-        Value::Proc {
+        Value::Function {
             params,
             body,
             lexical_env: parent_lexical_env,

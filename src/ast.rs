@@ -10,10 +10,13 @@ pub enum Value {
     Number(i32),
     Symbol(String),
     Boolean(bool),
-    Proc {
+    Function {
         params: Vec<Node>,
         body: Box<Node>,
         lexical_env: SmartEnv,
+    },
+    Primitive {
+        primitive_name: String,
     },
     List {
         children: Vec<Node>,
@@ -40,8 +43,6 @@ impl Deref for Node {
     }
 }
 
-// TODO: add loc: Option<Loc>
-
 impl Value {
     pub fn display(&self) -> String {
         #[allow(unreachable_patterns)]
@@ -62,7 +63,7 @@ impl Value {
         }
     }
 
-    pub fn as_number_value(&self) -> Result<i32, RuntimeError> {
+    pub fn as_host_number(&self) -> Result<i32, RuntimeError> {
         match self {
             &Value::Number(i) => Ok(i),
             _ => Err(RuntimeError::UnexpectedValue(
@@ -73,7 +74,7 @@ impl Value {
         }
     }
 
-    pub fn as_boolean_value(&self) -> Result<bool, RuntimeError> {
+    pub fn as_host_boolean(&self) -> Result<bool, RuntimeError> {
         match self {
             &Value::Boolean(b) => Ok(b),
             _ => Err(RuntimeError::UnexpectedValue(
