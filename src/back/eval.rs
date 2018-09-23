@@ -1,8 +1,8 @@
-use ast::{Node, Value};
+use ast::{Node, PrimitiveObj, Value};
 #[allow(unused_imports)]
 use back::env::{Env, SmartEnv};
-use back::primitives::eval_primitive_by_name;
-use back::runtime_error::RuntimeError;
+use back::primitives::eval_primitive;
+use back::runtime_error::{check_args, RuntimeError};
 use back::specials;
 use loc::Loc;
 
@@ -42,35 +42,35 @@ fn eval_list(env: &SmartEnv, mut args: Vec<Node>, loc: Loc) -> EvalResult {
     match head_value {
         Value::Symbol(ref name) => match name.as_ref() {
             "list" => {
-                check_builtin_args("list", &loc, &args, 0, -1)?;
+                check_args("list", &loc, &args, 0, -1)?;
                 return specials::eval_special_list(env, loc, args);
             }
             "quote" => {
-                check_builtin_args("quote", &loc, &args, 1, -1)?;
+                check_args("quote", &loc, &args, 1, -1)?;
                 return specials::eval_special_quote(args);
             }
             "def" => {
-                check_builtin_args("def", &loc, &args, 2, 2)?;
+                check_args("def", &loc, &args, 2, 2)?;
                 return specials::eval_special_def(env, args);
             }
             "fn" => {
-                check_builtin_args("fn", &loc, &args, 2, 2)?;
+                check_args("fn", &loc, &args, 2, 2)?;
                 return specials::eval_special_fn(env, args);
             }
             "update!" => {
-                check_builtin_args("update!", &loc, &args, 2, 2)?;
+                check_args("update!", &loc, &args, 2, 2)?;
                 return specials::eval_special_update(env, args);
             }
             "update-element!" => {
-                check_builtin_args("update-element!", &loc, &args, 3, 3)?;
+                check_args("update-element!", &loc, &args, 3, 3)?;
                 return specials::eval_special_update_element(env, args);
             }
             "if" => {
-                check_builtin_args("if", &loc, &args, 3, 3)?;
+                check_args("if", &loc, &args, 3, 3)?;
                 return specials::eval_special_if(env, args);
             }
             "let" => {
-                check_builtin_args("let", &loc, &args, 2, -1)?;
+                check_args("let", &loc, &args, 2, -1)?;
                 return specials::eval_special_let(env, args);
             }
             _ => {}
@@ -82,7 +82,7 @@ fn eval_list(env: &SmartEnv, mut args: Vec<Node>, loc: Loc) -> EvalResult {
 
     match evaled_head.value {
         Value::Function { .. } => eval_invoke_proc(env, evaled_head, args),
-        Value::Primitive { primitive_name, .. } => eval_invoke_primitive(primitive_name, env, args),
+        Value::Primitive(obj) => eval_invoke_primitive(obj, env, args, loc),
         _ => Err(RuntimeError::UnableToEvalListStartingWith(
             evaled_head.display(),
             loc,
@@ -91,12 +91,13 @@ fn eval_list(env: &SmartEnv, mut args: Vec<Node>, loc: Loc) -> EvalResult {
 }
 
 fn eval_invoke_primitive(
-    primitive_name: String,
+    obj: PrimitiveObj,
     dynamic_env: &SmartEnv,
     unevaled_args: Vec<Node>,
+    loc: Loc,
 ) -> EvalResult {
     let evaled_args = eval_each_node(dynamic_env, unevaled_args)?;
-    eval_primitive_by_name(primitive_name, dynamic_env, evaled_args)
+    eval_primitive(obj, dynamic_env, evaled_args, loc)
 }
 
 fn eval_invoke_proc(dynamic_env: &SmartEnv, proc: Node, unevaled_args: Vec<Node>) -> EvalResult {
@@ -154,55 +155,18 @@ fn eval_invoke_proc(dynamic_env: &SmartEnv, proc: Node, unevaled_args: Vec<Node>
     */
 }
 
-#[allow(dead_code, unused_variables)]
-fn check_builtin_args(
-    name: &str,
-    loc: &Loc,
-    args: &Vec<Node>,
-    min_params: isize,
-    max_params: isize,
-) -> Result<(), RuntimeError> {
-    if max_params == -1 {
-        if (args.len() as isize) < min_params {
-            return Err(RuntimeError::NotEnoughArgs(
-                name.to_string(),
-                min_params,
-                args.len(),
-                loc.clone(),
-            ));
-        }
-    } else if (min_params == max_params) && (min_params != args.len() as isize) {
-        return Err(RuntimeError::WrongNumberOfArgs(
-            name.to_string(),
-            min_params,
-            args.len(),
-            loc.clone(),
-        ));
-    } else if ((args.len() as isize) < min_params) || ((args.len() as isize) > max_params) {
-        return Err(RuntimeError::ArgCountOutOfRange(
-            name.to_string(),
-            min_params,
-            max_params,
-            args.len(),
-            loc.clone(),
-        ));
-    }
-
-    Ok(())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_check_builtin_args() {
+    fn test_check_args() {
         // Arrange
         //let args = vec![Node::new(Value::Number(42), Loc::Unknown)];
         let args = Vec::<Node>::new();
 
         // Act
-        let r = check_builtin_args("list", &Loc::Unknown, &args, 1, -1);
+        let r = check_args("list", &Loc::Unknown, &args, 1, -1);
 
         // Assert
         assert_eq!(

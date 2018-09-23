@@ -16,32 +16,10 @@ pub enum Value {
         body: Box<Node>,
         lexical_env: SmartEnv,
     },
-    Primitive {
-        primitive_name: String,
-    },
+    Primitive(PrimitiveObj),
     List {
         children: Vec<Node>,
     },
-}
-
-#[derive(PartialEq, Debug, Clone)]
-pub struct Node {
-    pub value: Value,
-    pub loc: Loc,
-}
-
-impl Node {
-    pub fn new(value: Value, loc: Loc) -> Self {
-        Node { value, loc }
-    }
-}
-
-impl Deref for Node {
-    type Target = Value;
-
-    fn deref(&self) -> &Value {
-        &self.value
-    }
 }
 
 impl Value {
@@ -89,4 +67,31 @@ impl Value {
             )),
         }
     }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct Node {
+    pub value: Value,
+    pub loc: Loc,
+}
+
+impl Node {
+    pub fn new(value: Value, loc: Loc) -> Self {
+        Node { value, loc }
+    }
+}
+
+impl Deref for Node {
+    type Target = Value;
+
+    fn deref(&self) -> &Value {
+        &self.value
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct PrimitiveObj {
+    pub name: String,
+    pub min_arity: isize,
+    pub max_arity: isize,
 }

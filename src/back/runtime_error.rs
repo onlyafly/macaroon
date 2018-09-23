@@ -1,3 +1,4 @@
+use ast::Node;
 use ast::Value;
 use loc::Loc;
 
@@ -84,4 +85,40 @@ impl RuntimeError {
             ProcArgsDoNotMatchParams(.., loc) => loc.clone(),
         }
     }
+}
+
+pub fn check_args(
+    name: &str,
+    loc: &Loc,
+    args: &Vec<Node>,
+    min_params: isize,
+    max_params: isize,
+) -> Result<(), RuntimeError> {
+    if max_params == -1 {
+        if (args.len() as isize) < min_params {
+            return Err(RuntimeError::NotEnoughArgs(
+                name.to_string(),
+                min_params,
+                args.len(),
+                loc.clone(),
+            ));
+        }
+    } else if (min_params == max_params) && (min_params != args.len() as isize) {
+        return Err(RuntimeError::WrongNumberOfArgs(
+            name.to_string(),
+            min_params,
+            args.len(),
+            loc.clone(),
+        ));
+    } else if ((args.len() as isize) < min_params) || ((args.len() as isize) > max_params) {
+        return Err(RuntimeError::ArgCountOutOfRange(
+            name.to_string(),
+            min_params,
+            max_params,
+            args.len(),
+            loc.clone(),
+        ));
+    }
+
+    Ok(())
 }

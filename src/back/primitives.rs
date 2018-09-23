@@ -1,8 +1,8 @@
 /* Primitives are build-in functions */
 
-use ast::{Node, Value};
+use ast::{Node, PrimitiveObj, Value};
 use back::env::{Env, SmartEnv};
-use back::runtime_error::RuntimeError;
+use back::runtime_error::{check_args, RuntimeError};
 use loc::Loc;
 use std::cell::RefMut;
 
@@ -13,39 +13,55 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     menv.define("false", Node::new(Value::Boolean(false), Loc::Unknown))?;
     menv.define("nil", Node::new(Value::Nil, Loc::Unknown))?;
 
-    define_primitive(&mut menv, "+")?;
-    define_primitive(&mut menv, "-")?;
-    define_primitive(&mut menv, "=")?;
-    define_primitive(&mut menv, "not")?;
+    define_primitive(&mut menv, "+", 2, 2)?; // TODO: should be 0, -1
+    define_primitive(&mut menv, "-", 2, 2)?; // TODO: should be 1, -1 ???
+    define_primitive(&mut menv, "=", 2, 2)?; // TODO: should be 2, -1
+    define_primitive(&mut menv, "not", 1, 1)?;
 
     Ok(())
 }
 
-fn define_primitive(mut_env: &mut RefMut<Env>, name: &'static str) -> Result<(), RuntimeError> {
+fn define_primitive(
+    mut_env: &mut RefMut<Env>,
+    name: &'static str,
+    min_arity: isize,
+    max_arity: isize,
+) -> Result<(), RuntimeError> {
     mut_env.define(
         name,
         Node::new(
-            Value::Primitive {
-                primitive_name: name.to_string(),
-            },
+            Value::Primitive(PrimitiveObj {
+                name: name.to_string(),
+                min_arity,
+                max_arity,
+            }),
             Loc::Unknown,
         ),
     )
 }
 
-pub fn eval_primitive_by_name(
-    primitive_name: String,
+pub fn eval_primitive(
+    primitive_obj: PrimitiveObj,
     env: &SmartEnv,
     mut args: Vec<Node>,
+    loc: Loc,
 ) -> Result<Node, RuntimeError> {
-    let primitive_fn = match primitive_name.as_ref() {
+    check_args(
+        &primitive_obj.name,
+        &loc,
+        &args,
+        primitive_obj.min_arity,
+        primitive_obj.max_arity,
+    )?;
+
+    let primitive_fn = match primitive_obj.name.as_ref() {
         "+" => eval_primitive_add,
         "-" => eval_primitive_subtract,
         "=" => eval_primitive_equal,
         "not" => eval_primitive_not,
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
-                primitive_name,
+                primitive_obj.name,
                 args.remove(0).loc,
             ))
         }
