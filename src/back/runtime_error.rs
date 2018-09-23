@@ -4,6 +4,7 @@ use loc::Loc;
 #[derive(Debug, PartialEq)]
 pub enum RuntimeError {
     Unknown(String, Loc),
+    UndefinedPrimitive(String, Loc),
     UndefinedName(String, Loc),
     CannotRedefine(String, Loc),
     CannotUpdateUndefinedName(String, Loc),
@@ -23,6 +24,7 @@ impl RuntimeError {
         use self::RuntimeError::*;
         match self {
             Unknown(name, _) => format!("Unknown error: {}", name),
+            UndefinedPrimitive(name, _) => format!("Undefined primitive: {}", name),
             UndefinedName(name, _) => format!("Undefined name: {}", name),
             CannotRedefine(name, _) => format!("Cannot redefine a name: {}", name),
             CannotUpdateUndefinedName(name, _) => {
@@ -64,6 +66,7 @@ impl RuntimeError {
         use self::RuntimeError::*;
         match self {
             Unknown(_, l) => l.clone(),
+            UndefinedPrimitive(_, l) => l.clone(),
             UndefinedName(_, l) => l.clone(),
             CannotRedefine(_, l) => l.clone(),
             CannotUpdateUndefinedName(_, l) => l.clone(),

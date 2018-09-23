@@ -6,6 +6,7 @@ use std::ops::Deref;
 #[allow(dead_code)]
 #[derive(PartialEq, Debug, Clone)]
 pub enum Value {
+    Nil,
     Error(String),
     Number(i32),
     Symbol(String),
@@ -47,6 +48,7 @@ impl Value {
     pub fn display(&self) -> String {
         #[allow(unreachable_patterns)]
         match self {
+            &Value::Nil => "nil".to_string(),
             &Value::Error(ref s) => format!("<error: {}>", s),
             &Value::Number(n) => n.to_string(),
             &Value::Symbol(ref s) => s.clone(),
@@ -76,7 +78,10 @@ impl Value {
 
     pub fn as_host_boolean(&self) -> Result<bool, RuntimeError> {
         match self {
+            &Value::Nil => Ok(false),
             &Value::Boolean(b) => Ok(b),
+            &Value::Number(_) => Ok(true),
+            &Value::List { .. } => Ok(true),
             _ => Err(RuntimeError::UnexpectedValue(
                 "boolean".to_string(),
                 self.clone(),

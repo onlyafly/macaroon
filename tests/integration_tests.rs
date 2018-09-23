@@ -29,11 +29,12 @@ fn test_suite() {
 
                     if let Some(output_file_stem) = path.file_stem() {
                         let case: String = output_file_stem.to_str().unwrap().to_owned();
+                        let testsuite_case_name = format!("{}", path.to_str().unwrap().to_owned());
                         let output_path = path.parent().unwrap().join(case.clone() + ".out");
                         let expected_output = read_text_contents(&output_path);
 
                         if expected_output.trim_right() != actual_output.trim_right() {
-                            failures.push((case, expected_output, actual_output));
+                            failures.push((testsuite_case_name, expected_output, actual_output));
                         }
                     }
                 }
@@ -46,12 +47,12 @@ fn test_suite() {
 
         let mut count: i32 = 1;
         for failure in failures {
-            let (case, expected, actual) = failure;
+            let (case_name, expected, actual) = failure;
             println!(
                 "{}{} ({})\n\n   {}:\n\n\t{}\n\n   {}:\n\n\t{}\n\n",
                 "Failure #".magenta().bold(),
                 count.to_string().magenta().bold(),
-                case.blue(),
+                case_name.blue(),
                 "Expected".bold(),
                 expected.trim_right().green().bold(),
                 "Actual".bold(),

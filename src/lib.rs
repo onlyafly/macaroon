@@ -16,7 +16,12 @@ pub fn interpret(filename: &str, input: &str) -> String {
             let root_env_result = back::create_root_env();
             match root_env_result {
                 Ok(root_env) => env = root_env,
-                Err(_) => return "Problem creating root environment".to_string(),
+                Err(runtime_error) => {
+                    return format!(
+                        "Error creating root environment: {}",
+                        runtime_error.display()
+                    )
+                }
             }
 
             /* DEBUG
@@ -35,7 +40,7 @@ pub fn interpret(filename: &str, input: &str) -> String {
                         line,
                         runtime_error.display()
                     ),
-                    Loc::Unknown => format!("Runtime error: {}\n\n", runtime_error.display(),),
+                    Loc::Unknown => format!("Runtime error: {}\n\n", runtime_error.display()),
                 },
             }
         }
