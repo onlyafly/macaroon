@@ -14,6 +14,8 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     menv.define("nil", Node::new(Value::Nil, Loc::Unknown))?;
 
     define_primitive(&mut menv, "+")?;
+    define_primitive(&mut menv, "-")?;
+    define_primitive(&mut menv, "=")?;
     define_primitive(&mut menv, "not")?;
 
     Ok(())
@@ -37,7 +39,9 @@ pub fn eval_primitive_by_name(
     mut args: Vec<Node>,
 ) -> Result<Node, RuntimeError> {
     let primitive_fn = match primitive_name.as_ref() {
-        "+" => eval_primitive_addition,
+        "+" => eval_primitive_add,
+        "-" => eval_primitive_subtract,
+        "=" => eval_primitive_equal,
         "not" => eval_primitive_not,
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
@@ -61,15 +65,37 @@ fn eval_primitive_not(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, Runt
     Ok(result)
 }
 
-fn eval_primitive_addition(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_add(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let one = args.remove(0);
     let two = args.remove(0);
 
     let one_i32 = one.as_host_number()?;
     let two_i32 = two.as_host_number()?;
 
-    let addition_result = one_i32 + two_i32;
+    let output = one_i32 + two_i32;
 
-    let result = Node::new(Value::Number(addition_result), one.loc);
+    let result = Node::new(Value::Number(output), one.loc);
     Ok(result)
+}
+
+fn eval_primitive_subtract(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let one = args.remove(0);
+    let two = args.remove(0);
+
+    let one_i32 = one.as_host_number()?;
+    let two_i32 = two.as_host_number()?;
+
+    let output = one_i32 - two_i32;
+
+    let result = Node::new(Value::Number(output), one.loc);
+    Ok(result)
+}
+
+fn eval_primitive_equal(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let a = args.remove(0);
+    let b = args.remove(0);
+
+    let output = a.value == b.value;
+
+    Ok(Node::new(Value::Boolean(output), a.loc))
 }

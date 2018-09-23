@@ -7,6 +7,7 @@ pub enum RuntimeError {
     UndefinedPrimitive(String, Loc),
     UndefinedName(String, Loc),
     CannotRedefine(String, Loc),
+    CannotEvalEmptyList(Loc),
     CannotUpdateUndefinedName(String, Loc),
     UnableToEvalValue(Value, Loc),
     UnableToEvalListStartingWith(String, Loc),
@@ -27,6 +28,7 @@ impl RuntimeError {
             UndefinedPrimitive(name, _) => format!("Undefined primitive: {}", name),
             UndefinedName(name, _) => format!("Undefined name: {}", name),
             CannotRedefine(name, _) => format!("Cannot redefine a name: {}", name),
+            CannotEvalEmptyList(_) => format!("Cannot evaluate an empty list"),
             CannotUpdateUndefinedName(name, _) => {
                 format!("Cannot update an undefined name: {}", name)
             }
@@ -70,6 +72,7 @@ impl RuntimeError {
             UndefinedName(_, l) => l.clone(),
             CannotRedefine(_, l) => l.clone(),
             CannotUpdateUndefinedName(_, l) => l.clone(),
+            CannotEvalEmptyList(l) => l.clone(),
             UnableToEvalValue(_, l) => l.clone(),
             UnableToEvalListStartingWith(_, l) => l.clone(),
             UnexpectedValue(_, _, l) => l.clone(),

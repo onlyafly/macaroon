@@ -11,7 +11,7 @@ type EvalResult = Result<Node, RuntimeError>;
 pub fn eval_node(env: &SmartEnv, node: Node) -> EvalResult {
     let loc = node.loc;
     match node.value {
-        Value::List { children } => eval_list(env, children),
+        Value::List { children } => eval_list(env, children, loc),
         Value::Symbol(name) => match env.borrow_mut().get(&name) {
             Some(node) => Ok(node),
             None => Err(RuntimeError::UndefinedName(name, loc)),
@@ -30,7 +30,11 @@ fn eval_each_node(env: &SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, Runtime
     Ok(outputs)
 }
 
-fn eval_list(env: &SmartEnv, mut args: Vec<Node>) -> EvalResult {
+fn eval_list(env: &SmartEnv, mut args: Vec<Node>, loc: Loc) -> EvalResult {
+    if args.len() == 0 {
+        return Err(RuntimeError::CannotEvalEmptyList(loc));
+    }
+
     let head_node = args.remove(0);
     let head_value = head_node.value;
     let loc = head_node.loc;
