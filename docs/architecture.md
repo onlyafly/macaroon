@@ -1,16 +1,36 @@
-Read -> Eval -> Print
+# Architecture Research
 
-Read:
+## Implementation of Tail Call Optimization (TCO)
 
-* Scan() -> tokens -> Parse() -> AST Values
+https://en.wikipedia.org/wiki/Tail_call
 
-Eval:
+### TCO Option 0: Clojure-style loop/recur
 
-* AST Values -> Eval() -> Values
+    (defn fib_iterative
+        [n]
+        (loop [n n
+                accum1 1
+                accum2 1]
+            (if (< n 2)
+            accum1
+            (recur (- n 1) (+ accum1 accum2) accum1))))
 
-Print:
+### TCO Option 1: Trampoline
 
-* Values -> Print()
+https://eli.thegreenplace.net/2017/on-recursion-continuations-and-trampolines/
+
+### TCO Option 2: Transformation to Continuation Passing Style
+
+"CONS Should Not CONS Its Arguments, Part II: Cheney on the M.T.A." by Henry Baker
+
+* http://home.pipeline.com/~hbaker1/CheneyMTA.html
+
+### Other
+
+"Three Implementation Models for Scheme" by R. Kent Dybvig
+
+* http://www.cs.indiana.edu/~dyb/papers/3imp.pdf
+* http://agl.cs.unm.edu/~williams/cs491/three-imp.pdf
 
 ## Options for creating a AST
 

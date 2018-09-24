@@ -1,6 +1,7 @@
 use back::env::SmartEnv;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
+use std::cmp::Ordering;
 use std::ops::Deref;
 
 #[allow(dead_code)]
@@ -65,6 +66,16 @@ impl Value {
                 self.clone(),
                 Loc::Unknown,
             )),
+        }
+    }
+}
+
+impl PartialOrd for Value {
+    fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
+        use self::Value::*;
+        match (self, other) {
+            (Number(a), Number(b)) => a.partial_cmp(b),
+            _ => None,
         }
     }
 }
