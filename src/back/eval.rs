@@ -1,27 +1,30 @@
+#![allow(unused_imports)]
+
 use ast::{Node, PrimitiveObj, Value};
-#[allow(unused_imports)]
 use back::env::{Env, SmartEnv};
 use back::primitives::eval_primitive;
 use back::runtime_error::{check_args, RuntimeError};
 use back::specials;
+use back::trampoline::{Continuation, ContinuationResult};
 use loc::Loc;
 
 type EvalResult = Result<Node, RuntimeError>;
 
-pub fn eval_node(env: &SmartEnv, node: Node) -> EvalResult {
+pub fn eval_node(env: SmartEnv, node: Node) -> ContinuationResult {
     let loc = node.loc;
     match node.value {
-        Value::List { children } => eval_list(env, children, loc),
+        //Value::List { children } => eval_list(env, children, loc),
         Value::Symbol(name) => match env.borrow_mut().get(&name) {
-            Some(node) => Ok(node),
+            Some(node) => Ok(Continuation::Response(node)),
             None => Err(RuntimeError::UndefinedName(name, loc)),
         },
-        n @ Value::Number(_) => Ok(Node::new(n, loc)),
+        n @ Value::Number(_) => Ok(Continuation::Response(Node::new(n, loc))),
         n => Err(RuntimeError::UnableToEvalValue(n, loc)),
     }
 }
 
-fn eval_each_node(env: &SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, RuntimeError> {
+/*
+fn eval_each_node(env: SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, RuntimeError> {
     let mut outputs = Vec::new();
     for node in nodes {
         let output = eval_node(env, node)?;
@@ -30,7 +33,7 @@ fn eval_each_node(env: &SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, Runtime
     Ok(outputs)
 }
 
-fn eval_list(env: &SmartEnv, mut args: Vec<Node>, loc: Loc) -> EvalResult {
+fn eval_list(env: SmartEnv, mut args: Vec<Node>, loc: Loc) -> EvalResult {
     if args.len() == 0 {
         return Err(RuntimeError::CannotEvalEmptyList(loc));
     }
@@ -154,6 +157,7 @@ fn eval_invoke_proc(dynamic_env: &SmartEnv, proc: Node, unevaled_args: Vec<Node>
 	}()
     */
 }
+*/
 
 #[cfg(test)]
 mod tests {

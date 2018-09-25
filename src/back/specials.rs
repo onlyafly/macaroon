@@ -1,11 +1,12 @@
+#![allow(unused_imports)]
 use ast::{Node, Value};
-#[allow(unused_imports)]
 use back::env::{Env, SmartEnv};
 use back::eval;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 use std::rc::Rc;
 
+/*
 pub fn eval_special_list(env: &SmartEnv, loc: Loc, args: Vec<Node>) -> Result<Node, RuntimeError> {
     let mut evaled_args = Vec::new();
 
@@ -173,3 +174,4 @@ pub fn eval_special_fn(lexical_env: &SmartEnv, mut args: Vec<Node>) -> Result<No
         )),
     }
 }
+*/

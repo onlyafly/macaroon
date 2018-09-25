@@ -1,0 +1,30 @@
+use ast::Node;
+use back::eval::EvalResult;
+use back::runtime_error::RuntimeError;
+
+pub type TrampolineResult<F> = Result<Trampoline<F>, RuntimeError>;
+
+enum Trampoline<F>
+where
+    F: Fn() -> TrampolineResult,
+{
+    Continue(F),
+    End(Node),
+}
+
+impl Trampoline<F> {
+    fn start(thunk: F) -> Node
+    where
+        F: Fn() -> EvalResult,
+    {
+        let mut current_thunk = thunk;
+        loop {
+            match thunk() {
+                Trampoline::Continue(next_thunk) => {
+                    current_thunk = next_thunk;
+                }
+                Trampoline::End(output) => return Ok(output),
+            }
+        }
+    }
+}
