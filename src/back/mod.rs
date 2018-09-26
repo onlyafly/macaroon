@@ -21,7 +21,7 @@ pub fn eval(env: SmartEnv, values: Vec<Node>) -> Result<Node, RuntimeError> {
     let mut output = Node::new(Value::Error("NO-INPUT".to_string()), Loc::Unknown); // TODO: should this be nil?
 
     for value in values {
-        output = trampoline::start(eval::eval_node, Rc::clone(&env), value)?;
+        output = trampoline::run(eval::eval_node, Rc::clone(&env), value)?;
     }
 
     Ok(output)

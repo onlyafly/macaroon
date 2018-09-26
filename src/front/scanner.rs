@@ -29,7 +29,6 @@ impl<'a> Scanner<'a> {
     }
 
     //TODO: Change return type to Result
-    #[allow(dead_code)]
     pub fn next(&mut self) -> Token {
         self.skip_whitespace();
 

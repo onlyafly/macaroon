@@ -3,8 +3,7 @@ mod back;
 mod front;
 mod loc;
 
-#[allow(unused_imports)]
-use back::env::{Env, SmartEnv};
+use back::env::SmartEnv;
 use loc::Loc;
 
 pub fn interpret(filename: &str, input: &str) -> String {

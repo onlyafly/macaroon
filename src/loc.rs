@@ -1,5 +1,4 @@
 #[derive(Debug, PartialEq, Clone)]
-#[allow(dead_code)]
 pub enum Loc {
     File {
         filename: String,

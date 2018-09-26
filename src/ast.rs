@@ -4,7 +4,6 @@ use loc::Loc;
 use std::cmp::Ordering;
 use std::ops::Deref;
 
-#[allow(dead_code)]
 #[derive(PartialEq, Debug, Clone)]
 pub enum Value {
     Nil,
@@ -25,7 +24,6 @@ pub enum Value {
 
 impl Value {
     pub fn display(&self) -> String {
-        #[allow(unreachable_patterns)]
         match self {
             &Value::Nil => "nil".to_string(),
             &Value::Error(ref s) => format!("<error: {}>", s),

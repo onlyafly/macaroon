@@ -1,11 +1,5 @@
 # Todo
 
-FIXME
-
-Finish trampolining the interpreter
-
-Search for all bounces in Vamos and make sure you are bouncing in the same places.
-
 Remove all the warnings
 
 Turn of the unnecessary #allows

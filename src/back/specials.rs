@@ -1,4 +1,3 @@
-#![allow(unused_imports)]
 use ast::{Node, Value};
 use back::env::{Env, SmartEnv};
 use back::eval;
@@ -12,11 +11,11 @@ pub fn eval_special_list(env: SmartEnv, loc: Loc, args: Vec<Node>) -> Continuati
     let mut evaled_args = Vec::new();
 
     for child in args {
-        let evaled_child = trampoline::start(eval::eval_node, Rc::clone(&env), child)?;
+        let evaled_child = trampoline::run(eval::eval_node, Rc::clone(&env), child)?;
         evaled_args.push(evaled_child);
     }
 
-    Ok(trampoline::respond(Node::new(
+    Ok(trampoline::finish(Node::new(
         Value::List {
             children: evaled_args,
         },
@@ -25,16 +24,16 @@ pub fn eval_special_list(env: SmartEnv, loc: Loc, args: Vec<Node>) -> Continuati
 }
 
 pub fn eval_special_quote(mut args: Vec<Node>) -> ContinuationResult {
-    Ok(trampoline::respond(args.remove(0)))
+    Ok(trampoline::finish(args.remove(0)))
 }
 
 pub fn eval_special_def(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
     let name_node = args.remove(0);
 
     if let Value::Symbol(name) = name_node.value {
-        let value_node = trampoline::start(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+        let value_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
         env.borrow_mut().define(&name, value_node)?;
-        Ok(trampoline::respond(Node::new(Value::Nil, name_node.loc))) // TODO: should be nil
+        Ok(trampoline::finish(Node::new(Value::Nil, name_node.loc))) // TODO: should be nil
     } else {
         Err(RuntimeError::UnexpectedValue(
             "symbol".to_string(),
@@ -56,7 +55,7 @@ pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
             while bindings_vec.len() > 1 {
                 let name_node = bindings_vec.remove(0);
                 let value_node =
-                    trampoline::start(eval::eval_node, Rc::clone(&env), bindings_vec.remove(0))?;
+                    trampoline::run(eval::eval_node, Rc::clone(&env), bindings_vec.remove(0))?;
 
                 let name = match name_node.value {
                     Value::Symbol(name_node) => name_node,
@@ -86,9 +85,9 @@ pub fn eval_special_update(env: SmartEnv, mut args: Vec<Node>) -> ContinuationRe
     let loc = name_node.loc;
 
     if let Value::Symbol(name) = value {
-        let value = trampoline::start(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+        let value = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
         env.borrow_mut().update(&name, value)?;
-        Ok(trampoline::respond(Node::new(Value::Nil, loc)))
+        Ok(trampoline::finish(Node::new(Value::Nil, loc)))
     } else {
         Err(RuntimeError::UnexpectedValue(
             "symbol".to_string(),
@@ -103,10 +102,10 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
     let loc = name_node.loc;
 
     if let Value::Symbol(name) = name_node.value {
-        let mut index_node = trampoline::start(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+        let mut index_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
         let index = index_node.value.as_host_number()? as usize;
 
-        let newval_node = trampoline::start(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+        let newval_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
 
         let mut mutable_env = env.borrow_mut();
 
@@ -132,7 +131,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
             }
         }
 
-        Ok(trampoline::respond(Node::new(Value::Nil, loc)))
+        Ok(trampoline::finish(Node::new(Value::Nil, loc)))
     } else {
         Err(RuntimeError::UnexpectedValue(
             "symbol".to_string(),
@@ -143,7 +142,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
 }
 
 pub fn eval_special_if(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
-    let predicate = trampoline::start(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+    let predicate = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
     let true_branch = args.remove(0);
     let false_branch = args.remove(0);
 
@@ -160,7 +159,7 @@ pub fn eval_special_fn(lexical_env: SmartEnv, mut args: Vec<Node>) -> Continuati
     let body = args.remove(0); // TODO: note that the body is only one node currently
 
     match param_list.value {
-        Value::List { children } => Ok(trampoline::respond(Node::new(
+        Value::List { children } => Ok(trampoline::finish(Node::new(
             Value::Function {
                 params: children,
                 body: Box::new(body),

@@ -1,5 +1,3 @@
-#![allow(unused_imports)]
-
 use ast::{Node, PrimitiveObj, Value};
 use back::env::{Env, SmartEnv};
 use back::primitives::eval_primitive;
@@ -17,10 +15,10 @@ pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult 
     match node.value {
         v @ Value::List { .. } => Ok(trampoline::bounce(eval_list, env, Node::new(v, loc))),
         Value::Symbol(name) => match env.borrow_mut().get(&name) {
-            Some(node) => Ok(trampoline::respond(node)),
+            Some(node) => Ok(trampoline::finish(node)),
             None => Err(RuntimeError::UndefinedName(name, loc)),
         },
-        n @ Value::Number(_) => Ok(trampoline::respond(Node::new(n, loc))),
+        n @ Value::Number(_) => Ok(trampoline::finish(Node::new(n, loc))),
         n => Err(RuntimeError::UnableToEvalValue(n, loc)),
     }
 }
@@ -28,7 +26,7 @@ pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult 
 fn eval_each_node(env: SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, RuntimeError> {
     let mut outputs = Vec::new();
     for node in nodes {
-        let output = trampoline::start(eval_node, Rc::clone(&env), node)?;
+        let output = trampoline::run(eval_node, Rc::clone(&env), node)?;
         outputs.push(output);
     }
     Ok(outputs)
@@ -87,7 +85,7 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
         _ => {}
     }
 
-    let evaled_head = trampoline::start(
+    let evaled_head = trampoline::run(
         eval_node,
         Rc::clone(&env),
         Node::new(head_value, loc.clone()),
@@ -102,7 +100,7 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
         )),
         Value::Primitive(obj) => {
             let out = eval_invoke_primitive(obj, Rc::clone(&env), args, loc)?;
-            Ok(trampoline::respond(out))
+            Ok(trampoline::finish(out))
         }
         _ => Err(RuntimeError::UnableToEvalListStartingWith(
             evaled_head.display(),

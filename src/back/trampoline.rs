@@ -10,7 +10,7 @@ pub type ContinuationResult = Result<Continuation, RuntimeError>;
 // If it contains a Node, the trampolining session is over and the Node represents the result.
 pub enum Continuation {
     Next(Thunk, SmartEnv, Node, Vec<Node>),
-    Response(Node),
+    Outcome(Node),
 }
 
 pub fn bounce(t: Thunk, e: SmartEnv, n: Node) -> Continuation {
@@ -21,13 +21,13 @@ pub fn bounce_with_nodes(t: Thunk, e: SmartEnv, n: Node, ns: Vec<Node>) -> Conti
     Continuation::Next(t, e, n, ns)
 }
 
-pub fn respond(n: Node) -> Continuation {
-    Continuation::Response(n)
+pub fn finish(n: Node) -> Continuation {
+    Continuation::Outcome(n)
 }
 
-// Trampoline iteratively calls a chain of thunks until there is no next thunk,
-// at which point it pulls the resulting ast.Node out of the packet and returns it.
-pub fn start(t: Thunk, e: SmartEnv, n: Node) -> Result<Node, RuntimeError> {
+// The trampoline iteratively calls a chain of thunks until there is no next thunk,
+// at which point it pulls the resulting Node out of the continuation and returns it.
+pub fn run(t: Thunk, e: SmartEnv, n: Node) -> Result<Node, RuntimeError> {
     let mut current_t = t;
     let mut current_e = e;
     let mut current_n = n;
@@ -41,7 +41,7 @@ pub fn start(t: Thunk, e: SmartEnv, n: Node) -> Result<Node, RuntimeError> {
                 current_n = next_n;
                 current_ns = next_ns;
             }
-            Continuation::Response(n) => return Ok(n),
+            Continuation::Outcome(n) => return Ok(n),
         }
     }
 }
