@@ -5,15 +5,17 @@ use back::env::{Env, SmartEnv};
 use back::primitives::eval_primitive;
 use back::runtime_error::{check_args, RuntimeError};
 use back::specials;
+use back::trampoline;
 use back::trampoline::{Continuation, ContinuationResult};
 use loc::Loc;
+use std::rc::Rc;
 
 type EvalResult = Result<Node, RuntimeError>;
 
 pub fn eval_node(env: SmartEnv, node: Node) -> ContinuationResult {
     let loc = node.loc;
     match node.value {
-        //Value::List { children } => eval_list(env, children, loc),
+        v @ Value::List { .. } => eval_list(env, Node::new(v, loc)),
         Value::Symbol(name) => match env.borrow_mut().get(&name) {
             Some(node) => Ok(Continuation::Response(node)),
             None => Err(RuntimeError::UndefinedName(name, loc)),
@@ -23,27 +25,32 @@ pub fn eval_node(env: SmartEnv, node: Node) -> ContinuationResult {
     }
 }
 
-/*
 fn eval_each_node(env: SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, RuntimeError> {
     let mut outputs = Vec::new();
     for node in nodes {
-        let output = eval_node(env, node)?;
+        let output = trampoline::start(eval_node, Rc::clone(&env), node)?;
         outputs.push(output);
     }
     Ok(outputs)
 }
 
-fn eval_list(env: SmartEnv, mut args: Vec<Node>, loc: Loc) -> EvalResult {
+fn eval_list(env: SmartEnv, node: Node) -> ContinuationResult {
+    let loc = node.loc;
+    let mut args = match node.value {
+        Value::List { children } => children,
+        _ => panic!("expected list"),
+    };
+
     if args.len() == 0 {
         return Err(RuntimeError::CannotEvalEmptyList(loc));
     }
 
     let head_node = args.remove(0);
     let head_value = head_node.value;
-    let loc = head_node.loc;
 
+    /* FIXME
     match head_value {
-        Value::Symbol(ref name) => match name.as_ref() {
+        Value::Symbol(ref name) => match name.as_ref()         
             "list" => {
                 check_args("list", &loc, &args, 0, -1)?;
                 return specials::eval_special_list(env, loc, args);
@@ -80,12 +87,24 @@ fn eval_list(env: SmartEnv, mut args: Vec<Node>, loc: Loc) -> EvalResult {
         },
         _ => {}
     }
+    */
 
-    let evaled_head = eval_node(env, Node::new(head_value, loc.clone()))?;
+    let evaled_head = trampoline::start(
+        eval_node,
+        Rc::clone(&env),
+        Node::new(head_value, loc.clone()),
+    )?;
 
     match evaled_head.value {
-        Value::Function { .. } => eval_invoke_proc(env, evaled_head, args),
-        Value::Primitive(obj) => eval_invoke_primitive(obj, env, args, loc),
+        Value::Function { .. } => {
+            //FIXME: this is where we need the bounce, AKA Continuation::Next
+            let out = eval_invoke_proc(Rc::clone(&env), evaled_head, args)?;
+            Ok(Continuation::Response(out))
+        }
+        Value::Primitive(obj) => {
+            let out = eval_invoke_primitive(obj, Rc::clone(&env), args, loc)?;
+            Ok(Continuation::Response(out))
+        }
         _ => Err(RuntimeError::UnableToEvalListStartingWith(
             evaled_head.display(),
             loc,
@@ -95,15 +114,15 @@ fn eval_list(env: SmartEnv, mut args: Vec<Node>, loc: Loc) -> EvalResult {
 
 fn eval_invoke_primitive(
     obj: PrimitiveObj,
-    dynamic_env: &SmartEnv,
+    dynamic_env: SmartEnv,
     unevaled_args: Vec<Node>,
     loc: Loc,
 ) -> EvalResult {
-    let evaled_args = eval_each_node(dynamic_env, unevaled_args)?;
+    let evaled_args = eval_each_node(Rc::clone(&dynamic_env), unevaled_args)?;
     eval_primitive(obj, dynamic_env, evaled_args, loc)
 }
 
-fn eval_invoke_proc(dynamic_env: &SmartEnv, proc: Node, unevaled_args: Vec<Node>) -> EvalResult {
+fn eval_invoke_proc(dynamic_env: SmartEnv, proc: Node, unevaled_args: Vec<Node>) -> EvalResult {
     let loc = proc.loc;
     match proc.value {
         Value::Function {
@@ -138,49 +157,8 @@ fn eval_invoke_proc(dynamic_env: &SmartEnv, proc: Node, unevaled_args: Vec<Node>
             }
 
             // Evaluate the application of the procedure
-            eval_node(&lexical_env, *body)
+            trampoline::start(eval_node, lexical_env, *body)
         }
         _ => panic!("Cannot invoke a non-procedure"),
-    }
-
-    /* TODO
-    defer func() {
-		if e := recover(); e != nil {
-			switch errorValue := e.(type) {
-			case *EvalError:
-				fmt.Printf("TRACE: (%v: %v): call to %v\n", head.Loc().Filename, head.Loc().Line, f.Name)
-				panic(errorValue)
-			default:
-				panic(errorValue)
-			}
-		}
-	}()
-    */
-}
-*/
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_check_args() {
-        // Arrange
-        //let args = vec![Node::new(Value::Number(42), Loc::Unknown)];
-        let args = Vec::<Node>::new();
-
-        // Act
-        let r = check_args("list", &Loc::Unknown, &args, 1, -1);
-
-        // Assert
-        assert_eq!(
-            r,
-            Err(RuntimeError::NotEnoughArgs(
-                "list".to_string(),
-                1,
-                0,
-                Loc::Unknown
-            ))
-        );
     }
 }

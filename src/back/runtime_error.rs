@@ -122,3 +122,29 @@ pub fn check_args(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_check_args() {
+        // Arrange
+        //let args = vec![Node::new(Value::Number(42), Loc::Unknown)];
+        let args = Vec::<Node>::new();
+
+        // Act
+        let r = check_args("list", &Loc::Unknown, &args, 1, -1);
+
+        // Assert
+        assert_eq!(
+            r,
+            Err(RuntimeError::NotEnoughArgs(
+                "list".to_string(),
+                1,
+                0,
+                Loc::Unknown
+            ))
+        );
+    }
+}

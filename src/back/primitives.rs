@@ -43,7 +43,7 @@ fn define_primitive(
 
 pub fn eval_primitive(
     primitive_obj: PrimitiveObj,
-    env: &SmartEnv,
+    env: SmartEnv,
     mut args: Vec<Node>,
     loc: Loc,
 ) -> Result<Node, RuntimeError> {
@@ -72,7 +72,7 @@ pub fn eval_primitive(
     primitive_fn(env, args)
 }
 
-fn eval_primitive_not(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_not(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let one = args.remove(0);
 
     let one_bool = one.as_host_boolean()?;
@@ -83,7 +83,7 @@ fn eval_primitive_not(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, Runt
     Ok(result)
 }
 
-fn eval_primitive_add(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_add(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let one = args.remove(0);
     let two = args.remove(0);
 
@@ -96,7 +96,7 @@ fn eval_primitive_add(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, Runt
     Ok(result)
 }
 
-fn eval_primitive_subtract(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_subtract(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let one = args.remove(0);
     let two = args.remove(0);
 
@@ -109,7 +109,7 @@ fn eval_primitive_subtract(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node,
     Ok(result)
 }
 
-fn eval_primitive_equal(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_equal(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let a = args.remove(0);
     let b = args.remove(0);
 
@@ -118,7 +118,7 @@ fn eval_primitive_equal(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, Ru
     Ok(Node::new(Value::Boolean(output), a.loc))
 }
 
-fn eval_primitive_less_than(_env: &SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_less_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let a = args.remove(0);
     let b = args.remove(0);
 
