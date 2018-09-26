@@ -6,21 +6,21 @@ use back::primitives::eval_primitive;
 use back::runtime_error::{check_args, RuntimeError};
 use back::specials;
 use back::trampoline;
-use back::trampoline::{Continuation, ContinuationResult};
+use back::trampoline::ContinuationResult;
 use loc::Loc;
 use std::rc::Rc;
 
 type EvalResult = Result<Node, RuntimeError>;
 
-pub fn eval_node(env: SmartEnv, node: Node) -> ContinuationResult {
+pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
     let loc = node.loc;
     match node.value {
-        v @ Value::List { .. } => eval_list(env, Node::new(v, loc)),
+        v @ Value::List { .. } => Ok(trampoline::bounce(eval_list, env, Node::new(v, loc))),
         Value::Symbol(name) => match env.borrow_mut().get(&name) {
-            Some(node) => Ok(Continuation::Response(node)),
+            Some(node) => Ok(trampoline::respond(node)),
             None => Err(RuntimeError::UndefinedName(name, loc)),
         },
-        n @ Value::Number(_) => Ok(Continuation::Response(Node::new(n, loc))),
+        n @ Value::Number(_) => Ok(trampoline::respond(Node::new(n, loc))),
         n => Err(RuntimeError::UnableToEvalValue(n, loc)),
     }
 }
@@ -34,7 +34,7 @@ fn eval_each_node(env: SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, RuntimeE
     Ok(outputs)
 }
 
-fn eval_list(env: SmartEnv, node: Node) -> ContinuationResult {
+fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
     let loc = node.loc;
     let mut args = match node.value {
         Value::List { children } => children,
@@ -96,14 +96,15 @@ fn eval_list(env: SmartEnv, node: Node) -> ContinuationResult {
     )?;
 
     match evaled_head.value {
-        Value::Function { .. } => {
-            //FIXME: this is where we need the bounce, AKA Continuation::Next
-            let out = eval_invoke_proc(Rc::clone(&env), evaled_head, args)?;
-            Ok(Continuation::Response(out))
-        }
+        Value::Function { .. } => Ok(trampoline::bounce_with_nodes(
+            eval_invoke_proc,
+            Rc::clone(&env),
+            evaled_head,
+            args,
+        )),
         Value::Primitive(obj) => {
             let out = eval_invoke_primitive(obj, Rc::clone(&env), args, loc)?;
-            Ok(Continuation::Response(out))
+            Ok(trampoline::respond(out))
         }
         _ => Err(RuntimeError::UnableToEvalListStartingWith(
             evaled_head.display(),
@@ -122,7 +123,11 @@ fn eval_invoke_primitive(
     eval_primitive(obj, dynamic_env, evaled_args, loc)
 }
 
-fn eval_invoke_proc(dynamic_env: SmartEnv, proc: Node, unevaled_args: Vec<Node>) -> EvalResult {
+fn eval_invoke_proc(
+    dynamic_env: SmartEnv,
+    proc: Node,
+    unevaled_args: Vec<Node>,
+) -> ContinuationResult {
     let loc = proc.loc;
     match proc.value {
         Value::Function {
@@ -157,7 +162,7 @@ fn eval_invoke_proc(dynamic_env: SmartEnv, proc: Node, unevaled_args: Vec<Node>)
             }
 
             // Evaluate the application of the procedure
-            trampoline::start(eval_node, lexical_env, *body)
+            Ok(trampoline::bounce(eval_node, lexical_env, *body))
         }
         _ => panic!("Cannot invoke a non-procedure"),
     }
