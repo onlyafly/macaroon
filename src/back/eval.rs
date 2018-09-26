@@ -48,32 +48,23 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
     let head_node = args.remove(0);
     let head_value = head_node.value;
 
-    /* FIXME
     match head_value {
-        Value::Symbol(ref name) => match name.as_ref()         
-            "list" => {
-                check_args("list", &loc, &args, 0, -1)?;
-                return specials::eval_special_list(env, loc, args);
+        Value::Symbol(ref name) => match name.as_ref() {
+            "def" => {
+                check_args("def", &loc, &args, 2, 2)?;
+                return specials::eval_special_def(env, args);
             }
             "quote" => {
                 check_args("quote", &loc, &args, 1, -1)?;
                 return specials::eval_special_quote(args);
             }
-            "def" => {
-                check_args("def", &loc, &args, 2, 2)?;
-                return specials::eval_special_def(env, args);
+            "list" => {
+                check_args("list", &loc, &args, 0, -1)?;
+                return specials::eval_special_list(env, loc, args);
             }
             "fn" => {
                 check_args("fn", &loc, &args, 2, 2)?;
                 return specials::eval_special_fn(env, args);
-            }
-            "update!" => {
-                check_args("update!", &loc, &args, 2, 2)?;
-                return specials::eval_special_update(env, args);
-            }
-            "update-element!" => {
-                check_args("update-element!", &loc, &args, 3, 3)?;
-                return specials::eval_special_update_element(env, args);
             }
             "if" => {
                 check_args("if", &loc, &args, 3, 3)?;
@@ -83,11 +74,18 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
                 check_args("let", &loc, &args, 2, -1)?;
                 return specials::eval_special_let(env, args);
             }
+            "update!" => {
+                check_args("update!", &loc, &args, 2, 2)?;
+                return specials::eval_special_update(env, args);
+            }
+            "update-element!" => {
+                check_args("update-element!", &loc, &args, 3, 3)?;
+                return specials::eval_special_update_element(env, args);
+            }
             _ => {}
         },
         _ => {}
     }
-    */
 
     let evaled_head = trampoline::start(
         eval_node,
