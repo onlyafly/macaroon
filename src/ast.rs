@@ -57,13 +57,7 @@ impl Value {
         match self {
             &Value::Nil => Ok(false),
             &Value::Boolean(b) => Ok(b),
-            &Value::Number(_) => Ok(true),
-            &Value::List { .. } => Ok(true),
-            _ => Err(RuntimeError::UnexpectedValue(
-                "boolean".to_string(),
-                self.clone(),
-                Loc::Unknown,
-            )),
+            _ => Ok(true),
         }
     }
 }

@@ -160,6 +160,29 @@ pub fn eval_special_if(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult
     Ok(trampoline::bounce(eval::eval_node, env, branch))
 }
 
+pub fn eval_special_cond(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
+    loop {
+        match args.len() {
+            0 => return Ok(trampoline::finish(Node::new(Value::Nil, Loc::Unknown))),
+            1 => {
+                let unmatched_node = args.remove(0);
+                return Err(RuntimeError::CondUnmatchedClause(
+                    unmatched_node.value,
+                    unmatched_node.loc,
+                ));
+            }
+            _ => (),
+        }
+
+        let predicate = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+        let unevaled_branch = args.remove(0);
+
+        if predicate.as_host_boolean()? {
+            return Ok(trampoline::bounce(eval::eval_node, env, unevaled_branch));
+        }
+    }
+}
+
 pub fn eval_special_for(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
     let name_node = args.remove(0);
     let loc = name_node.loc;
@@ -189,6 +212,11 @@ pub fn eval_special_for(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
         start_number += 1;
     }
 
+    Ok(trampoline::finish(output))
+}
+
+pub fn eval_special_begin(env: SmartEnv, unevaled_args: Vec<Node>) -> ContinuationResult {
+    let output = eval::eval_each_node_for_single_output(env, unevaled_args)?;
     Ok(trampoline::finish(output))
 }
 

@@ -32,6 +32,17 @@ fn eval_each_node(env: SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, RuntimeE
     Ok(outputs)
 }
 
+pub fn eval_each_node_for_single_output(
+    env: SmartEnv,
+    nodes: Vec<Node>,
+) -> Result<Node, RuntimeError> {
+    let mut output = Node::new(Value::Nil, Loc::Unknown);
+    for node in nodes {
+        output = trampoline::run(eval_node, Rc::clone(&env), node)?;
+    }
+    Ok(output)
+}
+
 fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
     let loc = node.loc;
     let mut args = match node.value {
@@ -68,6 +79,10 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
                 check_args("if", &loc, &args, 3, 3)?;
                 return specials::eval_special_if(env, args);
             }
+            "cond" => {
+                check_args("cond", &loc, &args, 2, -1)?;
+                return specials::eval_special_cond(env, args);
+            }
             "for" => {
                 check_args("for", &loc, &args, 4, 4)?;
                 return specials::eval_special_for(env, args);
@@ -83,6 +98,10 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
             "update-element!" => {
                 check_args("update-element!", &loc, &args, 3, 3)?;
                 return specials::eval_special_update_element(env, args);
+            }
+            "begin" => {
+                check_args("begin", &loc, &args, 0, -1)?;
+                return specials::eval_special_begin(env, args);
             }
             _ => {}
         },

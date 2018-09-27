@@ -1,1 +1,7 @@
-* Registerize the evaluatorin order to implement a trampoline without closures.
+# Architecture Choices
+
+## Evaluator
+
+### Tail Call Optimization
+
+Trampoline, with registerized functions to avoid the need for closures.

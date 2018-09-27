@@ -1,4 +1,4 @@
 (cond false  15
-      'false 'foo
+      nil    'foo
       true   'bar
       'true  'baz)

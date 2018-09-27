@@ -19,6 +19,7 @@ pub enum RuntimeError {
     WrongNumberOfArgs(String, isize, usize, Loc),
     ArgCountOutOfRange(String, isize, isize, usize, Loc),
     ProcArgsDoNotMatchParams(String, Loc),
+    CondUnmatchedClause(Value, Loc),
 }
 
 impl RuntimeError {
@@ -62,6 +63,10 @@ impl RuntimeError {
             ProcArgsDoNotMatchParams(_, _) => {
                 format!("Arguments passed to procedure do not match parameter list")
             }
+            CondUnmatchedClause(value, _) => format!(
+                "'cond' expects each clause to have a test and a body, but found: {}",
+                value.display()
+            ),
         }
     }
 
@@ -83,6 +88,7 @@ impl RuntimeError {
             WrongNumberOfArgs(.., loc) => loc.clone(),
             ArgCountOutOfRange(.., loc) => loc.clone(),
             ProcArgsDoNotMatchParams(.., loc) => loc.clone(),
+            CondUnmatchedClause(.., loc) => loc.clone(),
         }
     }
 }
