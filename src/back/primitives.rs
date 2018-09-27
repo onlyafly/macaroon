@@ -17,6 +17,7 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "-", 2, 2)?; // TODO: should be 1, -1 ???
     define_primitive(&mut menv, "=", 2, 2)?; // TODO: should be 2, -1
     define_primitive(&mut menv, "<", 2, 2)?;
+    define_primitive(&mut menv, ">", 2, 2)?;
     define_primitive(&mut menv, "not", 1, 1)?;
 
     Ok(())
@@ -60,6 +61,7 @@ pub fn eval_primitive(
         "-" => eval_primitive_subtract,
         "=" => eval_primitive_equal,
         "<" => eval_primitive_less_than,
+        ">" => eval_primitive_greater_than,
         "not" => eval_primitive_not,
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
@@ -123,6 +125,15 @@ fn eval_primitive_less_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node,
     let b = args.remove(0);
 
     let output = a.value < b.value;
+
+    Ok(Node::new(Value::Boolean(output), a.loc))
+}
+
+fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let a = args.remove(0);
+    let b = args.remove(0);
+
+    let output = a.value > b.value;
 
     Ok(Node::new(Value::Boolean(output), a.loc))
 }
