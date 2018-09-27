@@ -68,6 +68,10 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
                 check_args("if", &loc, &args, 3, 3)?;
                 return specials::eval_special_if(env, args);
             }
+            "for" => {
+                check_args("for", &loc, &args, 4, 4)?;
+                return specials::eval_special_for(env, args);
+            }
             "let" => {
                 check_args("let", &loc, &args, 2, -1)?;
                 return specials::eval_special_let(env, args);

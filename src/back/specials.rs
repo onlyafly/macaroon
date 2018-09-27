@@ -58,8 +58,14 @@ pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
                     trampoline::run(eval::eval_node, Rc::clone(&env), bindings_vec.remove(0))?;
 
                 let name = match name_node.value {
-                    Value::Symbol(name_node) => name_node,
-                    _ => "".to_string(), // TODO: probably should throw error here
+                    Value::Symbol(name) => name,
+                    v => {
+                        return Err(RuntimeError::UnexpectedValue(
+                            "symbol".to_string(),
+                            v,
+                            name_node.loc,
+                        ))
+                    }
                 };
 
                 bindings_env.borrow_mut().define(&name, value_node)?;
@@ -152,6 +158,38 @@ pub fn eval_special_if(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult
     };
 
     Ok(trampoline::bounce(eval::eval_node, env, branch))
+}
+
+pub fn eval_special_for(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
+    let name_node = args.remove(0);
+    let loc = name_node.loc;
+    let name = match name_node.value {
+        Value::Symbol(name) => name,
+        v => return Err(RuntimeError::UnexpectedValue("symbol".to_string(), v, loc)),
+    };
+
+    let start_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+    let mut start_number = start_node.as_host_number()?;
+
+    let end_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+    let end_number = end_node.as_host_number()?;
+
+    let body = args.remove(0);
+
+    let mut output = Node::new(Value::Nil, loc.clone());
+
+    while start_number <= end_number {
+        let loop_env = Env::new(Some(Rc::clone(&env)));
+        let index_node = Node::new(Value::Number(start_number), loc.clone());
+        loop_env.borrow_mut().define(&name, index_node)?;
+
+        let cloned_body = body.clone();
+        output = trampoline::run(eval::eval_node, loop_env, cloned_body)?;
+
+        start_number += 1;
+    }
+
+    Ok(trampoline::finish(output))
 }
 
 pub fn eval_special_fn(lexical_env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
