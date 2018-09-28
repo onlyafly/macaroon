@@ -9,7 +9,7 @@ pub enum Token {
     Number(String),
     Caret,
     SingleQuote,
-    Char(String),
+    Character { value: String, raw: String },
 }
 
 impl Token {
@@ -24,7 +24,7 @@ impl Token {
             &Token::Number(ref s) => s.clone(),
             &Token::Caret => "^".to_string(),
             &Token::SingleQuote => "'".to_string(),
-            &Token::Char(ref s) => format!("'{}", s),
+            &Token::Character { ref raw, .. } => format!("{}", raw),
         }
     }
 }

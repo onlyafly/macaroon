@@ -63,14 +63,7 @@ impl<'a> Scanner<'a> {
             }
             Some('^') => Token::Caret,
             Some('\'') => Token::SingleQuote,
-            Some('\\') => {
-                if let Some(ch) = self.read_char() {
-                    Token::Char(ch.to_string())
-                } else {
-                    //TODO: Change return type to Result
-                    Token::Error("END-OF-INPUT".to_string())
-                }
-            }
+            Some('\\') => self.scan_character_literal(),
 
             // TODO
             //  1. Single line comments
@@ -119,6 +112,32 @@ impl<'a> Scanner<'a> {
 
         //TODO: Change return type to Result
         Token::Error("Unterminated multiline comment".to_string())
+    }
+
+    fn scan_character_literal(&mut self) -> Token {
+        let mut buffer = String::new();
+
+        // First char
+        if let Some(c) = self.read_char() {
+            buffer.push(c);
+        }
+
+        // Additional chars
+        while let Some(&c) = self.peek_char() {
+            if !c.is_alphabetic() {
+                break;
+            }
+            buffer.push(self.read_char().unwrap());
+        }
+
+        if buffer.len() > 0 {
+            Token::Character {
+                value: buffer.to_string(),
+                raw: format!("\\{}", buffer),
+            }
+        } else {
+            Token::Error(format!("\\{}", buffer))
+        }
     }
 
     fn scan_number(&mut self, first: char) -> Token {
@@ -266,14 +285,20 @@ mod tests {
     #[test]
     fn test_chars() {
         let mut s = Scanner::new("", r"\a");
-        assert_eq!(s.next(), Token::Char("a".to_string()));
+        assert_eq!(
+            s.next(),
+            Token::Character {
+                raw: r"\a".to_string(),
+                value: "a".to_string()
+            }
+        );
         assert_eq!(s.next(), Token::EndOfFile);
     }
 
     #[test]
     fn test_errors() {
         let mut s = Scanner::new("", r"\");
-        assert_eq!(s.next(), Token::Error("END-OF-INPUT".to_string()));
+        assert_eq!(s.next(), Token::Error(r"\".to_string()));
     }
 
     #[test]

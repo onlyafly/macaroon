@@ -42,6 +42,21 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
+            Token::Character { ref value, ref raw } => {
+                match raw.as_ref() {
+                    r"\newline" => Value::Character("\n".to_string()),
+                    x if x.len() == 2 => Value::Character(value.to_string()),
+                    x => {
+                        self.register_error(
+                            errors,
+                            SyntaxError::UnparsableCharacter(x.to_string()),
+                        );
+
+                        // Recover from error by continuing with a dummy value
+                        Value::Error(x.to_string())
+                    }
+                }
+            }
 
             Token::Symbol(ref s) => Value::Symbol(s.clone()),
             Token::SingleQuote => {

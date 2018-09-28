@@ -19,6 +19,7 @@ pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult 
             None => Err(RuntimeError::UndefinedName(name, loc)),
         },
         n @ Value::Number(_) => Ok(trampoline::finish(Node::new(n, loc))),
+        c @ Value::Character(_) => Ok(trampoline::finish(Node::new(c, loc))),
         n => Err(RuntimeError::UnableToEvalValue(n, loc)),
     }
 }

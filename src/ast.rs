@@ -9,6 +9,7 @@ pub enum Value {
     Nil,
     Error(String),
     Number(i32),
+    Character(String),
     Symbol(String),
     Boolean(bool),
     Function {
@@ -26,8 +27,12 @@ impl Value {
     pub fn display(&self) -> String {
         match self {
             &Value::Nil => "nil".to_string(),
-            &Value::Error(ref s) => format!("<error: {}>", s),
+            &Value::Error(ref s) => format!("#error<{}>", s),
             &Value::Number(n) => n.to_string(),
+            &Value::Character(ref s) => match s.as_ref() {
+                "\n" => r"\newline".to_string(),
+                _ => format!(r"\{}", s),
+            },
             &Value::Symbol(ref s) => s.clone(),
             &Value::List { ref children } => {
                 let mut v = Vec::new();
@@ -38,7 +43,8 @@ impl Value {
             }
             &Value::Boolean(false) => "false".to_string(),
             &Value::Boolean(true) => "true".to_string(),
-            n => format!("<unrecognized value: {:?}>", n),
+            &Value::Function { .. } => "#function".to_string(),
+            &Value::Primitive(..) => "#primitive".to_string(),
         }
     }
 
