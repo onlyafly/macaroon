@@ -2,6 +2,7 @@ use back::env::SmartEnv;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 use std::cell::RefCell;
+use std::cell::RefMut;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -119,6 +120,12 @@ pub struct PrimitiveObj {
 pub struct WriterObj {
     pub name: String,
     pub host_writer: Rc<RefCell<dyn io::Write>>,
+}
+
+impl WriterObj {
+    pub fn mutable_host_writer(&self) -> RefMut<dyn io::Write> {
+        self.host_writer.borrow_mut()
+    }
 }
 
 impl PartialEq for WriterObj {
