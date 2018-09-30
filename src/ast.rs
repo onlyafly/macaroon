@@ -1,11 +1,13 @@
 use back::env::SmartEnv;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
+use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::io;
 use std::ops::Deref;
+use std::rc::Rc;
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum Val {
@@ -114,10 +116,9 @@ pub struct PrimitiveObj {
     pub max_arity: isize,
 }
 
-#[derive(Clone)]
 pub struct WriterObj {
     pub name: String,
-    pub get_host_writer: fn() -> Box<dyn io::Write>,
+    pub host_writer: Rc<RefCell<dyn io::Write>>,
 }
 
 impl PartialEq for WriterObj {
@@ -129,5 +130,14 @@ impl PartialEq for WriterObj {
 impl fmt::Debug for WriterObj {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "#writer")
+    }
+}
+
+impl Clone for WriterObj {
+    fn clone(&self) -> WriterObj {
+        WriterObj {
+            name: self.name.clone(),
+            host_writer: Rc::clone(&self.host_writer),
+        }
     }
 }

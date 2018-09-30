@@ -6,18 +6,16 @@ mod loc;
 use ast::WriterObj;
 use back::env::SmartEnv;
 use loc::Loc;
+use std::cell::RefCell;
 use std::io;
-
-fn get_stdout() -> Box<io::Write> {
-    Box::new(io::stdout())
-}
+use std::rc::Rc;
 
 pub fn interpret(filename: &str, input: &str) -> String {
     let parse_result = front::parse(filename, input);
 
     let writer_obj = WriterObj {
         name: "stdout".to_string(),
-        get_host_writer: get_stdout,
+        host_writer: Rc::new(RefCell::new(io::stdout())),
     };
 
     match parse_result {

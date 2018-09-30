@@ -5,7 +5,6 @@ use back::env::{Env, SmartEnv};
 use back::runtime_error::{check_args, RuntimeError};
 use loc::Loc;
 use std::cell::RefMut;
-use std::io::Write;
 
 pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     let mut menv = env.borrow_mut();
@@ -142,16 +141,15 @@ fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<No
 }
 
 fn eval_primitive_println(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
-    let mut w = match env.borrow().get("*writer*") {
+    let writer_refcell = match env.borrow().get("*writer*") {
         Some(node) => match node.val {
-            Val::Writer(writer_obj) => {
-                let f = writer_obj.get_host_writer;
-                f()
-            }
+            Val::Writer(writer_obj) => writer_obj.host_writer,
             _ => panic!("expected writer value"),
         },
         _ => panic!("expected writer value"),
     };
+
+    let mut w = writer_refcell.borrow_mut();
 
     while args.len() > 0 {
         let n = args.remove(0);
