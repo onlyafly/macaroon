@@ -1,6 +1,6 @@
 use ast::*;
 use front::scanner;
-use front::syntax_error::{SyntaxError, WrappedSyntaxErrors};
+use front::syntax_error::SyntaxError;
 use front::tokens::Token;
 use loc::Loc;
 
@@ -15,7 +15,7 @@ impl<'a> Parser<'a> {
         let s = scanner::Scanner::new(filename, input);
         Parser {
             scanner: s,
-            current_token: Token::Error("START".to_string()),
+            current_token: Token::Error,
             current_loc: Loc::File {
                 filename: "<start>".to_string(),
                 line: 0,
@@ -24,18 +24,27 @@ impl<'a> Parser<'a> {
         }
     }
 
-    pub fn next_token(&mut self) {
-        self.current_token = self.scanner.next();
+    pub fn next_token(&mut self, errors: &mut Vec<SyntaxError>) {
         self.current_loc = self.scanner.loc();
+        self.current_token = match self.scanner.next() {
+            Ok(t) => t,
+            Err(e) => {
+                errors.push(e);
+                Token::Error
+            }
+        }
     }
 
-    pub fn parse_value(&mut self, errors: &mut WrappedSyntaxErrors) -> Node {
+    pub fn parse_value(&mut self, errors: &mut Vec<SyntaxError>) -> Node {
         let val = match self.current_token {
             Token::Number(ref s) => {
                 match s.parse::<i32>() {
                     Ok(number) => Val::Number(number),
                     Err(_) => {
-                        self.register_error(errors, SyntaxError::UnparsableNumber(s.to_string()));
+                        errors.push(SyntaxError::UnparsableNumberLiteral(
+                            s.to_string(),
+                            self.loc(),
+                        ));
 
                         // Recover from error by continuing with a dummy val
                         Val::Number(0)
@@ -47,10 +56,10 @@ impl<'a> Parser<'a> {
                     r"\newline" => Val::Character("\n".to_string()),
                     x if x.len() == 2 => Val::Character(val.to_string()),
                     x => {
-                        self.register_error(
-                            errors,
-                            SyntaxError::UnparsableCharacter(x.to_string()),
-                        );
+                        errors.push(SyntaxError::UnparsableCharacterLiteral(
+                            x.to_string(),
+                            self.loc(),
+                        ));
 
                         // Recover from error by continuing with a dummy val
                         Val::Error(x.to_string())
@@ -61,7 +70,7 @@ impl<'a> Parser<'a> {
             Token::StringLiteral(ref s) => Val::StringVal(s.clone()),
             Token::Symbol(ref s) => Val::Symbol(s.clone()),
             Token::SingleQuote => {
-                self.next_token();
+                self.next_token(errors);
                 let quoted_value = self.parse_value(errors);
                 let children = vec![
                     self.make_node(Val::Symbol("quote".to_string())),
@@ -70,25 +79,21 @@ impl<'a> Parser<'a> {
                 Val::List { children }
             }
             Token::LeftParen => {
-                self.next_token();
+                self.next_token(errors);
                 let mut children = Vec::<Node>::new();
 
                 while self.current_token != Token::EndOfFile
                     && self.current_token != Token::RightParen
                 {
                     children.push(self.parse_value(errors));
-                    self.next_token();
+                    self.next_token(errors);
                 }
 
                 Val::List { children }
             }
-            Token::Error(ref s) => {
-                self.register_error(errors, SyntaxError::ScanningError(s.to_string()));
-                // Try to recover by pushing an error Val
-                Val::Error(s.to_string())
-            }
+            Token::Error => Val::Error(String::new()),
             ref t => {
-                self.register_error(errors, SyntaxError::UnrecognizedToken(t.clone()));
+                errors.push(SyntaxError::UnrecognizedToken(t.clone(), self.loc()));
                 // Try to recover by pushing an error Val
                 Val::Error(t.display())
             }
@@ -97,8 +102,8 @@ impl<'a> Parser<'a> {
         self.make_node(val)
     }
 
-    fn register_error(&self, errors: &mut WrappedSyntaxErrors, e: SyntaxError) {
-        errors.push((self.current_loc.clone(), e));
+    fn loc(&self) -> Loc {
+        self.current_loc.clone()
     }
 
     fn make_node(&self, n: Val) -> Node {

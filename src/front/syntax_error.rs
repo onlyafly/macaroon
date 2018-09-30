@@ -1,23 +1,45 @@
 use front::tokens::Token;
 use loc::Loc;
 
-pub type WrappedSyntaxErrors = Vec<(Loc, SyntaxError)>;
-
+#[derive(Debug, PartialEq)]
 pub enum SyntaxError {
-    UnparsableNumber(String),
-    UnparsableCharacter(String),
-    UnrecognizedToken(Token),
-    ScanningError(String), //TODO: once scanner returns a Result, the scanner can return actual errors
+    UnparsableNumberLiteral(String, Loc),
+    UnparsableCharacterLiteral(String, Loc),
+    UnrecognizedCharacterSequence(String, Loc),
+    UnrecognizedToken(Token, Loc),
+    UnrecognizedCharacterInInput(char, Loc),
+    UnterminatedMultilineComment(Loc),
+    UnterminatedStringLiteral(Loc),
 }
 
 impl SyntaxError {
     pub fn display(&self) -> String {
         use self::SyntaxError::*;
         match self {
-            UnparsableNumber(s) => format!("Unparsable number literal: {}", s),
-            UnparsableCharacter(s) => format!("Unparsable character literal: {}", s),
-            UnrecognizedToken(t) => format!("Unrecognized token: {}", t.display()),
-            ScanningError(s) => format!("{}", s),
+            UnparsableNumberLiteral(s, ..) => format!("Unparsable number literal: {}", s),
+            UnparsableCharacterLiteral(s, ..) => format!("Unparsable character literal: {}", s),
+            UnrecognizedCharacterSequence(s, ..) => {
+                format!("Unrecognized character sequence: {}", s)
+            }
+            UnrecognizedToken(t, ..) => format!("Unrecognized token: {}", t.display()),
+            UnrecognizedCharacterInInput(ch, ..) => {
+                format!("Unrecognized character in input: {}", ch)
+            }
+            UnterminatedMultilineComment(..) => "Unterminated multiline comment".to_string(),
+            UnterminatedStringLiteral(..) => "Unterminated string literal".to_string(),
+        }
+    }
+
+    pub fn loc(&self) -> Loc {
+        use self::SyntaxError::*;
+        match self {
+            UnparsableNumberLiteral(_, l) => l.clone(),
+            UnparsableCharacterLiteral(_, l) => l.clone(),
+            UnrecognizedCharacterSequence(_, l) => l.clone(),
+            UnrecognizedToken(_, l) => l.clone(),
+            UnrecognizedCharacterInInput(_, l) => l.clone(),
+            UnterminatedMultilineComment(l) => l.clone(),
+            UnterminatedStringLiteral(l) => l.clone(),
         }
     }
 }

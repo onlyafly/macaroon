@@ -1,8 +1,7 @@
 #[derive(Debug, PartialEq, Clone)]
 pub enum Token {
-    Error(String),
+    Error,
     EndOfFile,
-    //TODO: String(String),
     LeftParen,
     RightParen,
     Symbol(String),
@@ -16,9 +15,8 @@ pub enum Token {
 impl Token {
     pub fn display(&self) -> String {
         match self {
-            &Token::Error(ref s) => format!("{}", s),
+            &Token::Error => "<error>".to_string(),
             &Token::EndOfFile => "<eof>".to_string(),
-            //TODO: &Token::String(ref s) => format!("\"{}\"", s),
             &Token::LeftParen => "(".to_string(),
             &Token::RightParen => "(".to_string(),
             &Token::Symbol(ref s) => s.clone(),

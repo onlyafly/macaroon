@@ -45,8 +45,8 @@ pub fn interpret(filename: &str, input: &str) -> String {
         }
         Err(syntax_errors) => {
             let mut output = String::new();
-            for (loc, syntax_error) in syntax_errors {
-                let s = match loc {
+            for syntax_error in syntax_errors {
+                let s = match syntax_error.loc() {
                     Loc::File { filename, line, .. } => format!(
                         "Syntax error ({}:{}): {}\n\n",
                         filename,
