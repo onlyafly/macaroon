@@ -54,8 +54,13 @@ pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
 
             while bindings_vec.len() > 1 {
                 let name_node = bindings_vec.remove(0);
-                let value_node =
-                    trampoline::run(eval::eval_node, Rc::clone(&env), bindings_vec.remove(0))?;
+
+                // By evaluating the value in the bindings environment, this allows recursive definitions
+                let value_node = trampoline::run(
+                    eval::eval_node,
+                    Rc::clone(&bindings_env),
+                    bindings_vec.remove(0),
+                )?;
 
                 let name = match name_node.val {
                     Val::Symbol(name) => name,
