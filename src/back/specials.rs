@@ -1,4 +1,4 @@
-use ast::{Node, Value};
+use ast::{Node, Val};
 use back::env::{Env, SmartEnv};
 use back::eval;
 use back::runtime_error::RuntimeError;
@@ -16,7 +16,7 @@ pub fn eval_special_list(env: SmartEnv, loc: Loc, args: Vec<Node>) -> Continuati
     }
 
     Ok(trampoline::finish(Node::new(
-        Value::List {
+        Val::List {
             children: evaled_args,
         },
         loc,
@@ -30,10 +30,10 @@ pub fn eval_special_quote(mut args: Vec<Node>) -> ContinuationResult {
 pub fn eval_special_def(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
     let name_node = args.remove(0);
 
-    if let Value::Symbol(name) = name_node.value {
+    if let Val::Symbol(name) = name_node.value {
         let value_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
         env.borrow_mut().define(&name, value_node)?;
-        Ok(trampoline::finish(Node::new(Value::Nil, name_node.loc))) // TODO: should be nil
+        Ok(trampoline::finish(Node::new(Val::Nil, name_node.loc))) // TODO: should be nil
     } else {
         Err(RuntimeError::UnexpectedValue(
             "symbol".to_string(),
@@ -47,7 +47,7 @@ pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
     let bindings_node = args.remove(0);
 
     match bindings_node.value {
-        Value::List {
+        Val::List {
             children: mut bindings_vec,
         } => {
             let bindings_env = Env::new(Some(Rc::clone(&env)));
@@ -58,7 +58,7 @@ pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
                     trampoline::run(eval::eval_node, Rc::clone(&env), bindings_vec.remove(0))?;
 
                 let name = match name_node.value {
-                    Value::Symbol(name) => name,
+                    Val::Symbol(name) => name,
                     v => {
                         return Err(RuntimeError::UnexpectedValue(
                             "symbol".to_string(),
@@ -90,10 +90,10 @@ pub fn eval_special_update(env: SmartEnv, mut args: Vec<Node>) -> ContinuationRe
     let value = name_node.value;
     let loc = name_node.loc;
 
-    if let Value::Symbol(name) = value {
+    if let Val::Symbol(name) = value {
         let value = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
         env.borrow_mut().update(&name, value)?;
-        Ok(trampoline::finish(Node::new(Value::Nil, loc)))
+        Ok(trampoline::finish(Node::new(Val::Nil, loc)))
     } else {
         Err(RuntimeError::UnexpectedValue(
             "symbol".to_string(),
@@ -107,7 +107,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
     let name_node = args.remove(0);
     let loc = name_node.loc;
 
-    if let Value::Symbol(name) = name_node.value {
+    if let Val::Symbol(name) = name_node.value {
         let mut index_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
         let index = index_node.value.as_host_number()? as usize;
 
@@ -117,7 +117,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
 
         if let Some(entry) = mutable_env.remove(&name) {
             match entry.value {
-                Value::List { mut children } => {
+                Val::List { mut children } => {
                     //TODO: get num from index_value instead of using zero
 
                     if index >= children.len() {
@@ -129,7 +129,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
                     }
 
                     children[index] = newval_node;
-                    mutable_env.update(&name, Node::new(Value::List { children }, loc.clone()))?;
+                    mutable_env.update(&name, Node::new(Val::List { children }, loc.clone()))?;
                 }
                 _ => {
                     return Err(RuntimeError::CannotUpdateElementInValue(entry.value, loc));
@@ -137,7 +137,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
             }
         }
 
-        Ok(trampoline::finish(Node::new(Value::Nil, loc)))
+        Ok(trampoline::finish(Node::new(Val::Nil, loc)))
     } else {
         Err(RuntimeError::UnexpectedValue(
             "symbol".to_string(),
@@ -163,7 +163,7 @@ pub fn eval_special_if(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult
 pub fn eval_special_cond(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
     loop {
         match args.len() {
-            0 => return Ok(trampoline::finish(Node::new(Value::Nil, Loc::Unknown))),
+            0 => return Ok(trampoline::finish(Node::new(Val::Nil, Loc::Unknown))),
             1 => {
                 let unmatched_node = args.remove(0);
                 return Err(RuntimeError::CondUnmatchedClause(
@@ -187,7 +187,7 @@ pub fn eval_special_for(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
     let name_node = args.remove(0);
     let loc = name_node.loc;
     let name = match name_node.value {
-        Value::Symbol(name) => name,
+        Val::Symbol(name) => name,
         v => return Err(RuntimeError::UnexpectedValue("symbol".to_string(), v, loc)),
     };
 
@@ -199,11 +199,11 @@ pub fn eval_special_for(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
 
     let body = args.remove(0);
 
-    let mut output = Node::new(Value::Nil, loc.clone());
+    let mut output = Node::new(Val::Nil, loc.clone());
 
     while start_number <= end_number {
         let loop_env = Env::new(Some(Rc::clone(&env)));
-        let index_node = Node::new(Value::Number(start_number), loc.clone());
+        let index_node = Node::new(Val::Number(start_number), loc.clone());
         loop_env.borrow_mut().define(&name, index_node)?;
 
         let cloned_body = body.clone();
@@ -225,8 +225,8 @@ pub fn eval_special_fn(lexical_env: SmartEnv, mut args: Vec<Node>) -> Continuati
     let body = args.remove(0); // TODO: note that the body is only one node currently
 
     match param_list.value {
-        Value::List { children } => Ok(trampoline::finish(Node::new(
-            Value::Function {
+        Val::List { children } => Ok(trampoline::finish(Node::new(
+            Val::Function {
                 params: children,
                 body: Box::new(body),
                 lexical_env: Rc::clone(&lexical_env),

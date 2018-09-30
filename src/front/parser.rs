@@ -33,19 +33,19 @@ impl<'a> Parser<'a> {
         let value = match self.current_token {
             Token::Number(ref s) => {
                 match s.parse::<i32>() {
-                    Ok(number) => Value::Number(number),
+                    Ok(number) => Val::Number(number),
                     Err(_) => {
                         self.register_error(errors, SyntaxError::UnparsableNumber(s.to_string()));
 
                         // Recover from error by continuing with a dummy value
-                        Value::Number(0)
+                        Val::Number(0)
                     }
                 }
             }
             Token::Character { ref value, ref raw } => {
                 match raw.as_ref() {
-                    r"\newline" => Value::Character("\n".to_string()),
-                    x if x.len() == 2 => Value::Character(value.to_string()),
+                    r"\newline" => Val::Character("\n".to_string()),
+                    x if x.len() == 2 => Val::Character(value.to_string()),
                     x => {
                         self.register_error(
                             errors,
@@ -53,21 +53,21 @@ impl<'a> Parser<'a> {
                         );
 
                         // Recover from error by continuing with a dummy value
-                        Value::Error(x.to_string())
+                        Val::Error(x.to_string())
                     }
                 }
             }
 
-            Token::StringLiteral(ref s) => Value::StringVal(s.clone()),
-            Token::Symbol(ref s) => Value::Symbol(s.clone()),
+            Token::StringLiteral(ref s) => Val::StringVal(s.clone()),
+            Token::Symbol(ref s) => Val::Symbol(s.clone()),
             Token::SingleQuote => {
                 self.next_token();
                 let quoted_value = self.parse_value(errors);
                 let children = vec![
-                    self.make_node(Value::Symbol("quote".to_string())),
+                    self.make_node(Val::Symbol("quote".to_string())),
                     quoted_value,
                 ];
-                Value::List { children }
+                Val::List { children }
             }
             Token::LeftParen => {
                 self.next_token();
@@ -80,12 +80,12 @@ impl<'a> Parser<'a> {
                     self.next_token();
                 }
 
-                Value::List { children }
+                Val::List { children }
             }
             ref t => {
                 self.register_error(errors, SyntaxError::UnrecognizedToken(t.clone()));
-                // Try to recover by pushing an error Value
-                Value::Error(t.display())
+                // Try to recover by pushing an error Val
+                Val::Error(t.display())
             }
         };
 
@@ -96,7 +96,7 @@ impl<'a> Parser<'a> {
         errors.push((self.current_loc.clone(), e));
     }
 
-    fn make_node(&self, n: Value) -> Node {
+    fn make_node(&self, n: Val) -> Node {
         Node::new(n, self.current_loc.clone())
     }
 }

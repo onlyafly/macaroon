@@ -1,5 +1,5 @@
 use ast::Node;
-use ast::Value;
+use ast::Val;
 use loc::Loc;
 
 #[derive(Debug, PartialEq)]
@@ -10,16 +10,16 @@ pub enum RuntimeError {
     CannotRedefine(String, Loc),
     CannotEvalEmptyList(Loc),
     CannotUpdateUndefinedName(String, Loc),
-    UnableToEvalValue(Value, Loc),
+    UnableToEvalValue(Val, Loc),
     UnableToEvalListStartingWith(String, Loc),
-    UnexpectedValue(String, Value, Loc),
-    CannotUpdateElementInValue(Value, Loc),
+    UnexpectedValue(String, Val, Loc),
+    CannotUpdateElementInValue(Val, Loc),
     IndexOutOfBounds { index: usize, len: usize, loc: Loc },
     NotEnoughArgs(String, isize, usize, Loc),
     WrongNumberOfArgs(String, isize, usize, Loc),
     ArgCountOutOfRange(String, isize, isize, usize, Loc),
     ProcArgsDoNotMatchParams(String, Loc),
-    CondUnmatchedClause(Value, Loc),
+    CondUnmatchedClause(Val, Loc),
 }
 
 impl RuntimeError {
@@ -136,7 +136,7 @@ mod tests {
     #[test]
     fn test_check_args() {
         // Arrange
-        //let args = vec![Node::new(Value::Number(42), Loc::Unknown)];
+        //let args = vec![Node::new(Val::Number(42), Loc::Unknown)];
         let args = Vec::<Node>::new();
 
         // Act

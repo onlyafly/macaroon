@@ -1,6 +1,6 @@
 /* Primitives are build-in functions */
 
-use ast::{Node, PrimitiveObj, Value};
+use ast::{Node, PrimitiveObj, Val};
 use back::env::{Env, SmartEnv};
 use back::runtime_error::{check_args, RuntimeError};
 use loc::Loc;
@@ -9,9 +9,9 @@ use std::cell::RefMut;
 pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     let mut menv = env.borrow_mut();
 
-    menv.define("true", Node::new(Value::Boolean(true), Loc::Unknown))?;
-    menv.define("false", Node::new(Value::Boolean(false), Loc::Unknown))?;
-    menv.define("nil", Node::new(Value::Nil, Loc::Unknown))?;
+    menv.define("true", Node::new(Val::Boolean(true), Loc::Unknown))?;
+    menv.define("false", Node::new(Val::Boolean(false), Loc::Unknown))?;
+    menv.define("nil", Node::new(Val::Nil, Loc::Unknown))?;
 
     define_primitive(&mut menv, "+", 2, 2)?; // TODO: should be 0, -1
     define_primitive(&mut menv, "-", 2, 2)?; // TODO: should be 1, -1 ???
@@ -32,7 +32,7 @@ fn define_primitive(
     mut_env.define(
         name,
         Node::new(
-            Value::Primitive(PrimitiveObj {
+            Val::Primitive(PrimitiveObj {
                 name: name.to_string(),
                 min_arity,
                 max_arity,
@@ -81,7 +81,7 @@ fn eval_primitive_not(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runti
 
     let output = !one_bool;
 
-    let result = Node::new(Value::Boolean(output), one.loc);
+    let result = Node::new(Val::Boolean(output), one.loc);
     Ok(result)
 }
 
@@ -94,7 +94,7 @@ fn eval_primitive_add(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runti
 
     let output = one_i32 + two_i32;
 
-    let result = Node::new(Value::Number(output), one.loc);
+    let result = Node::new(Val::Number(output), one.loc);
     Ok(result)
 }
 
@@ -107,7 +107,7 @@ fn eval_primitive_subtract(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, 
 
     let output = one_i32 - two_i32;
 
-    let result = Node::new(Value::Number(output), one.loc);
+    let result = Node::new(Val::Number(output), one.loc);
     Ok(result)
 }
 
@@ -117,7 +117,7 @@ fn eval_primitive_equal(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Run
 
     let output = a.value == b.value;
 
-    Ok(Node::new(Value::Boolean(output), a.loc))
+    Ok(Node::new(Val::Boolean(output), a.loc))
 }
 
 fn eval_primitive_less_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
@@ -126,7 +126,7 @@ fn eval_primitive_less_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node,
 
     let output = a.value < b.value;
 
-    Ok(Node::new(Value::Boolean(output), a.loc))
+    Ok(Node::new(Val::Boolean(output), a.loc))
 }
 
 fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
@@ -135,5 +135,5 @@ fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<No
 
     let output = a.value > b.value;
 
-    Ok(Node::new(Value::Boolean(output), a.loc))
+    Ok(Node::new(Val::Boolean(output), a.loc))
 }

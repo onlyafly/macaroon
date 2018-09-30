@@ -1,4 +1,4 @@
-use ast::{Node, Value};
+use ast::{Node, Val};
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 use std::cell::RefCell;
@@ -62,7 +62,7 @@ impl Env {
         let val = self.map.remove(k);
         // Reinsert nil here so that a later update will update the correct hashmap
         self.map
-            .insert(k.to_string(), Node::new(Value::Number(0), Loc::Unknown)); //TODO: should be nil
+            .insert(k.to_string(), Node::new(Val::Number(0), Loc::Unknown)); //TODO: should be nil
         val
     }
 }

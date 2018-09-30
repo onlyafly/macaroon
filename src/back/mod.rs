@@ -5,7 +5,7 @@ pub mod runtime_error;
 mod specials;
 mod trampoline;
 
-use ast::{Node, Value};
+use ast::{Node, Val};
 use back::env::{Env, SmartEnv};
 use back::runtime_error::RuntimeError;
 use loc::Loc;
@@ -18,7 +18,7 @@ pub fn create_root_env() -> Result<SmartEnv, RuntimeError> {
 }
 
 pub fn eval(env: SmartEnv, values: Vec<Node>) -> Result<Node, RuntimeError> {
-    let mut output = Node::new(Value::Error("NO-INPUT".to_string()), Loc::Unknown); // TODO: should this be nil?
+    let mut output = Node::new(Val::Error("NO-INPUT".to_string()), Loc::Unknown); // TODO: should this be nil?
 
     for value in values {
         output = trampoline::run(eval::eval_node, Rc::clone(&env), value)?;

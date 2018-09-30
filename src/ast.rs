@@ -5,7 +5,7 @@ use std::cmp::Ordering;
 use std::ops::Deref;
 
 #[derive(PartialEq, Debug, Clone)]
-pub enum Value {
+pub enum Val {
     Nil,
     Error(String),
     Number(i32),
@@ -24,35 +24,35 @@ pub enum Value {
     },
 }
 
-impl Value {
+impl Val {
     pub fn display(&self) -> String {
         match self {
-            &Value::Nil => "nil".to_string(),
-            &Value::Error(ref s) => format!("#error<{}>", s),
-            &Value::Number(n) => n.to_string(),
-            &Value::StringVal(ref s) => format!("\"{}\"", s),
-            &Value::Character(ref s) => match s.as_ref() {
+            Val::Nil => "nil".to_string(),
+            Val::Error(ref s) => format!("#error<{}>", s),
+            Val::Number(n) => n.to_string(),
+            Val::StringVal(ref s) => format!("\"{}\"", s),
+            Val::Character(ref s) => match s.as_ref() {
                 "\n" => r"\newline".to_string(),
                 _ => format!(r"\{}", s),
             },
-            &Value::Symbol(ref s) => s.clone(),
-            &Value::List { ref children } => {
+            Val::Symbol(ref s) => s.clone(),
+            Val::List { ref children } => {
                 let mut v = Vec::new();
                 for child in children {
                     v.push(child.display());
                 }
                 "(".to_string() + &v.join(" ") + ")"
             }
-            &Value::Boolean(false) => "false".to_string(),
-            &Value::Boolean(true) => "true".to_string(),
-            &Value::Function { .. } => "#function".to_string(),
-            &Value::Primitive(..) => "#primitive".to_string(),
+            Val::Boolean(false) => "false".to_string(),
+            Val::Boolean(true) => "true".to_string(),
+            Val::Function { .. } => "#function".to_string(),
+            Val::Primitive(..) => "#primitive".to_string(),
         }
     }
 
     pub fn as_host_number(&self) -> Result<i32, RuntimeError> {
         match self {
-            &Value::Number(i) => Ok(i),
+            &Val::Number(i) => Ok(i),
             _ => Err(RuntimeError::UnexpectedValue(
                 "number".to_string(),
                 self.clone(),
@@ -63,16 +63,16 @@ impl Value {
 
     pub fn as_host_boolean(&self) -> Result<bool, RuntimeError> {
         match self {
-            &Value::Nil => Ok(false),
-            &Value::Boolean(b) => Ok(b),
+            &Val::Nil => Ok(false),
+            &Val::Boolean(b) => Ok(b),
             _ => Ok(true),
         }
     }
 }
 
-impl PartialOrd for Value {
-    fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
-        use self::Value::*;
+impl PartialOrd for Val {
+    fn partial_cmp(&self, other: &Val) -> Option<Ordering> {
+        use self::Val::*;
         match (self, other) {
             (Number(a), Number(b)) => a.partial_cmp(b),
             _ => None,
@@ -82,20 +82,20 @@ impl PartialOrd for Value {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct Node {
-    pub value: Value,
+    pub value: Val,
     pub loc: Loc,
 }
 
 impl Node {
-    pub fn new(value: Value, loc: Loc) -> Self {
+    pub fn new(value: Val, loc: Loc) -> Self {
         Node { value, loc }
     }
 }
 
 impl Deref for Node {
-    type Target = Value;
+    type Target = Val;
 
-    fn deref(&self) -> &Value {
+    fn deref(&self) -> &Val {
         &self.value
     }
 }
