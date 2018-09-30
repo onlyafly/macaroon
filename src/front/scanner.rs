@@ -64,6 +64,7 @@ impl<'a> Scanner<'a> {
             Some('^') => Token::Caret,
             Some('\'') => Token::SingleQuote,
             Some('\\') => self.scan_character_literal(),
+            Some('"') => self.scan_string_literal(),
 
             // TODO
             //  1. Single line comments
@@ -112,6 +113,19 @@ impl<'a> Scanner<'a> {
 
         //TODO: Change return type to Result
         Token::Error("Unterminated multiline comment".to_string())
+    }
+
+    fn scan_string_literal(&mut self) -> Token {
+        let mut buffer = String::new();
+
+        while let Some(c) = self.read_char() {
+            if c == '"' {
+                break;
+            }
+            buffer.push(c);
+        }
+
+        Token::StringLiteral(buffer)
     }
 
     fn scan_character_literal(&mut self) -> Token {

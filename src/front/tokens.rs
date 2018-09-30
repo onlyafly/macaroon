@@ -7,6 +7,7 @@ pub enum Token {
     RightParen,
     Symbol(String),
     Number(String),
+    StringLiteral(String),
     Caret,
     SingleQuote,
     Character { value: String, raw: String },
@@ -25,6 +26,7 @@ impl Token {
             &Token::Caret => "^".to_string(),
             &Token::SingleQuote => "'".to_string(),
             &Token::Character { ref raw, .. } => format!("{}", raw),
+            &Token::StringLiteral(ref s) => format!("\"{}\"", s),
         }
     }
 }

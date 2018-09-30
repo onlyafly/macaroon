@@ -58,6 +58,7 @@ impl<'a> Parser<'a> {
                 }
             }
 
+            Token::StringLiteral(ref s) => Value::StringVal(s.clone()),
             Token::Symbol(ref s) => Value::Symbol(s.clone()),
             Token::SingleQuote => {
                 self.next_token();

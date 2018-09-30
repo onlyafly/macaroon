@@ -10,6 +10,7 @@ pub enum Value {
     Error(String),
     Number(i32),
     Character(String),
+    StringVal(String),
     Symbol(String),
     Boolean(bool),
     Function {
@@ -29,6 +30,7 @@ impl Value {
             &Value::Nil => "nil".to_string(),
             &Value::Error(ref s) => format!("#error<{}>", s),
             &Value::Number(n) => n.to_string(),
+            &Value::StringVal(ref s) => format!("\"{}\"", s),
             &Value::Character(ref s) => match s.as_ref() {
                 "\n" => r"\newline".to_string(),
                 _ => format!(r"\{}", s),
