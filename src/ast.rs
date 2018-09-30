@@ -2,6 +2,8 @@ use back::env::SmartEnv;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 use std::cmp::Ordering;
+use std::fmt;
+use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 
 #[derive(PartialEq, Debug, Clone)]
@@ -24,32 +26,34 @@ pub enum Val {
     },
 }
 
-impl Val {
-    pub fn display(&self) -> String {
+impl Display for Val {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            Val::Nil => "nil".to_string(),
-            Val::Error(ref s) => format!("#error<{}>", s),
-            Val::Number(n) => n.to_string(),
-            Val::StringVal(ref s) => format!("\"{}\"", s),
+            Val::Nil => write!(f, "nil"),
+            Val::Error(ref s) => write!(f, "#error<{}>", s),
+            Val::Number(n) => write!(f, "{}", n),
+            Val::StringVal(ref s) => write!(f, "\"{}\"", s),
             Val::Character(ref s) => match s.as_ref() {
-                "\n" => r"\newline".to_string(),
-                _ => format!(r"\{}", s),
+                "\n" => write!(f, r"\newline"),
+                _ => write!(f, r"\{}", s),
             },
-            Val::Symbol(ref s) => s.clone(),
+            Val::Symbol(ref s) => write!(f, "{}", s),
             Val::List { ref children } => {
                 let mut v = Vec::new();
                 for child in children {
-                    v.push(child.display());
+                    v.push(format!("{}", child.val));
                 }
-                "(".to_string() + &v.join(" ") + ")"
+                write!(f, "({})", &v.join(" "))
             }
-            Val::Boolean(false) => "false".to_string(),
-            Val::Boolean(true) => "true".to_string(),
-            Val::Function { .. } => "#function".to_string(),
-            Val::Primitive(..) => "#primitive".to_string(),
+            Val::Boolean(false) => write!(f, "false"),
+            Val::Boolean(true) => write!(f, "true"),
+            Val::Function { .. } => write!(f, "#function"),
+            Val::Primitive(..) => write!(f, "#primitive"),
         }
     }
+}
 
+impl Val {
     pub fn as_host_number(&self) -> Result<i32, RuntimeError> {
         match self {
             &Val::Number(i) => Ok(i),

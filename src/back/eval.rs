@@ -139,7 +139,7 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
             Ok(trampoline::finish(out))
         }
         _ => Err(RuntimeError::UnableToEvalListStartingWith(
-            evaled_head.display(),
+            format!("{}", evaled_head.val),
             loc,
         )),
     }

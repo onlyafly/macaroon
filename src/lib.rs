@@ -31,7 +31,7 @@ pub fn interpret(filename: &str, input: &str) -> String {
 
             let eval_result = back::eval(env, nodes);
             match eval_result {
-                Ok(output_value) => output_value.display(),
+                Ok(output_node) => format!("{}", output_node.val),
                 Err(runtime_error) => match runtime_error.loc() {
                     Loc::File { filename, line, .. } => format!(
                         "Runtime error ({}:{}): {}\n\n",

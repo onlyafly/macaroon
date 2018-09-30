@@ -5,6 +5,8 @@ use back::env::{Env, SmartEnv};
 use back::runtime_error::{check_args, RuntimeError};
 use loc::Loc;
 use std::cell::RefMut;
+use std::io;
+use std::io::Write;
 
 pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     let mut menv = env.borrow_mut();
@@ -18,6 +20,7 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "=", 2, 2)?; // TODO: should be 2, -1
     define_primitive(&mut menv, "<", 2, 2)?;
     define_primitive(&mut menv, ">", 2, 2)?;
+    define_primitive(&mut menv, "println", 0, -1)?;
     define_primitive(&mut menv, "not", 1, 1)?;
 
     Ok(())
@@ -63,6 +66,7 @@ pub fn eval_primitive(
         "<" => eval_primitive_less_than,
         ">" => eval_primitive_greater_than,
         "not" => eval_primitive_not,
+        "println" => eval_primitive_println,
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
                 primitive_obj.name,
@@ -136,4 +140,24 @@ fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<No
     let output = a.val > b.val;
 
     Ok(Node::new(Val::Boolean(output), a.loc))
+}
+
+fn eval_primitive_println(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let mut w = io::stdout();
+
+    while args.len() > 0 {
+        let n = args.remove(0);
+        if let Err(_) = write!(&mut w, "{}", n.val) {
+            return Err(RuntimeError::Unknown("println error".to_string(), n.loc));
+        }
+    }
+
+    if let Err(_) = write!(&mut w, "\n") {
+        return Err(RuntimeError::Unknown(
+            "println error".to_string(),
+            Loc::Unknown,
+        ));
+    }
+
+    Ok(Node::new(Val::Nil, Loc::Unknown))
 }
