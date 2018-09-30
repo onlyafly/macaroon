@@ -7,6 +7,7 @@ pub enum SyntaxError {
     UnparsableNumber(String),
     UnparsableCharacter(String),
     UnrecognizedToken(Token),
+    ScanningError(String), //TODO: once scanner returns a Result, the scanner can return actual errors
 }
 
 impl SyntaxError {
@@ -16,6 +17,7 @@ impl SyntaxError {
             UnparsableNumber(s) => format!("Unparsable number literal: {}", s),
             UnparsableCharacter(s) => format!("Unparsable character literal: {}", s),
             UnrecognizedToken(t) => format!("Unrecognized token: {}", t.display()),
+            ScanningError(s) => format!("{}", s),
         }
     }
 }

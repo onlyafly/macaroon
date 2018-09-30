@@ -34,17 +34,17 @@ impl RuntimeError {
             CannotUpdateUndefinedName(name, _) => {
                 format!("Cannot update an undefined name: {}", name)
             }
-            UnableToEvalValue(value, _) => format!("Unable to eval value: {}", value.display()),
+            UnableToEvalValue(val, _) => format!("Unable to eval val: {}", val.display()),
             UnableToEvalListStartingWith(name, _) => {
                 format!("Unable to eval list starting with: {}", name)
             }
             UnexpectedValue(expected_string, got_value, _) => format!(
-                "Unexpected value. Expected {} but got: {}",
+                "Unexpected val. Expected {} but got: {}",
                 expected_string,
                 got_value.display(),
             ),
-            CannotUpdateElementInValue(value, _) => {
-                format!("Cannot update an element in: {}", value.display())
+            CannotUpdateElementInValue(val, _) => {
+                format!("Cannot update an element in: {}", val.display())
             }
             IndexOutOfBounds { index, len, .. } => {
                 format!("Index of {} is out of bounds of length {}", index, len)
@@ -63,9 +63,9 @@ impl RuntimeError {
             ProcArgsDoNotMatchParams(_, _) => {
                 format!("Arguments passed to procedure do not match parameter list")
             }
-            CondUnmatchedClause(value, _) => format!(
+            CondUnmatchedClause(val, _) => format!(
                 "'cond' expects each clause to have a test and a body, but found: {}",
-                value.display()
+                val.display()
             ),
         }
     }

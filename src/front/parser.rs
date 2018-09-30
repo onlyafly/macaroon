@@ -30,29 +30,29 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse_value(&mut self, errors: &mut WrappedSyntaxErrors) -> Node {
-        let value = match self.current_token {
+        let val = match self.current_token {
             Token::Number(ref s) => {
                 match s.parse::<i32>() {
                     Ok(number) => Val::Number(number),
                     Err(_) => {
                         self.register_error(errors, SyntaxError::UnparsableNumber(s.to_string()));
 
-                        // Recover from error by continuing with a dummy value
+                        // Recover from error by continuing with a dummy val
                         Val::Number(0)
                     }
                 }
             }
-            Token::Character { ref value, ref raw } => {
+            Token::Character { ref val, ref raw } => {
                 match raw.as_ref() {
                     r"\newline" => Val::Character("\n".to_string()),
-                    x if x.len() == 2 => Val::Character(value.to_string()),
+                    x if x.len() == 2 => Val::Character(val.to_string()),
                     x => {
                         self.register_error(
                             errors,
                             SyntaxError::UnparsableCharacter(x.to_string()),
                         );
 
-                        // Recover from error by continuing with a dummy value
+                        // Recover from error by continuing with a dummy val
                         Val::Error(x.to_string())
                     }
                 }
@@ -82,6 +82,11 @@ impl<'a> Parser<'a> {
 
                 Val::List { children }
             }
+            Token::Error(ref s) => {
+                self.register_error(errors, SyntaxError::ScanningError(s.to_string()));
+                // Try to recover by pushing an error Val
+                Val::Error(s.to_string())
+            }
             ref t => {
                 self.register_error(errors, SyntaxError::UnrecognizedToken(t.clone()));
                 // Try to recover by pushing an error Val
@@ -89,7 +94,7 @@ impl<'a> Parser<'a> {
             }
         };
 
-        self.make_node(value)
+        self.make_node(val)
     }
 
     fn register_error(&self, errors: &mut WrappedSyntaxErrors, e: SyntaxError) {

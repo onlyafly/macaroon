@@ -1,4 +1,4 @@
-use ast::{Node, PrimitiveObj, Val};
+use ast::*;
 use back::env::{Env, SmartEnv};
 use back::primitives::eval_primitive;
 use back::runtime_error::{check_args, RuntimeError};
@@ -11,31 +11,28 @@ use std::rc::Rc;
 type EvalResult = Result<Node, RuntimeError>;
 
 pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
+    use ast::Val::*;
     match node {
         Node {
-            value: Val::List { .. },
-            ..
+            val: List { .. }, ..
         } => Ok(trampoline::bounce(eval_list, env, node)),
         Node {
-            value: Val::Symbol(name),
+            val: Symbol(name),
             loc,
         } => match env.borrow_mut().get(&name) {
             Some(node) => Ok(trampoline::finish(node)),
             None => Err(RuntimeError::UndefinedName(name, loc)),
         },
         Node {
-            value: Val::Number(..),
-            ..
+            val: Number(..), ..
         } => Ok(trampoline::finish(node)),
         Node {
-            value: Val::Character(..),
-            ..
+            val: Character(..), ..
         } => Ok(trampoline::finish(node)),
         Node {
-            value: Val::StringVal(..),
-            ..
+            val: StringVal(..), ..
         } => Ok(trampoline::finish(node)),
-        _ => Err(RuntimeError::UnableToEvalValue(node.value, node.loc)),
+        _ => Err(RuntimeError::UnableToEvalValue(node.val, node.loc)),
     }
 }
 
@@ -61,7 +58,7 @@ pub fn eval_each_node_for_single_output(
 
 fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
     let loc = node.loc;
-    let mut args = match node.value {
+    let mut args = match node.val {
         Val::List { children } => children,
         _ => panic!("expected list"),
     };
@@ -71,7 +68,7 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
     }
 
     let head_node = args.remove(0);
-    let head_value = head_node.value;
+    let head_value = head_node.val;
 
     match head_value {
         Val::Symbol(ref name) => match name.as_ref() {
@@ -130,7 +127,7 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
         Node::new(head_value, loc.clone()),
     )?;
 
-    match evaled_head.value {
+    match evaled_head.val {
         Val::Function { .. } => Ok(trampoline::bounce_with_nodes(
             eval_invoke_proc,
             Rc::clone(&env),
@@ -164,7 +161,7 @@ fn eval_invoke_proc(
     unevaled_args: Vec<Node>,
 ) -> ContinuationResult {
     let loc = proc.loc;
-    match proc.value {
+    match proc.val {
         Val::Function {
             params,
             body,
@@ -188,7 +185,7 @@ fn eval_invoke_proc(
                     Some(n) => n,
                 };
 
-                match param.value {
+                match param.val {
                     Val::Symbol(name) => {
                         lexical_env.borrow_mut().define(&name, evaled_arg)?;
                     }

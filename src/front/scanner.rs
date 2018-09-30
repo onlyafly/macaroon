@@ -118,14 +118,16 @@ impl<'a> Scanner<'a> {
     fn scan_string_literal(&mut self) -> Token {
         let mut buffer = String::new();
 
-        while let Some(c) = self.read_char() {
-            if c == '"' {
-                break;
+        loop {
+            match self.read_char() {
+                Some('"') => return Token::StringLiteral(buffer),
+                Some(c) => buffer.push(c),
+                None => break,
             }
-            buffer.push(c);
         }
 
-        Token::StringLiteral(buffer)
+        //TODO: Change return type to Result
+        Token::Error("Unterminated string".to_string())
     }
 
     fn scan_character_literal(&mut self) -> Token {
@@ -146,7 +148,7 @@ impl<'a> Scanner<'a> {
 
         if buffer.len() > 0 {
             Token::Character {
-                value: buffer.to_string(),
+                val: buffer.to_string(),
                 raw: format!("\\{}", buffer),
             }
         } else {
@@ -303,7 +305,7 @@ mod tests {
             s.next(),
             Token::Character {
                 raw: r"\a".to_string(),
-                value: "a".to_string()
+                val: "a".to_string()
             }
         );
         assert_eq!(s.next(), Token::EndOfFile);

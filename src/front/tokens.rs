@@ -10,7 +10,7 @@ pub enum Token {
     StringLiteral(String),
     Caret,
     SingleQuote,
-    Character { value: String, raw: String },
+    Character { val: String, raw: String },
 }
 
 impl Token {

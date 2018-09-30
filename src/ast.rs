@@ -82,13 +82,13 @@ impl PartialOrd for Val {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct Node {
-    pub value: Val,
+    pub val: Val,
     pub loc: Loc,
 }
 
 impl Node {
-    pub fn new(value: Val, loc: Loc) -> Self {
-        Node { value, loc }
+    pub fn new(val: Val, loc: Loc) -> Self {
+        Node { val, loc }
     }
 }
 
@@ -96,7 +96,7 @@ impl Deref for Node {
     type Target = Val;
 
     fn deref(&self) -> &Val {
-        &self.value
+        &self.val
     }
 }
 

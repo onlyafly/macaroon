@@ -115,7 +115,7 @@ fn eval_primitive_equal(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Run
     let a = args.remove(0);
     let b = args.remove(0);
 
-    let output = a.value == b.value;
+    let output = a.val == b.val;
 
     Ok(Node::new(Val::Boolean(output), a.loc))
 }
@@ -124,7 +124,7 @@ fn eval_primitive_less_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node,
     let a = args.remove(0);
     let b = args.remove(0);
 
-    let output = a.value < b.value;
+    let output = a.val < b.val;
 
     Ok(Node::new(Val::Boolean(output), a.loc))
 }
@@ -133,7 +133,7 @@ fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<No
     let a = args.remove(0);
     let b = args.remove(0);
 
-    let output = a.value > b.value;
+    let output = a.val > b.val;
 
     Ok(Node::new(Val::Boolean(output), a.loc))
 }

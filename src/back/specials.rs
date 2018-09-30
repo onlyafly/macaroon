@@ -30,14 +30,14 @@ pub fn eval_special_quote(mut args: Vec<Node>) -> ContinuationResult {
 pub fn eval_special_def(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
     let name_node = args.remove(0);
 
-    if let Val::Symbol(name) = name_node.value {
+    if let Val::Symbol(name) = name_node.val {
         let value_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
         env.borrow_mut().define(&name, value_node)?;
         Ok(trampoline::finish(Node::new(Val::Nil, name_node.loc))) // TODO: should be nil
     } else {
         Err(RuntimeError::UnexpectedValue(
             "symbol".to_string(),
-            name_node.value,
+            name_node.val,
             name_node.loc,
         ))
     }
@@ -46,7 +46,7 @@ pub fn eval_special_def(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
 pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
     let bindings_node = args.remove(0);
 
-    match bindings_node.value {
+    match bindings_node.val {
         Val::List {
             children: mut bindings_vec,
         } => {
@@ -57,7 +57,7 @@ pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
                 let value_node =
                     trampoline::run(eval::eval_node, Rc::clone(&env), bindings_vec.remove(0))?;
 
-                let name = match name_node.value {
+                let name = match name_node.val {
                     Val::Symbol(name) => name,
                     v => {
                         return Err(RuntimeError::UnexpectedValue(
@@ -79,7 +79,7 @@ pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
         }
         _ => Err(RuntimeError::UnexpectedValue(
             "let".to_string(),
-            bindings_node.value,
+            bindings_node.val,
             bindings_node.loc,
         )),
     }
@@ -87,17 +87,17 @@ pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
 
 pub fn eval_special_update(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
     let name_node = args.remove(0);
-    let value = name_node.value;
+    let val = name_node.val;
     let loc = name_node.loc;
 
-    if let Val::Symbol(name) = value {
-        let value = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
-        env.borrow_mut().update(&name, value)?;
+    if let Val::Symbol(name) = val {
+        let val = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+        env.borrow_mut().update(&name, val)?;
         Ok(trampoline::finish(Node::new(Val::Nil, loc)))
     } else {
         Err(RuntimeError::UnexpectedValue(
             "symbol".to_string(),
-            value,
+            val,
             loc,
         ))
     }
@@ -107,16 +107,16 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
     let name_node = args.remove(0);
     let loc = name_node.loc;
 
-    if let Val::Symbol(name) = name_node.value {
+    if let Val::Symbol(name) = name_node.val {
         let mut index_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
-        let index = index_node.value.as_host_number()? as usize;
+        let index = index_node.val.as_host_number()? as usize;
 
         let newval_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
 
         let mut mutable_env = env.borrow_mut();
 
         if let Some(entry) = mutable_env.remove(&name) {
-            match entry.value {
+            match entry.val {
                 Val::List { mut children } => {
                     //TODO: get num from index_value instead of using zero
 
@@ -132,7 +132,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
                     mutable_env.update(&name, Node::new(Val::List { children }, loc.clone()))?;
                 }
                 _ => {
-                    return Err(RuntimeError::CannotUpdateElementInValue(entry.value, loc));
+                    return Err(RuntimeError::CannotUpdateElementInValue(entry.val, loc));
                 }
             }
         }
@@ -141,7 +141,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
     } else {
         Err(RuntimeError::UnexpectedValue(
             "symbol".to_string(),
-            name_node.value,
+            name_node.val,
             loc,
         ))
     }
@@ -167,7 +167,7 @@ pub fn eval_special_cond(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResu
             1 => {
                 let unmatched_node = args.remove(0);
                 return Err(RuntimeError::CondUnmatchedClause(
-                    unmatched_node.value,
+                    unmatched_node.val,
                     unmatched_node.loc,
                 ));
             }
@@ -186,7 +186,7 @@ pub fn eval_special_cond(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResu
 pub fn eval_special_for(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
     let name_node = args.remove(0);
     let loc = name_node.loc;
-    let name = match name_node.value {
+    let name = match name_node.val {
         Val::Symbol(name) => name,
         v => return Err(RuntimeError::UnexpectedValue("symbol".to_string(), v, loc)),
     };
@@ -224,7 +224,7 @@ pub fn eval_special_fn(lexical_env: SmartEnv, mut args: Vec<Node>) -> Continuati
     let param_list = args.remove(0);
     let body = args.remove(0); // TODO: note that the body is only one node currently
 
-    match param_list.value {
+    match param_list.val {
         Val::List { children } => Ok(trampoline::finish(Node::new(
             Val::Function {
                 params: children,
@@ -235,7 +235,7 @@ pub fn eval_special_fn(lexical_env: SmartEnv, mut args: Vec<Node>) -> Continuati
         ))),
         _ => Err(RuntimeError::UnexpectedValue(
             "list of parameters".to_string(),
-            param_list.value,
+            param_list.val,
             param_list.loc,
         )),
     }
