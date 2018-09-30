@@ -3,16 +3,27 @@ mod back;
 mod front;
 mod loc;
 
+use ast::WriterObj;
 use back::env::SmartEnv;
 use loc::Loc;
+use std::io;
+
+fn get_stdout() -> Box<io::Write> {
+    Box::new(io::stdout())
+}
 
 pub fn interpret(filename: &str, input: &str) -> String {
     let parse_result = front::parse(filename, input);
 
+    let writer_obj = WriterObj {
+        name: "stdout".to_string(),
+        get_writer: get_stdout,
+    };
+
     match parse_result {
         Ok(nodes) => {
             let mut env: SmartEnv;
-            let root_env_result = back::create_root_env();
+            let root_env_result = back::create_root_env(writer_obj);
             match root_env_result {
                 Ok(root_env) => env = root_env,
                 Err(runtime_error) => {

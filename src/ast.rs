@@ -4,6 +4,7 @@ use loc::Loc;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::io;
 use std::ops::Deref;
 
 #[derive(PartialEq, Debug, Clone)]
@@ -24,6 +25,7 @@ pub enum Val {
     List {
         children: Vec<Node>,
     },
+    Writer(WriterObj),
 }
 
 impl Display for Val {
@@ -49,6 +51,7 @@ impl Display for Val {
             Val::Boolean(true) => write!(f, "true"),
             Val::Function { .. } => write!(f, "#function"),
             Val::Primitive(..) => write!(f, "#primitive"),
+            Val::Writer(..) => write!(f, "#writer"),
         }
     }
 }
@@ -109,4 +112,22 @@ pub struct PrimitiveObj {
     pub name: String,
     pub min_arity: isize,
     pub max_arity: isize,
+}
+
+#[derive(Clone)]
+pub struct WriterObj {
+    pub name: String,
+    pub get_writer: fn() -> Box<dyn io::Write>,
+}
+
+impl PartialEq for WriterObj {
+    fn eq(&self, other: &WriterObj) -> bool {
+        self.name == other.name
+    }
+}
+
+impl fmt::Debug for WriterObj {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "#writer")
+    }
 }

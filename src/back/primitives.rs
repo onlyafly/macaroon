@@ -142,8 +142,17 @@ fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<No
     Ok(Node::new(Val::Boolean(output), a.loc))
 }
 
-fn eval_primitive_println(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
-    let mut w = io::stdout();
+fn eval_primitive_println(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let mut w = match env.borrow().get("*writer*") {
+        Some(node) => match node.val {
+            Val::Writer(writer_obj) => {
+                let f = writer_obj.get_writer;
+                f()
+            }
+            _ => panic!("expected writer value"),
+        },
+        _ => panic!("expected writer value"),
+    };
 
     while args.len() > 0 {
         let n = args.remove(0);
