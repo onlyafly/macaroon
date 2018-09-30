@@ -117,7 +117,7 @@ pub struct PrimitiveObj {
 #[derive(Clone)]
 pub struct WriterObj {
     pub name: String,
-    pub get_writer: fn() -> Box<dyn io::Write>,
+    pub get_host_writer: fn() -> Box<dyn io::Write>,
 }
 
 impl PartialEq for WriterObj {

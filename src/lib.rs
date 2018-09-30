@@ -17,7 +17,7 @@ pub fn interpret(filename: &str, input: &str) -> String {
 
     let writer_obj = WriterObj {
         name: "stdout".to_string(),
-        get_writer: get_stdout,
+        get_host_writer: get_stdout,
     };
 
     match parse_result {
