@@ -3,12 +3,15 @@ extern crate colored;
 extern crate quivi;
 
 use colored::*;
+use quivi::ast::WriterObj;
+use std::cell::RefCell;
 use std::error::Error;
 use std::ffi::OsStr;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
+use std::rc::Rc;
 
 #[test]
 fn test_suite() {
@@ -24,8 +27,16 @@ fn test_suite() {
 
                 if Some(OsStr::new("q")) == path.extension() {
                     let input_contents = read_text_contents(&path);
+
+                    let buffer = Rc::new(RefCell::new(Vec::<u8>::new()));
+                    let w = WriterObj::Buffer(Rc::clone(&buffer));
+
                     let actual_output =
-                        quivi::interpret(path.to_str().unwrap(), input_contents.trim_right());
+                        quivi::interpret(path.to_str().unwrap(), input_contents.trim_right(), w);
+
+                    let raw_buffer = buffer.borrow_mut().to_vec();
+                    let buffer_output = String::from_utf8(raw_buffer).expect("Not UTF-8");
+                    let total_output = format!("{}{}", buffer_output, actual_output);
 
                     if let Some(output_file_stem) = path.file_stem() {
                         let case: String = output_file_stem.to_str().unwrap().to_owned();
@@ -33,8 +44,8 @@ fn test_suite() {
                         let output_path = path.parent().unwrap().join(case.clone() + ".out");
                         let expected_output = read_text_contents(&output_path);
 
-                        if expected_output.trim_right() != actual_output.trim_right() {
-                            failures.push((testsuite_case_name, expected_output, actual_output));
+                        if expected_output.trim_right() != total_output.trim_right() {
+                            failures.push((testsuite_case_name, expected_output, total_output));
                         }
                     }
                 }

@@ -1,10 +1,13 @@
 /* Primitives are build-in functions */
 
+use ast::WriterObj;
 use ast::{Node, PrimitiveObj, Val};
 use back::env::{Env, SmartEnv};
 use back::runtime_error::{check_args, RuntimeError};
 use loc::Loc;
 use std::cell::RefMut;
+use std::io;
+use std::io::Write;
 
 pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     let mut menv = env.borrow_mut();
@@ -141,15 +144,18 @@ fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<No
 }
 
 fn eval_primitive_println(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
-    let writer_obj = match env.borrow().get("*writer*") {
+    let mut w: Box<io::Write> = match env.borrow().get("*writer*") {
         Some(node) => match node.val {
-            Val::Writer(writer_obj) => writer_obj,
+            Val::Writer(WriterObj::Standard) => Box::new(io::stdout()),
+            Val::Writer(WriterObj::Buffer(b)) => {
+                let mut rm_buffer = b.borrow_mut();
+                write!(rm_buffer, "{}", "dude");
+                Box::new(io::stdout()) //FIXME: just to satifsy the checker right now
+            }
             _ => panic!("expected writer value"),
         },
         _ => panic!("expected writer value"),
     };
-
-    let mut w = writer_obj.mutable_host_writer();
 
     while args.len() > 0 {
         let n = args.remove(0);

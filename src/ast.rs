@@ -117,11 +117,14 @@ pub struct PrimitiveObj {
     pub max_arity: isize,
 }
 
-pub struct WriterObj {
-    pub name: String,
-    pub host_writer: Rc<RefCell<dyn io::Write>>,
+#[derive(PartialEq, Debug, Clone)]
+pub enum WriterObj {
+    Sink,
+    Standard,
+    Buffer(Rc<RefCell<Vec<u8>>>),
 }
 
+/*
 impl WriterObj {
     pub fn mutable_host_writer(&self) -> RefMut<dyn io::Write> {
         self.host_writer.borrow_mut()
@@ -148,3 +151,4 @@ impl Clone for WriterObj {
         }
     }
 }
+*/

@@ -1,4 +1,4 @@
-mod ast;
+pub mod ast;
 mod back;
 mod front;
 mod loc;
@@ -10,18 +10,13 @@ use std::cell::RefCell;
 use std::io;
 use std::rc::Rc;
 
-pub fn interpret(filename: &str, input: &str) -> String {
+pub fn interpret(filename: &str, input: &str, writer: WriterObj) -> String {
     let parse_result = front::parse(filename, input);
-
-    let writer_obj = WriterObj {
-        name: "stdout".to_string(),
-        host_writer: Rc::new(RefCell::new(io::stdout())),
-    };
 
     match parse_result {
         Ok(nodes) => {
             let mut env: SmartEnv;
-            let root_env_result = back::create_root_env(writer_obj);
+            let root_env_result = back::create_root_env(writer);
             match root_env_result {
                 Ok(root_env) => env = root_env,
                 Err(runtime_error) => {
