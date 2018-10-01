@@ -20,6 +20,7 @@ pub enum RuntimeError {
     ArgCountOutOfRange(String, isize, isize, usize, Loc),
     ProcArgsDoNotMatchParams(String, Loc),
     CondUnmatchedClause(Val, Loc),
+    ApplicationPanic(String, Loc),
 }
 
 impl RuntimeError {
@@ -64,6 +65,7 @@ impl RuntimeError {
                 "'cond' expects each clause to have a test and a body, but found: {}",
                 val
             ),
+            ApplicationPanic(s, _) => format!("Application Panic: {}", s),
         }
     }
 
@@ -86,6 +88,7 @@ impl RuntimeError {
             ArgCountOutOfRange(.., loc) => loc.clone(),
             ProcArgsDoNotMatchParams(.., loc) => loc.clone(),
             CondUnmatchedClause(.., loc) => loc.clone(),
+            ApplicationPanic(.., loc) => loc.clone(),
         }
     }
 }

@@ -6,8 +6,6 @@ use back::env::{Env, SmartEnv};
 use back::runtime_error::{check_args, RuntimeError};
 use loc::Loc;
 use std::cell::RefMut;
-use std::io;
-use std::io::Write;
 
 pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     let mut menv = env.borrow_mut();
@@ -21,6 +19,7 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "=", 2, 2)?; // TODO: should be 2, -1
     define_primitive(&mut menv, "<", 2, 2)?;
     define_primitive(&mut menv, ">", 2, 2)?;
+    define_primitive(&mut menv, "panic", 0, -1)?;
     define_primitive(&mut menv, "println", 0, -1)?;
     define_primitive(&mut menv, "not", 1, 1)?;
 
@@ -67,6 +66,7 @@ pub fn eval_primitive(
         "<" => eval_primitive_less_than,
         ">" => eval_primitive_greater_than,
         "not" => eval_primitive_not,
+        "panic" => eval_primitive_panic,
         "println" => eval_primitive_println,
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
@@ -143,32 +143,38 @@ fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<No
     Ok(Node::new(Val::Boolean(output), a.loc))
 }
 
-fn eval_primitive_println(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
-    let mut w: Box<io::Write> = match env.borrow().get("*writer*") {
+fn eval_primitive_panic(_env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let mut v = Vec::new();
+    let mut loc = Loc::Unknown;
+    for arg in args {
+        loc = arg.loc.clone();
+        v.push(arg.as_print_friendly_string());
+    }
+    let output = format!("{}\n", &v.join(" "));
+
+    Err(RuntimeError::ApplicationPanic(output, loc))
+}
+
+fn eval_primitive_println(env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let mut v = Vec::new();
+    for arg in args {
+        v.push(arg.as_print_friendly_string());
+    }
+    let output = format!("{}\n", &v.join(" "));
+
+    match env.borrow().get("*writer*") {
         Some(node) => match node.val {
-            Val::Writer(WriterObj::Standard) => Box::new(io::stdout()),
+            Val::Writer(WriterObj::Standard) => {
+                print!("{}", output);
+            }
             Val::Writer(WriterObj::Buffer(b)) => {
+                use std::io::Write;
                 let mut rm_buffer = b.borrow_mut();
-                write!(rm_buffer, "{}", "dude");
-                Box::new(io::stdout()) //FIXME: just to satifsy the checker right now
+                write!(&mut rm_buffer, "{}", output).expect("unable to write to buffer");
             }
             _ => panic!("expected writer value"),
         },
         _ => panic!("expected writer value"),
-    };
-
-    while args.len() > 0 {
-        let n = args.remove(0);
-        if let Err(_) = write!(&mut w, "{}", n.val) {
-            return Err(RuntimeError::Unknown("println error".to_string(), n.loc));
-        }
-    }
-
-    if let Err(_) = write!(&mut w, "\n") {
-        return Err(RuntimeError::Unknown(
-            "println error".to_string(),
-            Loc::Unknown,
-        ));
     }
 
     Ok(Node::new(Val::Nil, Loc::Unknown))

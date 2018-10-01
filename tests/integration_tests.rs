@@ -36,11 +36,7 @@ fn test_suite() {
 
                     let raw_buffer = buffer.borrow_mut().clone();
                     let buffer_output = String::from_utf8(raw_buffer).expect("Not UTF-8");
-                    let total_output = if buffer_output.len() > 0 {
-                        format!("{}\n{}", buffer_output, interpreter_output)
-                    } else {
-                        interpreter_output
-                    };
+                    let total_output = format!("{}{}", buffer_output, interpreter_output);
 
                     if let Some(output_file_stem) = path.file_stem() {
                         let case: String = output_file_stem.to_str().unwrap().to_owned();

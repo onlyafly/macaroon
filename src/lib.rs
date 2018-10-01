@@ -6,9 +6,6 @@ mod loc;
 use ast::WriterObj;
 use back::env::SmartEnv;
 use loc::Loc;
-use std::cell::RefCell;
-use std::io;
-use std::rc::Rc;
 
 pub fn interpret(filename: &str, input: &str, writer: WriterObj) -> String {
     let parse_result = front::parse(filename, input);

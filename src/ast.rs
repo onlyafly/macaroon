@@ -2,11 +2,9 @@ use back::env::SmartEnv;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 use std::cell::RefCell;
-use std::cell::RefMut;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::io;
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -60,6 +58,13 @@ impl Display for Val {
 }
 
 impl Val {
+    pub fn as_print_friendly_string(&self) -> String {
+        match self {
+            Val::StringVal(ref s) => format!("{}", s),
+            v => format!("{}", v), // Use Display fmt for everything else
+        }
+    }
+
     pub fn as_host_number(&self) -> Result<i32, RuntimeError> {
         match self {
             &Val::Number(i) => Ok(i),
@@ -123,32 +128,3 @@ pub enum WriterObj {
     Standard,
     Buffer(Rc<RefCell<Vec<u8>>>),
 }
-
-/*
-impl WriterObj {
-    pub fn mutable_host_writer(&self) -> RefMut<dyn io::Write> {
-        self.host_writer.borrow_mut()
-    }
-}
-
-impl PartialEq for WriterObj {
-    fn eq(&self, other: &WriterObj) -> bool {
-        self.name == other.name
-    }
-}
-
-impl fmt::Debug for WriterObj {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "#writer")
-    }
-}
-
-impl Clone for WriterObj {
-    fn clone(&self) -> WriterObj {
-        WriterObj {
-            name: self.name.clone(),
-            host_writer: Rc::clone(&self.host_writer),
-        }
-    }
-}
-*/
