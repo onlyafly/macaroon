@@ -31,12 +31,16 @@ fn test_suite() {
                     let buffer = Rc::new(RefCell::new(Vec::<u8>::new()));
                     let w = WriterObj::Buffer(Rc::clone(&buffer));
 
-                    let actual_output =
+                    let interpreter_output =
                         quivi::interpret(path.to_str().unwrap(), input_contents.trim_right(), w);
 
-                    let raw_buffer = buffer.borrow_mut().to_vec();
+                    let raw_buffer = buffer.borrow_mut().clone();
                     let buffer_output = String::from_utf8(raw_buffer).expect("Not UTF-8");
-                    let total_output = format!("{}{}", buffer_output, actual_output);
+                    let total_output = if buffer_output.len() > 0 {
+                        format!("{}\n{}", buffer_output, interpreter_output)
+                    } else {
+                        interpreter_output
+                    };
 
                     if let Some(output_file_stem) = path.file_stem() {
                         let case: String = output_file_stem.to_str().unwrap().to_owned();
