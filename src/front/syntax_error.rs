@@ -10,6 +10,7 @@ pub enum SyntaxError {
     UnrecognizedCharacterInInput(char, Loc),
     UnterminatedMultilineComment(Loc),
     UnterminatedStringLiteral(Loc),
+    UnbalancedParens(Loc),
 }
 
 impl SyntaxError {
@@ -27,6 +28,7 @@ impl SyntaxError {
             }
             UnterminatedMultilineComment(..) => "Unterminated multiline comment".to_string(),
             UnterminatedStringLiteral(..) => "Unterminated string literal".to_string(),
+            UnbalancedParens(..) => "Unbalanced parentheses".to_string(),
         }
     }
 
@@ -40,6 +42,7 @@ impl SyntaxError {
             UnrecognizedCharacterInInput(_, l) => l.clone(),
             UnterminatedMultilineComment(l) => l.clone(),
             UnterminatedStringLiteral(l) => l.clone(),
+            UnbalancedParens(l) => l.clone(),
         }
     }
 }

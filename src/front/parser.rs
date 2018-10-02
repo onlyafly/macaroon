@@ -25,14 +25,15 @@ impl<'a> Parser<'a> {
     }
 
     pub fn next_token(&mut self, errors: &mut Vec<SyntaxError>) {
-        self.current_loc = self.scanner.loc();
+        // ORDERING: Location must be updated after the next token is scanned
         self.current_token = match self.scanner.next() {
             Ok(t) => t,
             Err(e) => {
                 errors.push(e);
                 Token::Error
             }
-        }
+        };
+        self.current_loc = self.scanner.loc();
     }
 
     pub fn parse_value(&mut self, errors: &mut Vec<SyntaxError>) -> Node {
@@ -82,20 +83,26 @@ impl<'a> Parser<'a> {
                 self.next_token(errors);
                 let mut children = Vec::<Node>::new();
 
-                while self.current_token != Token::EndOfFile
-                    && self.current_token != Token::RightParen
-                {
+                while self.current_token != Token::RightParen {
+                    if self.current_token == Token::EndOfFile {
+                        errors.push(SyntaxError::UnbalancedParens(self.loc()));
+                        return self.make_node(Val::Error(String::new())); // Try to recover by pushing an error Val
+                    }
+
                     children.push(self.parse_value(errors));
                     self.next_token(errors);
                 }
 
                 Val::List { children }
             }
+            Token::RightParen => {
+                errors.push(SyntaxError::UnbalancedParens(self.loc()));
+                Val::Error(")".to_string()) // Try to recover by pushing an error Val
+            }
             Token::Error => Val::Error(String::new()),
             ref t => {
                 errors.push(SyntaxError::UnrecognizedToken(t.clone(), self.loc()));
-                // Try to recover by pushing an error Val
-                Val::Error(t.display())
+                Val::Error(t.display()) // Try to recover by pushing an error Val
             }
         };
 
