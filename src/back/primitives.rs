@@ -157,7 +157,9 @@ fn eval_primitive_panic(_env: SmartEnv, args: Vec<Node>) -> Result<Node, Runtime
 
 fn eval_primitive_println(env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {
     let mut v = Vec::new();
+    let mut loc = Loc::Unknown;
     for arg in args {
+        loc = arg.loc.clone();
         v.push(arg.as_print_friendly_string());
     }
     let output = format!("{}\n", &v.join(" "));
@@ -172,10 +174,10 @@ fn eval_primitive_println(env: SmartEnv, args: Vec<Node>) -> Result<Node, Runtim
                 let mut rm_buffer = b.borrow_mut();
                 write!(&mut rm_buffer, "{}", output).expect("unable to write to buffer");
             }
-            _ => panic!("expected writer value"),
+            v => return Err(RuntimeError::UnexpectedValue("writer".to_string(), v, loc)),
         },
         _ => panic!("expected writer value"),
     }
 
-    Ok(Node::new(Val::Nil, Loc::Unknown))
+    Ok(Node::new(Val::Nil, loc))
 }

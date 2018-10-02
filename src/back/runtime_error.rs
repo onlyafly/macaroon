@@ -40,7 +40,7 @@ impl RuntimeError {
                 format!("Unable to eval list starting with: {}", name)
             }
             UnexpectedValue(expected_string, got_value, _) => format!(
-                "Unexpected val. Expected {} but got: {}",
+                "Unexpected value. Expected {} but got: {}",
                 expected_string, got_value,
             ),
             CannotUpdateElementInValue(val, _) => format!("Cannot update an element in: {}", val),
