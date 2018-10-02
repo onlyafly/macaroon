@@ -17,15 +17,9 @@ pub enum Val {
     StringVal(String),
     Symbol(String),
     Boolean(bool),
-    Function {
-        params: Vec<Node>,
-        body: Box<Node>,
-        lexical_env: SmartEnv,
-    },
+    Function(FunctionObj),
     Primitive(PrimitiveObj),
-    List {
-        children: Vec<Node>,
-    },
+    List { children: Vec<Node> },
     Writer(WriterObj),
 }
 
@@ -113,6 +107,13 @@ impl Deref for Node {
     fn deref(&self) -> &Val {
         &self.val
     }
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct FunctionObj {
+    pub params: Vec<Node>,
+    pub body: Box<Node>,
+    pub lexical_env: SmartEnv,
 }
 
 #[derive(PartialEq, Debug, Clone)]

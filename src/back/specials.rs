@@ -1,4 +1,4 @@
-use ast::{Node, Val};
+use ast::{FunctionObj, Node, Val};
 use back::env::{Env, SmartEnv};
 use back::eval;
 use back::runtime_error::RuntimeError;
@@ -231,11 +231,11 @@ pub fn eval_special_fn(lexical_env: SmartEnv, mut args: Vec<Node>) -> Continuati
 
     match param_list.val {
         Val::List { children } => Ok(trampoline::finish(Node::new(
-            Val::Function {
+            Val::Function(FunctionObj {
                 params: children,
                 body: Box::new(body),
                 lexical_env: Rc::clone(&lexical_env),
-            },
+            }),
             param_list.loc,
         ))),
         _ => Err(RuntimeError::UnexpectedValue(

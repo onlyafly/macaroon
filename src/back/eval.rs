@@ -128,19 +128,29 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
     )?;
 
     match evaled_head.val {
-        Val::Function { .. } => Ok(trampoline::bounce_with_nodes(
-            eval_invoke_proc,
-            Rc::clone(&env),
-            evaled_head,
-            args,
-        )),
-        Val::Primitive(obj) => {
-            let out = eval_invoke_primitive(obj, Rc::clone(&env), args, loc)?;
-            Ok(trampoline::finish(out))
-        }
+        Val::Function(..) | Val::Primitive(..) => eval_invoke_procedure(env, evaled_head, args),
         _ => Err(RuntimeError::UnableToEvalListStartingWith(
             format!("{}", evaled_head.val),
             loc,
+        )),
+    }
+}
+
+pub fn eval_invoke_procedure(env: SmartEnv, head: Node, args: Vec<Node>) -> ContinuationResult {
+    match head.val {
+        Val::Function(..) => Ok(trampoline::bounce_with_nodes(
+            eval_invoke_function,
+            Rc::clone(&env),
+            head,
+            args,
+        )),
+        Val::Primitive(obj) => {
+            let out = eval_invoke_primitive(obj, Rc::clone(&env), args, head.loc)?;
+            Ok(trampoline::finish(out))
+        }
+        _ => Err(RuntimeError::CannotInvokeNonProcedure(
+            head.val.to_string(),
+            head.loc,
         )),
     }
 }
@@ -155,47 +165,51 @@ fn eval_invoke_primitive(
     eval_primitive(obj, dynamic_env, evaled_args, loc)
 }
 
-fn eval_invoke_proc(
+pub fn eval_invoke_function(
     dynamic_env: SmartEnv,
-    proc: Node,
+    fnode: Node,
     unevaled_args: Vec<Node>,
 ) -> ContinuationResult {
-    let loc = proc.loc;
-    match proc.val {
-        Val::Function {
-            params,
-            body,
-            lexical_env: parent_lexical_env,
-        } => {
-            // Validate params
-            if unevaled_args.len() != params.len() {
-                return Err(RuntimeError::ProcArgsDoNotMatchParams(String::new(), loc));
-            }
+    let loc = fnode.loc;
 
-            // Create the lexical environment based on the procedure's lexical parent
-            let lexical_env = Env::new(Some(parent_lexical_env));
+    if let Val::Function(fobj) = fnode.val {
+        let params = fobj.params;
+        let body = fobj.body;
+        let parent_lexical_env = fobj.lexical_env;
 
-            // Prepare the arguments for evaluation
-            let mut evaled_args = eval_each_node(dynamic_env, unevaled_args)?;
-
-            // Map arguments to parameters
-            for param in params {
-                let evaled_arg = match evaled_args.pop() {
-                    None => return Err(RuntimeError::Unknown("not enough args".to_string(), loc)),
-                    Some(n) => n,
-                };
-
-                match param.val {
-                    Val::Symbol(name) => {
-                        lexical_env.borrow_mut().define(&name, evaled_arg)?;
-                    }
-                    _ => return Err(RuntimeError::Unknown("param not a symbol".to_string(), loc)),
-                }
-            }
-
-            // Evaluate the application of the procedure
-            Ok(trampoline::bounce(eval_node, lexical_env, *body))
+        // Validate params
+        if unevaled_args.len() != params.len() {
+            return Err(RuntimeError::ProcArgsDoNotMatchParams(String::new(), loc));
         }
-        _ => panic!("Cannot invoke a non-procedure"),
+
+        // Create the lexical environment based on the procedure's lexical parent
+        let lexical_env = Env::new(Some(parent_lexical_env));
+
+        // Prepare the arguments for evaluation
+        let mut evaled_args = eval_each_node(dynamic_env, unevaled_args)?;
+
+        // Map arguments to parameters
+        for param in params {
+            let evaled_arg = if evaled_args.len() > 0 {
+                evaled_args.remove(0)
+            } else {
+                return Err(RuntimeError::Unknown("not enough args".to_string(), loc));
+            };
+
+            match param.val {
+                Val::Symbol(name) => {
+                    lexical_env.borrow_mut().define(&name, evaled_arg)?;
+                }
+                _ => return Err(RuntimeError::Unknown("param not a symbol".to_string(), loc)),
+            }
+        }
+
+        // Evaluate the application of the procedure
+        return Ok(trampoline::bounce(eval_node, lexical_env, *body));
     }
+
+    return Err(RuntimeError::CannotInvokeNonProcedure(
+        fnode.val.to_string(),
+        loc,
+    ));
 }

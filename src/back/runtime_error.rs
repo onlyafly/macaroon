@@ -21,6 +21,7 @@ pub enum RuntimeError {
     ProcArgsDoNotMatchParams(String, Loc),
     CondUnmatchedClause(Val, Loc),
     ApplicationPanic(String, Loc),
+    CannotInvokeNonProcedure(String, Loc),
 }
 
 impl RuntimeError {
@@ -66,6 +67,7 @@ impl RuntimeError {
                 val
             ),
             ApplicationPanic(s, _) => format!("Application Panic: {}", s),
+            CannotInvokeNonProcedure(s, _) => format!("Cannot invoke a non-procedure: {}", s),
         }
     }
 
@@ -89,6 +91,7 @@ impl RuntimeError {
             ProcArgsDoNotMatchParams(.., loc) => loc.clone(),
             CondUnmatchedClause(.., loc) => loc.clone(),
             ApplicationPanic(.., loc) => loc.clone(),
+            CannotInvokeNonProcedure(.., loc) => loc.clone(),
         }
     }
 }

@@ -1,10 +1,10 @@
-(def defproc
+(def defn
   (macro
     (fn (name args body)
       (list 'def name
-        (list 'proc args
+        (list 'fn args
           body)))))
 
-(defproc addem (a b) (+ a b))
+(defn addem (a b) (+ a b))
 
 (addem 100 1000)

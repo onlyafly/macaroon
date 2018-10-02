@@ -25,13 +25,17 @@ pub fn finish(n: Node) -> Continuation {
     Continuation::Outcome(n)
 }
 
+pub fn run(t: Thunk, e: SmartEnv, n: Node) -> Result<Node, RuntimeError> {
+    run_with_nodes(t, e, n, Vec::new())
+}
+
 // The trampoline iteratively calls a chain of thunks until there is no next thunk,
 // at which point it pulls the resulting Node out of the continuation and returns it.
-pub fn run(t: Thunk, e: SmartEnv, n: Node) -> Result<Node, RuntimeError> {
+pub fn run_with_nodes(t: Thunk, e: SmartEnv, n: Node, ns: Vec<Node>) -> Result<Node, RuntimeError> {
     let mut current_t = t;
     let mut current_e = e;
     let mut current_n = n;
-    let mut current_ns = Vec::new();
+    let mut current_ns = ns;
     loop {
         let k = current_t(current_e, current_n, current_ns)?;
         match k {

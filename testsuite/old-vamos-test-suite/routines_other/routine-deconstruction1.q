@@ -8,7 +8,7 @@
   (macro
     (fn (name)
       (list 'def name
-        (list 'proc (routine-params inc)
+        (list 'fn (routine-params inc)
           (routine-body inc))))))
 
 (eval '(rebuild-inc inc2) (routine-environment inc))

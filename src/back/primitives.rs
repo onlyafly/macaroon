@@ -3,7 +3,9 @@
 use ast::WriterObj;
 use ast::{Node, PrimitiveObj, Val};
 use back::env::{Env, SmartEnv};
+use back::eval;
 use back::runtime_error::{check_args, RuntimeError};
+use back::trampoline;
 use loc::Loc;
 use std::cell::RefMut;
 
@@ -22,6 +24,7 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "panic", 0, -1)?;
     define_primitive(&mut menv, "println", 0, -1)?;
     define_primitive(&mut menv, "not", 1, 1)?;
+    define_primitive(&mut menv, "apply", 2, 2)?;
 
     Ok(())
 }
@@ -68,6 +71,7 @@ pub fn eval_primitive(
         "not" => eval_primitive_not,
         "panic" => eval_primitive_panic,
         "println" => eval_primitive_println,
+        "apply" => eval_primitive_apply,
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
                 primitive_obj.name,
@@ -180,4 +184,23 @@ fn eval_primitive_println(env: SmartEnv, args: Vec<Node>) -> Result<Node, Runtim
     }
 
     Ok(Node::new(Val::Nil, loc))
+}
+
+fn eval_primitive_apply(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let f = args.remove(0);
+    let f_params_node = args.remove(0);
+    let f_params = match f_params_node.val {
+        Val::List { children } => children,
+        v => {
+            return Err(RuntimeError::UnexpectedValue(
+                "list".to_string(),
+                v,
+                f_params_node.loc,
+            ))
+        }
+    };
+
+    let output = trampoline::run_with_nodes(eval::eval_invoke_procedure, env, f, f_params)?;
+
+    Ok(output)
 }
