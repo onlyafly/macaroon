@@ -21,10 +21,14 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "=", 2, 2)?; // TODO: should be 2, -1
     define_primitive(&mut menv, "<", 2, 2)?;
     define_primitive(&mut menv, ">", 2, 2)?;
+
     define_primitive(&mut menv, "panic", 0, -1)?;
     define_primitive(&mut menv, "println", 0, -1)?;
     define_primitive(&mut menv, "not", 1, 1)?;
     define_primitive(&mut menv, "apply", 2, 2)?;
+    define_primitive(&mut menv, "typeof", 1, 1)?;
+
+    define_primitive(&mut menv, "str", 0, -1)?;
 
     Ok(())
 }
@@ -68,10 +72,15 @@ pub fn eval_primitive(
         "=" => eval_primitive_equal,
         "<" => eval_primitive_less_than,
         ">" => eval_primitive_greater_than,
+
         "not" => eval_primitive_not,
         "panic" => eval_primitive_panic,
         "println" => eval_primitive_println,
         "apply" => eval_primitive_apply,
+        "typeof" => eval_primitive_typeof,
+
+        "str" => eval_primitive_str,
+
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
                 primitive_obj.name,
@@ -203,4 +212,24 @@ fn eval_primitive_apply(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runt
     let output = trampoline::run_with_nodes(eval::eval_invoke_procedure, env, f, f_params)?;
 
     Ok(output)
+}
+
+fn eval_primitive_typeof(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let arg = args.remove(0);
+
+    let output = arg.type_name()?;
+
+    Ok(Node::new(Val::Symbol(output), arg.loc))
+}
+
+fn eval_primitive_str(_env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let mut v = Vec::new();
+    let mut loc = Loc::Unknown;
+    for arg in args {
+        loc = arg.loc.clone();
+        v.push(arg.as_print_friendly_string());
+    }
+    let output = format!("{}", &v.join(""));
+
+    Ok(Node::new(Val::StringVal(output), loc))
 }

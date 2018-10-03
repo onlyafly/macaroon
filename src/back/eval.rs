@@ -121,11 +121,17 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
         _ => {}
     }
 
-    let evaled_head = trampoline::run(
+    let mut evaled_head = trampoline::run(
         eval_node,
         Rc::clone(&env),
         Node::new(head_value, loc.clone()),
     )?;
+
+    // Sometimes the evaled head will lack a location. When that happens, the location needs
+    // to be set to the location of the unevaled head, to allow for good error messages.
+    if evaled_head.loc == Loc::Unknown {
+        evaled_head.loc = loc.clone();
+    }
 
     match evaled_head.val {
         Val::Function(..) | Val::Primitive(..) => eval_invoke_procedure(env, evaled_head, args),

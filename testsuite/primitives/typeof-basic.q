@@ -1,9 +1,9 @@
 (list
   (typeof 4)
   (typeof '())
+  (typeof (= 1 2))
+  (typeof *writer*)
   (typeof (fn () 'nil))
-  (typeof (macro (fn () 'nil)))
-  (typeof (current-environment))
   (typeof +)
   (typeof 'foo)
   (typeof "foo")

@@ -55,7 +55,8 @@ impl Val {
     pub fn as_print_friendly_string(&self) -> String {
         match self {
             Val::StringVal(ref s) => format!("{}", s),
-            v => format!("{}", v), // Use Display fmt for everything else
+            Val::Character(ref s) => format!("{}", s),
+            v => format!("{}", v), // Use Display's fmt for everything else
         }
     }
 
@@ -76,6 +77,24 @@ impl Val {
             &Val::Boolean(b) => Ok(b),
             _ => Ok(true),
         }
+    }
+
+    pub fn type_name(&self) -> Result<String, RuntimeError> {
+        let out = match self {
+            Val::Nil => "nil",
+            Val::Error(..) => "error",
+            Val::Number(..) => "number",
+            Val::StringVal(..) => "string",
+            Val::Character(..) => "char",
+            Val::Symbol(..) => "symbol",
+            Val::List { .. } => "list",
+            Val::Boolean(..) => "boolean",
+            Val::Function { .. } => "function",
+            Val::Primitive(..) => "primitive",
+            Val::Writer(..) => "writer",
+        };
+
+        Ok(out.to_string())
     }
 }
 
