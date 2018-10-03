@@ -5,17 +5,20 @@ pub mod runtime_error;
 mod specials;
 mod trampoline;
 
-use ast::{Node, Val, WriterObj};
+use ast::{Node, ReaderObj, Val, WriterObj};
 use back::env::{Env, SmartEnv};
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 use std::rc::Rc;
 
-pub fn create_root_env(writer: WriterObj) -> Result<SmartEnv, RuntimeError> {
+pub fn create_root_env(writer: WriterObj, reader: ReaderObj) -> Result<SmartEnv, RuntimeError> {
     let env = Env::new(None);
 
     env.borrow_mut()
         .define("*writer*", Node::new(Val::Writer(writer), Loc::Unknown))?;
+
+    env.borrow_mut()
+        .define("*reader*", Node::new(Val::Reader(reader), Loc::Unknown))?;
 
     primitives::init_env_with_primitives(&env)?;
     Ok(env)

@@ -1,7 +1,6 @@
 /* Primitives are build-in functions */
 
-use ast::WriterObj;
-use ast::{Node, PrimitiveObj, Val};
+use ast::{Node, PrimitiveObj, ReaderObj, Val, WriterObj};
 use back::env::{Env, SmartEnv};
 use back::eval;
 use back::runtime_error::{check_args, RuntimeError};
@@ -23,6 +22,7 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, ">", 2, 2)?;
 
     define_primitive(&mut menv, "panic", 0, -1)?;
+    define_primitive(&mut menv, "read-line", 0, 0)?;
     define_primitive(&mut menv, "println", 0, -1)?;
     define_primitive(&mut menv, "not", 1, 1)?;
     define_primitive(&mut menv, "apply", 2, 2)?;
@@ -75,6 +75,7 @@ pub fn eval_primitive(
 
         "not" => eval_primitive_not,
         "panic" => eval_primitive_panic,
+        "read-line" => eval_primitive_read_line,
         "println" => eval_primitive_println,
         "apply" => eval_primitive_apply,
         "typeof" => eval_primitive_typeof,
@@ -166,6 +167,26 @@ fn eval_primitive_panic(_env: SmartEnv, args: Vec<Node>) -> Result<Node, Runtime
     let output = format!("{}\n", &v.join(" "));
 
     Err(RuntimeError::ApplicationPanic(output, loc))
+}
+
+fn eval_primitive_read_line(env: SmartEnv, _args: Vec<Node>) -> Result<Node, RuntimeError> {
+    match env.borrow().get("*reader*") {
+        Some(node) => match node.val {
+            Val::Reader(ReaderObj { reader_function }) => match reader_function() {
+                Ok(output) => Ok(Node::new(Val::StringVal(output), Loc::Unknown)),
+                Err(s) => Err(RuntimeError::Unknown(
+                    format!("Problem while reading: {}", s),
+                    Loc::Unknown,
+                )),
+            },
+            v => Err(RuntimeError::UnexpectedValue(
+                "reader".to_string(),
+                v,
+                Loc::Unknown,
+            )),
+        },
+        _ => panic!("expected reader value"),
+    }
 }
 
 fn eval_primitive_println(env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {

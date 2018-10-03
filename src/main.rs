@@ -1,9 +1,21 @@
 extern crate quivi;
 extern crate rustyline;
 
-use quivi::ast::WriterObj;
+use quivi::ast::{ReaderObj, WriterObj};
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
+
+fn reader_function() -> Result<String, String> {
+    use std::io;
+
+    let mut input = String::new();
+    match io::stdin().read_line(&mut input) {
+        Ok(_count_bytes_read) => {
+            return Ok(input);
+        }
+        Err(error) => Err(format!("{}", error)),
+    }
+}
 
 fn main() {
     // `()` can be used when no completer is required
@@ -16,7 +28,12 @@ fn main() {
         match readline {
             Ok(line) => {
                 rl.add_history_entry(line.as_ref());
-                let output = quivi::interpret("REPL", &line, WriterObj::Standard);
+                let output = quivi::interpret(
+                    "REPL",
+                    &line,
+                    WriterObj::Standard,
+                    ReaderObj { reader_function },
+                );
                 println!("{}", output);
             }
             Err(ReadlineError::Interrupted) => {

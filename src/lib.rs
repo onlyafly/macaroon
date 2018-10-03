@@ -3,17 +3,17 @@ mod back;
 mod front;
 mod loc;
 
-use ast::WriterObj;
+use ast::{ReaderObj, WriterObj};
 use back::env::SmartEnv;
 use loc::Loc;
 
-pub fn interpret(filename: &str, input: &str, writer: WriterObj) -> String {
+pub fn interpret(filename: &str, input: &str, writer: WriterObj, reader: ReaderObj) -> String {
     let parse_result = front::parse(filename, input);
 
     match parse_result {
         Ok(nodes) => {
             let mut env: SmartEnv;
-            let root_env_result = back::create_root_env(writer);
+            let root_env_result = back::create_root_env(writer, reader);
             match root_env_result {
                 Ok(root_env) => env = root_env,
                 Err(runtime_error) => {

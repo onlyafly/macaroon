@@ -3,7 +3,7 @@ extern crate colored;
 extern crate quivi;
 
 use colored::*;
-use quivi::ast::WriterObj;
+use quivi::ast::{ReaderObj, WriterObj};
 use std::cell::RefCell;
 use std::error::Error;
 use std::ffi::OsStr;
@@ -12,6 +12,10 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::rc::Rc;
+
+fn reader_function() -> Result<String, String> {
+    Ok("this is a dummy string".to_string())
+}
 
 #[test]
 fn test_suite() {
@@ -30,9 +34,10 @@ fn test_suite() {
 
                     let buffer = Rc::new(RefCell::new(Vec::<u8>::new()));
                     let w = WriterObj::Buffer(Rc::clone(&buffer));
+                    let r = ReaderObj { reader_function };
 
                     let interpreter_output =
-                        quivi::interpret(path.to_str().unwrap(), input_contents.trim_right(), w);
+                        quivi::interpret(path.to_str().unwrap(), input_contents.trim_right(), w, r);
 
                     let raw_buffer = buffer.borrow_mut().clone();
                     let buffer_output = String::from_utf8(raw_buffer).expect("Not UTF-8");

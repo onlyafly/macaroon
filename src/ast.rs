@@ -21,6 +21,7 @@ pub enum Val {
     Primitive(PrimitiveObj),
     List { children: Vec<Node> },
     Writer(WriterObj),
+    Reader(ReaderObj),
 }
 
 impl Display for Val {
@@ -47,6 +48,7 @@ impl Display for Val {
             Val::Function { .. } => write!(f, "#function"),
             Val::Primitive(..) => write!(f, "#primitive"),
             Val::Writer(..) => write!(f, "#writer"),
+            Val::Reader(..) => write!(f, "#reader"),
         }
     }
 }
@@ -92,6 +94,7 @@ impl Val {
             Val::Function { .. } => "function",
             Val::Primitive(..) => "primitive",
             Val::Writer(..) => "writer",
+            Val::Reader(..) => "reader",
         };
 
         Ok(out.to_string())
@@ -147,4 +150,9 @@ pub enum WriterObj {
     Sink,
     Standard,
     Buffer(Rc<RefCell<Vec<u8>>>),
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct ReaderObj {
+    pub reader_function: fn() -> Result<String, String>,
 }
