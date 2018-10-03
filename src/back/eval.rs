@@ -185,7 +185,13 @@ pub fn eval_invoke_function(
 
         // Validate params
         if unevaled_args.len() != params.len() {
-            return Err(RuntimeError::ProcArgsDoNotMatchParams(String::new(), loc));
+            return Err(RuntimeError::FunctionArgsDoNotMatchParams {
+                params_count: params.len(),
+                args_count: unevaled_args.len(),
+                params_list: params,
+                args_list: unevaled_args,
+                loc: loc,
+            });
         }
 
         // Create the lexical environment based on the procedure's lexical parent
@@ -206,7 +212,7 @@ pub fn eval_invoke_function(
                 Val::Symbol(name) => {
                     lexical_env.borrow_mut().define(&name, evaled_arg)?;
                 }
-                _ => return Err(RuntimeError::Unknown("param not a symbol".to_string(), loc)),
+                v => return Err(RuntimeError::ParamsMustBeSymbols(v, loc)),
             }
         }
 

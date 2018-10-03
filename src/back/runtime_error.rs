@@ -14,14 +14,25 @@ pub enum RuntimeError {
     UnableToEvalListStartingWith(String, Loc),
     UnexpectedValue(String, Val, Loc),
     CannotUpdateElementInValue(Val, Loc),
-    IndexOutOfBounds { index: usize, len: usize, loc: Loc },
+    IndexOutOfBounds {
+        index: usize,
+        len: usize,
+        loc: Loc,
+    },
     NotEnoughArgs(String, isize, usize, Loc),
     WrongNumberOfArgs(String, isize, usize, Loc),
     ArgCountOutOfRange(String, isize, isize, usize, Loc),
-    ProcArgsDoNotMatchParams(String, Loc),
+    ParamsMustBeSymbols(Val, Loc),
     CondUnmatchedClause(Val, Loc),
     ApplicationPanic(String, Loc),
     CannotInvokeNonProcedure(String, Loc),
+    FunctionArgsDoNotMatchParams {
+        params_count: usize,
+        args_count: usize,
+        params_list: Vec<Node>,
+        args_list: Vec<Node>,
+        loc: Loc,
+    },
 }
 
 impl RuntimeError {
@@ -59,15 +70,24 @@ impl RuntimeError {
                 "'{}' expects between {} and {} arg(s), but got {}",
                 name, min, max, actual
             ),
-            ProcArgsDoNotMatchParams(_, _) => {
-                format!("Arguments passed to procedure do not match parameter list")
-            }
+            ParamsMustBeSymbols(v, _ ) => format!("Parameters must be symbols: {}", v),
             CondUnmatchedClause(val, _) => format!(
                 "'cond' expects each clause to have a test and a body, but found: {}",
                 val
             ),
             ApplicationPanic(s, _) => format!("Application Panic: {}", s),
             CannotInvokeNonProcedure(s, _) => format!("Cannot invoke a non-procedure: {}", s),
+            FunctionArgsDoNotMatchParams {
+                params_count,
+                args_count,
+                params_list,
+                args_list,
+                ..
+            } => format!("Function expects {} argument(s), but was given {}. Function parameter list: {}. Arguments: {}", params_count,
+                args_count,
+                Val::List{children: params_list.to_vec()},
+                Val::List{children: args_list.to_vec()},
+            ),
         }
     }
 
@@ -88,10 +108,11 @@ impl RuntimeError {
             NotEnoughArgs(.., loc) => loc.clone(),
             WrongNumberOfArgs(.., loc) => loc.clone(),
             ArgCountOutOfRange(.., loc) => loc.clone(),
-            ProcArgsDoNotMatchParams(.., loc) => loc.clone(),
+            ParamsMustBeSymbols(.., loc) => loc.clone(),
             CondUnmatchedClause(.., loc) => loc.clone(),
             ApplicationPanic(.., loc) => loc.clone(),
             CannotInvokeNonProcedure(.., loc) => loc.clone(),
+            FunctionArgsDoNotMatchParams { loc, .. } => loc.clone(),
         }
     }
 }
