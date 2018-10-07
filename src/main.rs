@@ -39,7 +39,7 @@ fn main() {
             Ok(line) => {
                 rl.add_history_entry(line.as_ref());
 
-                let output = quivi::interpret(Rc::clone(&env), "REPL", &line);
+                let output = quivi::parse_eval_print(Rc::clone(&env), "REPL", &line);
                 println!("{}", output);
             }
             Err(ReadlineError::Interrupted) => {

@@ -257,7 +257,7 @@ fn eval_primitive_typeof(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Ru
     Ok(Node::new(Val::Symbol(output), arg.loc))
 }
 
-fn eval_primitive_load(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_load(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let filename_node = args.remove(0);
 
     let filename = match filename_node.val {
@@ -271,11 +271,14 @@ fn eval_primitive_load(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runt
         }
     };
 
-    let mut f = File::open(filename).expect("file not found");
+    let mut f = File::open(filename.to_string()).expect("file not found");
 
     let mut contents = String::new();
     f.read_to_string(&mut contents)
         .expect("something went wrong reading the file");
+
+    let output = ::parse_eval_print(env, &filename, &contents);
+    println!("{}", output); // TODO: This doesn't actually deal with any errors while loading right now
 
     Ok(Node::new(Val::Nil, filename_node.loc))
 }

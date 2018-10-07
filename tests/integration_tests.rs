@@ -41,8 +41,11 @@ fn test_suite() {
                         Err(_err) => panic!("Problem creating root env"),
                     };
 
-                    let interpreter_output =
-                        quivi::interpret(env, path.to_str().unwrap(), input_contents.trim_right());
+                    let interpreter_output = quivi::parse_eval_print(
+                        env,
+                        path.to_str().unwrap(),
+                        input_contents.trim_right(),
+                    );
 
                     let raw_buffer = buffer.borrow_mut().clone();
                     let buffer_output = String::from_utf8(raw_buffer).expect("Not UTF-8");

@@ -1,5 +1,3 @@
 Syntax error (./testsuite/basic/112-double-errors.q:1): Unparsable number literal: 347509238475092837450982734098572930485
-
 Syntax error (./testsuite/basic/112-double-errors.q:2): Unrecognized character sequence: #€
-
 Syntax error (./testsuite/basic/112-double-errors.q:2): Unrecognized character in input: €
