@@ -7,6 +7,8 @@ use back::runtime_error::{check_args, RuntimeError};
 use back::trampoline;
 use loc::Loc;
 use std::cell::RefMut;
+use std::fs::File;
+use std::io::prelude::*;
 
 pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     let mut menv = env.borrow_mut();
@@ -27,6 +29,7 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "not", 1, 1)?;
     define_primitive(&mut menv, "apply", 2, 2)?;
     define_primitive(&mut menv, "typeof", 1, 1)?;
+    define_primitive(&mut menv, "load", 1, 1)?;
 
     define_primitive(&mut menv, "str", 0, -1)?;
     define_primitive(&mut menv, "concat", 0, -1)?;
@@ -84,6 +87,7 @@ pub fn eval_primitive(
         "println" => eval_primitive_println,
         "apply" => eval_primitive_apply,
         "typeof" => eval_primitive_typeof,
+        "load" => eval_primitive_load,
 
         "str" => eval_primitive_str,
         "concat" => eval_primitive_concat,
@@ -251,6 +255,29 @@ fn eval_primitive_typeof(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Ru
     let output = arg.type_name()?;
 
     Ok(Node::new(Val::Symbol(output), arg.loc))
+}
+
+fn eval_primitive_load(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let filename_node = args.remove(0);
+
+    let filename = match filename_node.val {
+        Val::StringVal(s) => s,
+        v => {
+            return Err(RuntimeError::UnexpectedValue(
+                "file name".to_string(),
+                v,
+                filename_node.loc,
+            ))
+        }
+    };
+
+    let mut f = File::open(filename).expect("file not found");
+
+    let mut contents = String::new();
+    f.read_to_string(&mut contents)
+        .expect("something went wrong reading the file");
+
+    Ok(Node::new(Val::Nil, filename_node.loc))
 }
 
 fn eval_primitive_str(_env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {

@@ -4,6 +4,7 @@ extern crate quivi;
 
 use colored::*;
 use quivi::ast::{ReaderObj, WriterObj};
+use quivi::back;
 use std::cell::RefCell;
 use std::error::Error;
 use std::ffi::OsStr;
@@ -35,9 +36,13 @@ fn test_suite() {
                     let buffer = Rc::new(RefCell::new(Vec::<u8>::new()));
                     let w = WriterObj::Buffer(Rc::clone(&buffer));
                     let r = ReaderObj { reader_function };
+                    let env = match back::create_root_env(w, r) {
+                        Ok(env) => env,
+                        Err(_err) => panic!("Problem creating root env"),
+                    };
 
                     let interpreter_output =
-                        quivi::interpret(path.to_str().unwrap(), input_contents.trim_right(), w, r);
+                        quivi::interpret(env, path.to_str().unwrap(), input_contents.trim_right());
 
                     let raw_buffer = buffer.borrow_mut().clone();
                     let buffer_output = String::from_utf8(raw_buffer).expect("Not UTF-8");

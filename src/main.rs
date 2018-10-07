@@ -2,8 +2,10 @@ extern crate quivi;
 extern crate rustyline;
 
 use quivi::ast::{ReaderObj, WriterObj};
+use quivi::back;
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
+use std::rc::Rc;
 
 fn reader_function() -> Result<String, String> {
     use std::io;
@@ -23,29 +25,33 @@ fn main() {
     if rl.load_history("history.txt").is_err() {
         println!("No previous history.");
     }
+
+    let w = WriterObj::Standard;
+    let r = ReaderObj { reader_function };
+    let env = match back::create_root_env(w, r) {
+        Ok(env) => env,
+        Err(_) => panic!("Problem creating root environment"),
+    };
+
     loop {
         let readline = rl.readline("> ");
         match readline {
             Ok(line) => {
                 rl.add_history_entry(line.as_ref());
-                let output = quivi::interpret(
-                    "REPL",
-                    &line,
-                    WriterObj::Standard,
-                    ReaderObj { reader_function },
-                );
+
+                let output = quivi::interpret(Rc::clone(&env), "REPL", &line);
                 println!("{}", output);
             }
             Err(ReadlineError::Interrupted) => {
-                println!("CTRL-C");
+                println!("Pressed CTRL-C... ending session");
                 break;
             }
             Err(ReadlineError::Eof) => {
-                println!("CTRL-D");
+                println!("Pressed CTRL-D... ending session");
                 break;
             }
             Err(err) => {
-                println!("Error: {:?}", err);
+                println!("Readline error: {:?}", err);
                 break;
             }
         }
