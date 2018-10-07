@@ -81,6 +81,15 @@ impl Val {
         }
     }
 
+    /* TODO
+    pub fn as_host_vector(&self) -> Result<bool, RuntimeError> {
+        match self {
+            &Val::Nil => Ok(false),
+            &Val::Boolean(b) => Ok(b),
+            _ => Ok(true),
+        }
+    } */
+
     pub fn type_name(&self) -> Result<String, RuntimeError> {
         let out = match self {
             Val::Nil => "nil",
@@ -120,6 +129,110 @@ pub struct Node {
 impl Node {
     pub fn new(val: Val, loc: Loc) -> Self {
         Node { val, loc }
+    }
+
+    pub fn coll_first(self) -> Result<Node, RuntimeError> {
+        match self.val {
+            Val::Nil => Ok(self),
+            Val::StringVal(s) => match s.chars().next() {
+                Some(c) => Ok(Node::new(Val::Character(c.to_string()), self.loc)),
+                None => Ok(Node::new(Val::Nil, self.loc)),
+            },
+            Val::List { mut children } => if children.len() == 0 {
+                Ok(Node::new(Val::Nil, self.loc))
+            } else {
+                Ok(children.remove(0))
+            },
+            v => Err(RuntimeError::CannotGetChildrenOfNonCollection(v, self.loc)),
+        }
+    }
+
+    pub fn coll_rest(self) -> Result<Node, RuntimeError> {
+        match self.val {
+            Val::Nil => Ok(Node::new(
+                Val::List {
+                    children: Vec::new(),
+                },
+                self.loc,
+            )),
+            Val::StringVal(s) => {
+                let mut cs = s.chars();
+                cs.next();
+                Ok(Node::new(Val::StringVal(cs.as_str().to_string()), self.loc))
+            }
+            Val::List { mut children } => {
+                if children.len() == 0 {
+                    Ok(Node::new(Val::List { children }, self.loc))
+                } else {
+                    children.remove(0);
+                    Ok(Node::new(Val::List { children }, self.loc))
+                }
+            }
+            v => Err(RuntimeError::CannotGetChildrenOfNonCollection(v, self.loc)),
+        }
+    }
+
+    pub fn coll_len(self) -> Result<usize, RuntimeError> {
+        match self.val {
+            Val::Nil => Ok(0),
+            Val::StringVal(s) => Ok(s.chars().count()),
+            Val::List { children } => Ok(children.len()),
+            v => Err(RuntimeError::CannotGetLengthOfNonCollection(v, self.loc)),
+        }
+    }
+
+    pub fn coll_cons(self, elem: Node) -> Result<Node, RuntimeError> {
+        let loc = self.loc;
+        match self.val {
+            Val::Nil => Ok(Node::new(
+                Val::List {
+                    children: vec![elem],
+                },
+                loc,
+            )),
+            Val::StringVal(s) => {
+                let loc = elem.loc;
+                let out = match elem.val {
+                    Val::Character(c) => format!("{}{}", c, s),
+                    v => return Err(RuntimeError::CannotConsNonCharacterOntoString(v, loc)),
+                };
+                Ok(Node::new(Val::StringVal(out), loc))
+            }
+            Val::List { mut children } => {
+                children.push(elem);
+                Ok(Node::new(Val::List { children }, loc))
+            }
+            v => Err(RuntimeError::CannotConsOntoNonCollection(v, loc)),
+        }
+    }
+
+    fn coll_children(self) -> Result<Vec<Node>, RuntimeError> {
+        let loc = self.loc;
+        match self.val {
+            Val::Nil => Ok(Vec::new()),
+            Val::StringVal(s) => Ok(s
+                .chars()
+                .map(|c| Node::new(Val::Character(format!("{}", c)), loc.clone()))
+                .collect()),
+            Val::List { children } => Ok(children),
+            v => Err(RuntimeError::CannotGetChildrenOfNonCollection(v, loc)),
+        }
+    }
+
+    pub fn coll_append(self, other: Node) -> Result<Node, RuntimeError> {
+        match self.val {
+            Val::Nil => Ok(other),
+            Val::StringVal(s) => {
+                let output = format!("{}{}", s, other.as_print_friendly_string()); // FIXME
+                Ok(Node::new(Val::StringVal(output), self.loc))
+            }
+            Val::List { mut children } => {
+                let mut other_children = other.coll_children()?;
+                children.append(&mut other_children);
+                Ok(Node::new(Val::List { children }, self.loc))
+            }
+            v => Err(RuntimeError::CannotAppendOnto(v, self.loc)),
+        }
     }
 }
 

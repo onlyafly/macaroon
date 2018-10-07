@@ -29,6 +29,11 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "typeof", 1, 1)?;
 
     define_primitive(&mut menv, "str", 0, -1)?;
+    define_primitive(&mut menv, "concat", 0, -1)?;
+    define_primitive(&mut menv, "cons", 2, 2)?;
+    define_primitive(&mut menv, "first", 1, 1)?;
+    define_primitive(&mut menv, "rest", 1, 1)?;
+    define_primitive(&mut menv, "len", 1, 1)?;
 
     Ok(())
 }
@@ -81,6 +86,11 @@ pub fn eval_primitive(
         "typeof" => eval_primitive_typeof,
 
         "str" => eval_primitive_str,
+        "concat" => eval_primitive_concat,
+        "cons" => eval_primitive_cons,
+        "first" => eval_primitive_first,
+        "rest" => eval_primitive_rest,
+        "len" => eval_primitive_len,
 
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
@@ -253,4 +263,39 @@ fn eval_primitive_str(_env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeEr
     let output = format!("{}", &v.join(""));
 
     Ok(Node::new(Val::StringVal(output), loc))
+}
+
+fn eval_primitive_concat(_env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let mut output = Node::new(Val::Nil, Loc::Unknown);
+    for mut arg in args {
+        output = output.coll_append(arg)?;
+    }
+
+    Ok(output)
+}
+
+fn eval_primitive_cons(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let elem = args.remove(0);
+    let coll = args.remove(0);
+
+    let output = coll.coll_cons(elem)?;
+
+    Ok(output)
+}
+
+fn eval_primitive_first(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    Ok(args.remove(0).coll_first()?)
+}
+
+fn eval_primitive_rest(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    Ok(args.remove(0).coll_rest()?)
+}
+
+fn eval_primitive_len(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let n = args.remove(0);
+    let loc = n.loc.clone();
+
+    let out = n.coll_len()?;
+
+    Ok(Node::new(Val::Number(out as i32), loc))
 }

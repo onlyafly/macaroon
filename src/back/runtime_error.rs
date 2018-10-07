@@ -34,6 +34,11 @@ pub enum RuntimeError {
         args_list: Vec<Node>,
         loc: Loc,
     },
+    CannotAppendOnto(Val, Loc),
+    CannotGetChildrenOfNonCollection(Val, Loc),
+    CannotConsOntoNonCollection(Val, Loc),
+    CannotConsNonCharacterOntoString(Val, Loc),
+    CannotGetLengthOfNonCollection(Val, Loc),
 }
 
 impl RuntimeError {
@@ -95,6 +100,11 @@ impl RuntimeError {
                 Val::List{children: params_list.to_vec()},
                 Val::List{children: args_list.to_vec()},
             ),
+            CannotAppendOnto(val, _) => format!("Cannot append onto: {}", val),
+            CannotGetChildrenOfNonCollection(val, _) => format!("Cannot get children of a non-collection: {}", val),
+            CannotConsOntoNonCollection(val, _) => format!("Cannot cons onto a non-collection: {}", val),
+            CannotConsNonCharacterOntoString(val, _) => format!("Cannot cons non-character onto a string: {}", val),
+            CannotGetLengthOfNonCollection(val, _) => format!("Cannot get length of a non-collection: {}", val),
         }
     }
 
@@ -119,7 +129,12 @@ impl RuntimeError {
             CondUnmatchedClause(.., loc) => loc.clone(),
             ApplicationPanic(.., loc) => loc.clone(),
             CannotInvokeNonProcedure(.., loc) => loc.clone(),
+            CannotAppendOnto(.., loc) => loc.clone(),
+            CannotGetChildrenOfNonCollection(.., loc) => loc.clone(),
             FunctionArgsDoNotMatchParams { loc, .. } => loc.clone(),
+            CannotConsOntoNonCollection(.., loc) => loc.clone(),
+            CannotConsNonCharacterOntoString(.., loc) => loc.clone(),
+            CannotGetLengthOfNonCollection(.., loc) => loc.clone(),
         }
     }
 }

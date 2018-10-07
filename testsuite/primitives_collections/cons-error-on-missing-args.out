@@ -1,0 +1,1 @@
+Runtime error (./testsuite/primitives_collections/cons-error-on-missing-args.q:1): 'cons' expects 2 arg(s), but got 1
