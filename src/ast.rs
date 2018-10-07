@@ -133,6 +133,7 @@ impl Deref for Node {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct FunctionObj {
+    pub name: Option<String>,
     pub params: Vec<Node>,
     pub body: Box<Node>,
     pub lexical_env: SmartEnv,

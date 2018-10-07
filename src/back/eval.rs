@@ -186,6 +186,7 @@ pub fn eval_invoke_function(
         // Validate params
         if unevaled_args.len() != params.len() {
             return Err(RuntimeError::FunctionArgsDoNotMatchParams {
+                function_name: fobj.name,
                 params_count: params.len(),
                 args_count: unevaled_args.len(),
                 params_list: params,

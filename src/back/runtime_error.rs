@@ -27,6 +27,7 @@ pub enum RuntimeError {
     ApplicationPanic(String, Loc),
     CannotInvokeNonProcedure(String, Loc),
     FunctionArgsDoNotMatchParams {
+        function_name: Option<String>,
         params_count: usize,
         args_count: usize,
         params_list: Vec<Node>,
@@ -78,12 +79,18 @@ impl RuntimeError {
             ApplicationPanic(s, _) => format!("Application Panic: {}", s),
             CannotInvokeNonProcedure(s, _) => format!("Cannot invoke a non-procedure: {}", s),
             FunctionArgsDoNotMatchParams {
+                function_name,
                 params_count,
                 args_count,
                 params_list,
                 args_list,
                 ..
-            } => format!("Function expects {} argument(s), but was given {}. Function parameter list: {}. Arguments: {}", params_count,
+            } => format!("Function{} expects {} argument(s), but was given {}. Function parameter list: {}. Arguments: {}",
+                match function_name {
+                    Some(s) => format!(" '{}'", s),
+                    None => String::new(),
+                },
+                params_count,
                 args_count,
                 Val::List{children: params_list.to_vec()},
                 Val::List{children: args_list.to_vec()},

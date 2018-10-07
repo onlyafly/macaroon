@@ -31,7 +31,14 @@ pub fn eval_special_def(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
     let name_node = args.remove(0);
 
     if let Val::Symbol(name) = name_node.val {
-        let value_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+        let mut value_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+
+        // If it is a function, give the function a name
+        match value_node.val {
+            Val::Function(ref mut fobj) => fobj.name = Some(name.clone()),
+            _ => (),
+        }
+
         env.borrow_mut().define(&name, value_node)?;
         Ok(trampoline::finish(Node::new(Val::Nil, name_node.loc))) // TODO: should be nil
     } else {
@@ -232,6 +239,7 @@ pub fn eval_special_fn(lexical_env: SmartEnv, mut args: Vec<Node>) -> Continuati
     match param_list.val {
         Val::List { children } => Ok(trampoline::finish(Node::new(
             Val::Function(FunctionObj {
+                name: None,
                 params: children,
                 body: Box::new(body),
                 lexical_env: Rc::clone(&lexical_env),

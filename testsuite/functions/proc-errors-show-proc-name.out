@@ -1,1 +1,1 @@
-Evaluation error (testsuite/routines_procedures/proc-errors-show-proc-name.v: 2): Procedure 'foo' expects 0 argument(s), but was given 1. Procedure parameter list: (). Arguments: (1).
+Runtime error (./testsuite/functions/proc-errors-show-proc-name.q:1): Function 'foo' expects 0 argument(s), but was given 1. Function parameter list: (). Arguments: (1)
