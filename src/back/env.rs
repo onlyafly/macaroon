@@ -35,11 +35,15 @@ impl Env {
 
     pub fn update(&mut self, k: &str, v: Node) -> Result<(), RuntimeError> {
         let kstring = k.to_string();
-        if !self.map.contains_key(k) {
-            Err(RuntimeError::CannotUpdateUndefinedName(kstring, v.loc))
-        } else {
+
+        if self.map.contains_key(k) {
             self.map.insert(kstring, v);
             Ok(())
+        } else {
+            match self.parent {
+                Some(ref parent_env) => parent_env.borrow_mut().update(k, v),
+                None => Err(RuntimeError::CannotUpdateUndefinedName(kstring, v.loc)),
+            }
         }
     }
 
