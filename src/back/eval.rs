@@ -56,7 +56,7 @@ pub fn eval_each_node_for_single_output(
     Ok(output)
 }
 
-fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
+pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
     let loc = node.loc;
     let mut args = match node.val {
         Val::List { children } => children,
@@ -86,7 +86,15 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
             }
             "fn" => {
                 check_args("fn", &loc, &args, 2, 2)?;
-                return specials::eval_special_fn(env, args);
+                return specials::eval_special_routine(env, args, RoutineType::Function);
+            }
+            "macro" => {
+                check_args("macro", &loc, &args, 2, 2)?;
+                return specials::eval_special_routine(env, args, RoutineType::Macro);
+            }
+            "macroexpand1" => {
+                check_args("macroexpand1", &loc, &args, 1, 1)?;
+                return specials::eval_special_macroexpand1(env, args);
             }
             "if" => {
                 check_args("if", &loc, &args, 3, 3)?;
@@ -134,7 +142,7 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
     }
 
     match evaled_head.val {
-        Val::Function(..) | Val::Primitive(..) => eval_invoke_procedure(env, evaled_head, args),
+        Val::Routine(..) | Val::Primitive(..) => eval_invoke_procedure(env, evaled_head, args),
         _ => Err(RuntimeError::UnableToEvalListStartingWith(
             format!("{}", evaled_head.val),
             loc,
@@ -144,8 +152,8 @@ fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
 
 pub fn eval_invoke_procedure(env: SmartEnv, head: Node, args: Vec<Node>) -> ContinuationResult {
     match head.val {
-        Val::Function(..) => Ok(trampoline::bounce_with_nodes(
-            eval_invoke_function,
+        Val::Routine(..) => Ok(trampoline::bounce_with_nodes(
+            eval_invoke_routine,
             Rc::clone(&env),
             head,
             args,
@@ -171,27 +179,27 @@ fn eval_invoke_primitive(
     eval_primitive(obj, dynamic_env, evaled_args, loc)
 }
 
-pub fn eval_invoke_function(
+pub fn eval_invoke_routine(
     dynamic_env: SmartEnv,
     fnode: Node,
     unevaled_args: Vec<Node>,
 ) -> ContinuationResult {
     let loc = fnode.loc;
 
-    if let Val::Function(fobj) = fnode.val {
-        let params = fobj.params;
-        let body = fobj.body;
-        let parent_lexical_env = fobj.lexical_env;
+    if let Val::Routine(robj) = fnode.val {
+        let params = robj.params;
+        let body = robj.body;
+        let parent_lexical_env = robj.lexical_env;
 
         // Validate params
         if unevaled_args.len() != params.len() {
             return Err(RuntimeError::FunctionArgsDoNotMatchParams {
-                function_name: fobj.name,
+                function_name: robj.name,
                 params_count: params.len(),
                 args_count: unevaled_args.len(),
                 params_list: params,
                 args_list: unevaled_args,
-                loc: loc,
+                loc,
             });
         }
 
@@ -199,26 +207,45 @@ pub fn eval_invoke_function(
         let lexical_env = Env::new(Some(parent_lexical_env));
 
         // Prepare the arguments for evaluation
-        let mut evaled_args = eval_each_node(dynamic_env, unevaled_args)?;
+        let mut prepared_args = match robj.routine_type {
+            RoutineType::Macro => unevaled_args,
+            RoutineType::Function => eval_each_node(Rc::clone(&dynamic_env), unevaled_args)?,
+        };
 
         // Map arguments to parameters
         for param in params {
-            let evaled_arg = if evaled_args.len() > 0 {
-                evaled_args.remove(0)
+            let prepared_arg = if prepared_args.len() > 0 {
+                prepared_args.remove(0)
             } else {
                 return Err(RuntimeError::Unknown("not enough args".to_string(), loc));
             };
 
             match param.val {
                 Val::Symbol(name) => {
-                    lexical_env.borrow_mut().define(&name, evaled_arg)?;
+                    lexical_env.borrow_mut().define(&name, prepared_arg)?;
                 }
                 v => return Err(RuntimeError::ParamsMustBeSymbols(v, loc)),
             }
         }
 
-        // Evaluate the application of the procedure
-        return Ok(trampoline::bounce(eval_node, lexical_env, *body));
+        // Evaluate the application of the routine
+        match robj.routine_type {
+            RoutineType::Macro => {
+                let expanded_macro = trampoline::run(eval_node, lexical_env, *body)?;
+
+                let should_eval_macros = true; // TODO
+                if should_eval_macros {
+                    // This is executed in the environment of its application, not the
+                    // environment of its definition
+                    return Ok(trampoline::bounce(eval_node, dynamic_env, expanded_macro));
+                } else {
+                    return Ok(trampoline::finish(expanded_macro));
+                }
+            },
+            RoutineType::Function => {
+                return Ok(trampoline::bounce(eval_node, lexical_env, *body));
+            },
+        }
     }
 
     return Err(RuntimeError::CannotInvokeNonProcedure(

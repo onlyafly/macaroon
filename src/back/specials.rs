@@ -1,4 +1,4 @@
-use ast::{FunctionObj, Node, Val};
+use ast::{RoutineObj, Node, RoutineType, Val};
 use back::env::{Env, SmartEnv};
 use back::eval;
 use back::runtime_error::RuntimeError;
@@ -35,7 +35,7 @@ pub fn eval_special_def(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
 
         // If it is a function, give the function a name
         match value_node.val {
-            Val::Function(ref mut fobj) => fobj.name = Some(name.clone()),
+            Val::Routine(ref mut fobj) => fobj.name = Some(name.clone()),
             _ => (),
         }
 
@@ -232,17 +232,22 @@ pub fn eval_special_begin(env: SmartEnv, unevaled_args: Vec<Node>) -> Continuati
     Ok(trampoline::finish(output))
 }
 
-pub fn eval_special_fn(lexical_env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
+pub fn eval_special_routine(
+    lexical_env: SmartEnv,
+    mut args: Vec<Node>,
+    routine_type: RoutineType,
+) -> ContinuationResult {
     let param_list = args.remove(0);
     let body = args.remove(0); // TODO: note that the body is only one node currently
 
     match param_list.val {
         Val::List { children } => Ok(trampoline::finish(Node::new(
-            Val::Function(FunctionObj {
+            Val::Routine(RoutineObj {
                 name: None,
                 params: children,
                 body: Box::new(body),
                 lexical_env: Rc::clone(&lexical_env),
+                routine_type,
             }),
             param_list.loc,
         ))),
@@ -250,6 +255,25 @@ pub fn eval_special_fn(lexical_env: SmartEnv, mut args: Vec<Node>) -> Continuati
             "list of parameters".to_string(),
             param_list.val,
             param_list.loc,
+        )),
+    }
+}
+
+pub fn eval_special_macroexpand1(
+    env: SmartEnv,
+    mut args: Vec<Node>,
+) -> ContinuationResult {
+
+    let unexpanded_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
+
+    match unexpanded_node.val {
+        Val::List { ..} => {
+            Ok(trampoline::bounce(eval::eval_list, env, unexpanded_node))
+        },
+        _ => Err(RuntimeError::UnexpectedValue(
+            "list".to_string(),
+            unexpanded_node.val,
+            unexpanded_node.loc,
         )),
     }
 }

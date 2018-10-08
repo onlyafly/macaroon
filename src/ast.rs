@@ -17,7 +17,7 @@ pub enum Val {
     StringVal(String),
     Symbol(String),
     Boolean(bool),
-    Function(FunctionObj),
+    Routine(RoutineObj),
     Primitive(PrimitiveObj),
     List { children: Vec<Node> },
     Writer(WriterObj),
@@ -45,8 +45,11 @@ impl Display for Val {
             }
             Val::Boolean(false) => write!(f, "false"),
             Val::Boolean(true) => write!(f, "true"),
-            Val::Function { .. } => write!(f, "#function"),
-            Val::Primitive(..) => write!(f, "#primitive"),
+            Val::Routine(RoutineObj{ routine_type: RoutineType::Function, name: None, .. }) => write!(f, "#function"),
+            Val::Routine(RoutineObj{ routine_type: RoutineType::Function, name: Some(s), .. }) => write!(f, "#function<{}>", s),
+            Val::Routine(RoutineObj{ routine_type: RoutineType::Macro, name: None, .. }) => write!(f, "#macro"),
+            Val::Routine(RoutineObj{ routine_type: RoutineType::Macro, name: Some(s), .. }) => write!(f, "#macro<{}>", s),
+            Val::Primitive(PrimitiveObj{ name, .. }) => write!(f, "#primitive<{}>", name),
             Val::Writer(..) => write!(f, "#writer"),
             Val::Reader(..) => write!(f, "#reader"),
         }
@@ -100,7 +103,7 @@ impl Val {
             Val::Symbol(..) => "symbol",
             Val::List { .. } => "list",
             Val::Boolean(..) => "boolean",
-            Val::Function { .. } => "function",
+            Val::Routine { .. } => "function",
             Val::Primitive(..) => "primitive",
             Val::Writer(..) => "writer",
             Val::Reader(..) => "reader",
@@ -138,7 +141,7 @@ impl Node {
                 Some(c) => Ok(Node::new(Val::Character(c.to_string()), self.loc)),
                 None => Ok(Node::new(Val::Nil, self.loc)),
             },
-            Val::List { mut children } => if children.len() == 0 {
+            Val::List { mut children, .. } => if children.len() == 0 {
                 Ok(Node::new(Val::Nil, self.loc))
             } else {
                 Ok(children.remove(0))
@@ -151,7 +154,7 @@ impl Node {
         match self.val {
             Val::Nil => Ok(Node::new(
                 Val::List {
-                    children: Vec::new(),
+                    children: Vec::new()
                 },
                 self.loc,
             )),
@@ -160,7 +163,7 @@ impl Node {
                 cs.next();
                 Ok(Node::new(Val::StringVal(cs.as_str().to_string()), self.loc))
             }
-            Val::List { mut children } => {
+            Val::List { mut children, .. } => {
                 if children.len() == 0 {
                     Ok(Node::new(Val::List { children }, self.loc))
                 } else {
@@ -245,11 +248,18 @@ impl Deref for Node {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct FunctionObj {
+pub enum RoutineType {
+    Function,
+    Macro,
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct RoutineObj {
     pub name: Option<String>,
     pub params: Vec<Node>,
     pub body: Box<Node>,
     pub lexical_env: SmartEnv,
+    pub routine_type: RoutineType,
 }
 
 #[derive(PartialEq, Debug, Clone)]
