@@ -2,25 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d48c5253-c1ef-492e-88ae-651fc9a07ecd" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/testsuite/functions/fn-value.out" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testsuite/functions/fn-value.q" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testsuite/primitives/primitive-value.out" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testsuite/primitives/primitive-value.q" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testsuite/routines_macros/macro1.out" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testsuite/routines_macros/macro1.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ast.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/ast.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/back/eval.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/back/eval.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/back/specials.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/back/specials.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/routines_macros/macro1.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/routines_macros/macro1.q" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/routines_macros/macro2.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/routines_macros/macro2.q" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/routines_macros/macro3.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/routines_macros/macro3.q" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/routines_macros/macroexpand1.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/routines_macros/macroexpand1.q" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/routines_macros/typeof-advanced.out" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/routines_macros/typeof-advanced.q" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/back/trampoline.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/back/trampoline.rs" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <ignored path="$PROJECT_DIR$/out/" />
@@ -44,14 +29,14 @@
         <counts>
           <entry key="out" value="48" />
           <entry key="q" value="38" />
-          <entry key="rs" value="750" />
+          <entry key="rs" value="1223" />
           <entry key="txt" value="6" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="92" />
-          <entry key="Rust" value="750" />
+          <entry key="Rust" value="1223" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -74,20 +59,51 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/back/eval.rs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="329">
-              <caret line="96" column="23" selection-start-line="96" selection-start-column="23" selection-end-line="96" selection-end-column="23" />
+            <state relative-caret-position="648">
+              <caret line="243" column="95" selection-start-line="243" selection-start-column="95" selection-end-line="243" selection-end-column="95" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/back/primitives.rs">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="295">
+              <caret line="244" column="6" lean-forward="true" selection-start-line="244" selection-start-column="6" selection-end-line="244" selection-end-column="6" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/back/trampoline.rs">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="410">
+              <caret line="38" column="1" lean-forward="true" selection-start-line="38" selection-start-column="1" selection-end-line="38" selection-end-column="1" />
+              <folding>
+                <element signature="e#754#755#0" expanded="true" />
+                <element signature="e#785#786#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/back/mod.rs">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="510">
+              <caret line="30" column="33" lean-forward="true" selection-start-line="30" selection-start-column="33" selection-end-line="30" selection-end-column="33" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/back/specials.rs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="733">
-              <caret line="269" column="28" lean-forward="true" selection-start-line="269" selection-start-column="28" selection-end-line="269" selection-end-column="28" />
+            <state relative-caret-position="752">
+              <caret line="270" column="60" lean-forward="true" selection-start-line="270" selection-start-column="60" selection-end-line="270" selection-end-column="60" />
             </state>
           </provider>
         </entry>
@@ -125,8 +141,10 @@
         <option value="$PROJECT_DIR$/testsuite/primitives/primitive-value.out" />
         <option value="$PROJECT_DIR$/testsuite/routines_macros/macro3.out" />
         <option value="$PROJECT_DIR$/src/ast.rs" />
-        <option value="$PROJECT_DIR$/src/back/eval.rs" />
+        <option value="$PROJECT_DIR$/src/back/trampoline.rs" />
+        <option value="$PROJECT_DIR$/src/back/primitives.rs" />
         <option value="$PROJECT_DIR$/src/back/specials.rs" />
+        <option value="$PROJECT_DIR$/src/back/eval.rs" />
       </list>
     </option>
   </component>
@@ -193,8 +211,9 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SearchEverywhereHistoryKey" value="rustfmt&#9;ACTION&#9;Rust.CargoFmtFile&#10;rustfm&#9;ACTION&#9;Rust.CargoFmtFile&#10;rust&#9;ACTION&#9;Rust.CargoFmtFile" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="settings.editor.selected.configurable" value="template.copyright.formatting" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -364,17 +383,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/back/eval.rs">
+    <entry file="file://$PROJECT_DIR$/src/back/mod.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="329">
-          <caret line="96" column="23" selection-start-line="96" selection-start-column="23" selection-end-line="96" selection-end-column="23" />
+        <state relative-caret-position="510">
+          <caret line="30" column="33" lean-forward="true" selection-start-line="30" selection-start-column="33" selection-end-line="30" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/back/trampoline.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="410">
+          <caret line="38" column="1" lean-forward="true" selection-start-line="38" selection-start-column="1" selection-end-line="38" selection-end-column="1" />
+          <folding>
+            <element signature="e#754#755#0" expanded="true" />
+            <element signature="e#785#786#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/back/primitives.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="295">
+          <caret line="244" column="6" lean-forward="true" selection-start-line="244" selection-start-column="6" selection-end-line="244" selection-end-column="6" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/back/specials.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="733">
-          <caret line="269" column="28" lean-forward="true" selection-start-line="269" selection-start-column="28" selection-end-line="269" selection-end-column="28" />
+        <state relative-caret-position="752">
+          <caret line="270" column="60" lean-forward="true" selection-start-line="270" selection-start-column="60" selection-end-line="270" selection-end-column="60" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/back/eval.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="648">
+          <caret line="243" column="95" selection-start-line="243" selection-start-column="95" selection-end-line="243" selection-end-column="95" />
         </state>
       </provider>
     </entry>

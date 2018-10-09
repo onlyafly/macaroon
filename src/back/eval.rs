@@ -4,13 +4,13 @@ use back::primitives::eval_primitive;
 use back::runtime_error::{check_args, RuntimeError};
 use back::specials;
 use back::trampoline;
-use back::trampoline::ContinuationResult;
+use back::trampoline::{ContinuationResult, Flag};
 use loc::Loc;
 use std::rc::Rc;
 
 type EvalResult = Result<Node, RuntimeError>;
 
-pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
+pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>, _: Flag) -> ContinuationResult {
     use ast::Val::*;
     match node {
         Node {
@@ -56,7 +56,7 @@ pub fn eval_each_node_for_single_output(
     Ok(output)
 }
 
-pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult {
+pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>, flag: Flag) -> ContinuationResult {
     let loc = node.loc;
     let mut args = match node.val {
         Val::List { children } => children,
@@ -142,7 +142,9 @@ pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult 
     }
 
     match evaled_head.val {
-        Val::Routine(..) | Val::Primitive(..) => eval_invoke_procedure(env, evaled_head, args),
+        Val::Routine(..) | Val::Primitive(..) => {
+            eval_invoke_procedure(env, evaled_head, args, flag)
+        }
         _ => Err(RuntimeError::UnableToEvalListStartingWith(
             format!("{}", evaled_head.val),
             loc,
@@ -150,13 +152,19 @@ pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>) -> ContinuationResult 
     }
 }
 
-pub fn eval_invoke_procedure(env: SmartEnv, head: Node, args: Vec<Node>) -> ContinuationResult {
+pub fn eval_invoke_procedure(
+    env: SmartEnv,
+    head: Node,
+    args: Vec<Node>,
+    flag: Flag,
+) -> ContinuationResult {
     match head.val {
         Val::Routine(..) => Ok(trampoline::bounce_with_nodes(
             eval_invoke_routine,
             Rc::clone(&env),
             head,
             args,
+            flag,
         )),
         Val::Primitive(obj) => {
             let out = eval_invoke_primitive(obj, Rc::clone(&env), args, head.loc)?;
@@ -183,6 +191,7 @@ pub fn eval_invoke_routine(
     dynamic_env: SmartEnv,
     fnode: Node,
     unevaled_args: Vec<Node>,
+    flag: Flag,
 ) -> ContinuationResult {
     let loc = fnode.loc;
 
@@ -233,18 +242,20 @@ pub fn eval_invoke_routine(
             RoutineType::Macro => {
                 let expanded_macro = trampoline::run(eval_node, lexical_env, *body)?;
 
-                let should_eval_macros = true; // TODO
-                if should_eval_macros {
-                    // This is executed in the environment of its application, not the
-                    // environment of its definition
-                    return Ok(trampoline::bounce(eval_node, dynamic_env, expanded_macro));
-                } else {
-                    return Ok(trampoline::finish(expanded_macro));
+                match flag {
+                    Flag::None => {
+                        // This is executed in the environment of its application, not the
+                        // environment of its definition
+                        return Ok(trampoline::bounce(eval_node, dynamic_env, expanded_macro));
+                    }
+                    Flag::DelayMacroEvaluation => {
+                        return Ok(trampoline::finish(expanded_macro));
+                    }
                 }
-            },
+            }
             RoutineType::Function => {
                 return Ok(trampoline::bounce(eval_node, lexical_env, *body));
-            },
+            }
         }
     }
 

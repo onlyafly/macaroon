@@ -1,9 +1,9 @@
-use ast::{RoutineObj, Node, RoutineType, Val};
+use ast::{Node, RoutineObj, RoutineType, Val};
 use back::env::{Env, SmartEnv};
 use back::eval;
 use back::runtime_error::RuntimeError;
 use back::trampoline;
-use back::trampoline::ContinuationResult;
+use back::trampoline::{ContinuationResult, Flag};
 use loc::Loc;
 use std::rc::Rc;
 
@@ -259,17 +259,19 @@ pub fn eval_special_routine(
     }
 }
 
-pub fn eval_special_macroexpand1(
-    env: SmartEnv,
-    mut args: Vec<Node>,
-) -> ContinuationResult {
-
+pub fn eval_special_macroexpand1(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
     let unexpanded_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
 
     match unexpanded_node.val {
-        Val::List { ..} => {
-            Ok(trampoline::bounce(eval::eval_list, env, unexpanded_node))
-        },
+        Val::List { .. } => {
+            let output = trampoline::run_with_flag(
+                eval::eval_list,
+                env,
+                unexpanded_node,
+                Flag::DelayMacroEvaluation,
+            )?;
+            Ok(trampoline::finish(output))
+        }
         _ => Err(RuntimeError::UnexpectedValue(
             "list".to_string(),
             unexpanded_node.val,
