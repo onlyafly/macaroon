@@ -336,7 +336,10 @@ fn eval_primitive_len(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runti
     Ok(Node::new(Val::Number(out as i32), loc))
 }
 
-fn eval_primitive_current_environment(env: SmartEnv, _args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_current_environment(
+    env: SmartEnv,
+    _args: Vec<Node>,
+) -> Result<Node, RuntimeError> {
     Ok(Node::new(Val::Environment(env), Loc::Unknown))
 }
 

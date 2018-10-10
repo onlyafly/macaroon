@@ -22,7 +22,13 @@ pub fn bounce(t: Thunk, e: SmartEnv, n: Node) -> Continuation {
     Continuation::Next(t, e, n, Vec::new(), Flag::None)
 }
 
-pub fn bounce_with_nodes(t: Thunk, e: SmartEnv, n: Node, ns: Vec<Node>, flag: Flag) -> Continuation {
+pub fn bounce_with_nodes(
+    t: Thunk,
+    e: SmartEnv,
+    n: Node,
+    ns: Vec<Node>,
+    flag: Flag,
+) -> Continuation {
     Continuation::Next(t, e, n, ns, flag)
 }
 
@@ -44,7 +50,13 @@ pub fn run_with_flag(t: Thunk, e: SmartEnv, n: Node, flag: Flag) -> Result<Node,
 
 // The trampoline iteratively calls a chain of thunks until there is no next thunk,
 // at which point it pulls the resulting Node out of the continuation and returns it.
-fn run_with_everything(t: Thunk, e: SmartEnv, n: Node, ns: Vec<Node>, flag: Flag) -> Result<Node, RuntimeError> {
+fn run_with_everything(
+    t: Thunk,
+    e: SmartEnv,
+    n: Node,
+    ns: Vec<Node>,
+    flag: Flag,
+) -> Result<Node, RuntimeError> {
     let mut current_t = t;
     let mut current_e = e;
     let mut current_n = n;

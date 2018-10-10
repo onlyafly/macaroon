@@ -2,29 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d48c5253-c1ef-492e-88ae-651fc9a07ecd" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/ast.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/ast.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/back/env.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/back/env.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/watcherTasks.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/back/primitives.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/back/primitives.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/current-environment.out" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/current-environment.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/current-environment.q" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/current-environment.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/eval-with-env1.out" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/eval-with-env1.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/eval-with-env1.q" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/eval-with-env1.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/eval-with-env2.out" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/eval-with-env2.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/eval-with-env2.q" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/eval-with-env2.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/eval-with-env3.out" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/eval-with-env3.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/eval-with-env3.q" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/eval-with-env3.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/eval1.out" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/eval1.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/eval1.q" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/eval1.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/read-string-and-eval.out" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/read-string-and-eval.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/read-string-and-eval.q" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/read-string-and-eval.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/read-string-error1.out" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/read-string-error1.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/read-string-error1.q" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/read-string-error1.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/read-string1.out" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/read-string1.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/read-string1.q" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/read-string1.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/read-string2.out" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/read-string2.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/read-string2.q" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/read-string2.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/readable-string.out" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/readable-string.out" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testsuite/xxx-old-vamos-test-suite/read_eval_environments/readable-string.q" beforeDir="false" afterPath="$PROJECT_DIR$/testsuite/read_eval_environments/readable-string.q" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/back/trampoline.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/back/trampoline.rs" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <ignored path="$PROJECT_DIR$/out/" />
@@ -38,24 +19,26 @@
     <session id="-1491267461">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="1" />
+          <entry key="project.closed" value="3" />
           <entry key="project.open.time.1" value="1" />
+          <entry key="project.open.time.11" value="1" />
           <entry key="project.open.time.4" value="1" />
-          <entry key="project.opened" value="2" />
+          <entry key="project.open.time.5" value="1" />
+          <entry key="project.opened" value="4" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="out" value="48" />
           <entry key="q" value="38" />
-          <entry key="rs" value="1892" />
+          <entry key="rs" value="1894" />
           <entry key="txt" value="6" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="92" />
-          <entry key="Rust" value="1892" />
+          <entry key="Rust" value="1894" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -81,8 +64,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/back/primitives.rs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="767">
-              <caret line="337" lean-forward="true" selection-start-line="337" selection-end-line="337" />
+            <state relative-caret-position="563">
+              <caret line="325" column="40" selection-start-line="325" selection-start-column="40" selection-end-line="325" selection-end-column="40" />
             </state>
           </provider>
         </entry>
@@ -91,11 +74,7 @@
         <entry file="file://$PROJECT_DIR$/src/back/env.rs">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="408">
-              <caret line="24" column="32" lean-forward="true" selection-start-line="24" selection-start-column="32" selection-end-line="24" selection-end-column="32" />
-              <folding>
-                <element signature="e#1482#1483#0" expanded="true" />
-                <element signature="e#1521#1522#0" expanded="true" />
-              </folding>
+              <caret line="24" column="32" selection-start-line="24" selection-start-column="32" selection-end-line="24" selection-end-column="32" />
             </state>
           </provider>
         </entry>
@@ -104,7 +83,7 @@
         <entry file="file://$PROJECT_DIR$/testsuite/read_eval_environments/eval1.q">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="17">
-              <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+              <caret line="1" selection-start-line="1" selection-end-line="1" />
             </state>
           </provider>
         </entry>
@@ -113,7 +92,7 @@
         <entry file="file://$PROJECT_DIR$/testsuite/read_eval_environments/eval1.out">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="17">
-              <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+              <caret line="1" selection-start-line="1" selection-end-line="1" />
             </state>
           </provider>
         </entry>
@@ -121,14 +100,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ast.rs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="359">
-              <caret line="70" column="52" lean-forward="true" selection-start-line="70" selection-start-column="52" selection-end-line="70" selection-end-column="52" />
-              <folding>
-                <element signature="e#4583#4584#0" expanded="true" />
-                <element signature="e#4615#4616#0" expanded="true" />
-                <element signature="e#8558#8559#0" expanded="true" />
-                <element signature="e#8582#8583#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="1190">
+              <caret line="70" column="52" selection-start-line="70" selection-start-column="52" selection-end-line="70" selection-end-column="52" />
             </state>
           </provider>
         </entry>
@@ -142,7 +115,7 @@
         <entry file="file://$PROJECT_DIR$/testsuite/read_eval_environments/current-environment.out">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="17">
-              <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+              <caret line="1" selection-start-line="1" selection-end-line="1" />
             </state>
           </provider>
         </entry>
@@ -173,10 +146,34 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="y" value="22" />
     <option name="width" value="2048" />
     <option name="height" value="1130" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State />
+          <State>
+            <id>Internationalization</id>
+          </State>
+          <State>
+            <id>Java</id>
+          </State>
+          <State>
+            <id>Java 9Java language level migration aidsJava</id>
+          </State>
+          <State>
+            <id>Java language level migration aidsJava</id>
+          </State>
+          <State>
+            <id>PerformanceJava</id>
+          </State>
+        </expanded-state>
+      </profile-state>
+    </entry>
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -243,9 +240,10 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="NewWatcherDialog.advanced.open" value="true" />
     <property name="SearchEverywhereHistoryKey" value="rustfmt&#9;ACTION&#9;Rust.CargoFmtFile&#10;rustfm&#9;ACTION&#9;Rust.CargoFmtFile&#10;rust&#9;ACTION&#9;Rust.CargoFmtFile" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
-    <property name="settings.editor.selected.configurable" value="language.rust.rustfmt" />
+    <property name="settings.editor.selected.configurable" value="watcher.settings" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -292,7 +290,7 @@
     <frame x="0" y="22" width="2048" height="1130" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49856323" visible="true" weight="0.1445663" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49856323" visible="true" weight="0.14755733" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Favorites" order="3" sideWeight="0.50143677" side_tool="true" weight="0.16899303" />
@@ -309,8 +307,8 @@
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="2" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="3" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="4" weight="0.25" />
-      <window_info active="true" anchor="right" id="Run" order="5" visible="true" weight="0.32751745" />
-      <window_info anchor="right" id="Terminal" order="6" weight="0.32901296" />
+      <window_info anchor="right" id="Run" order="5" weight="0.32751745" />
+      <window_info active="true" anchor="right" id="Terminal" order="6" visible="true" weight="0.32901296" />
     </layout>
   </component>
   <component name="UnknownFeatures">
@@ -426,10 +424,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="410">
           <caret line="38" column="1" selection-start-line="38" selection-start-column="1" selection-end-line="38" selection-end-column="1" />
-          <folding>
-            <element signature="e#754#755#0" expanded="true" />
-            <element signature="e#785#786#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -440,58 +434,48 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/testsuite/read_eval_environments/current-environment.q">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/testsuite/read_eval_environments/current-environment.out">
+    <entry file="file://$PROJECT_DIR$/src/back/primitives.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ast.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="359">
-          <caret line="70" column="52" lean-forward="true" selection-start-line="70" selection-start-column="52" selection-end-line="70" selection-end-column="52" />
-          <folding>
-            <element signature="e#4583#4584#0" expanded="true" />
-            <element signature="e#4615#4616#0" expanded="true" />
-            <element signature="e#8558#8559#0" expanded="true" />
-            <element signature="e#8582#8583#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="563">
+          <caret line="325" column="40" selection-start-line="325" selection-start-column="40" selection-end-line="325" selection-end-column="40" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/back/env.rs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="408">
-          <caret line="24" column="32" lean-forward="true" selection-start-line="24" selection-start-column="32" selection-end-line="24" selection-end-column="32" />
-          <folding>
-            <element signature="e#1482#1483#0" expanded="true" />
-            <element signature="e#1521#1522#0" expanded="true" />
-          </folding>
+          <caret line="24" column="32" selection-start-line="24" selection-start-column="32" selection-end-line="24" selection-end-column="32" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/testsuite/read_eval_environments/eval1.q">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
-          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/testsuite/read_eval_environments/eval1.out">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
-          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/back/primitives.rs">
+    <entry file="file://$PROJECT_DIR$/src/ast.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="767">
-          <caret line="337" lean-forward="true" selection-start-line="337" selection-end-line="337" />
+        <state relative-caret-position="1190">
+          <caret line="70" column="52" selection-start-line="70" selection-start-column="52" selection-end-line="70" selection-end-column="52" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/testsuite/read_eval_environments/current-environment.q">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/testsuite/read_eval_environments/current-environment.out">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
         </state>
       </provider>
     </entry>
