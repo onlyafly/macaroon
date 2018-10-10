@@ -16,8 +16,12 @@ pub struct Env {
 
 impl Env {
     pub fn new(parent: Option<SmartEnv>) -> SmartEnv {
+        let name = match parent {
+            None => "TopLevel",
+            Some(..) => "Local",
+        };
         let e = Env {
-            name: "NONAME".to_string(),
+            name: name.to_string(),
             map: HashMap::new(),
             parent,
         };

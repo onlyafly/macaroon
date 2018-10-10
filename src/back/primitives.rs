@@ -38,6 +38,9 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "rest", 1, 1)?;
     define_primitive(&mut menv, "len", 1, 1)?;
 
+    define_primitive(&mut menv, "current-environment", 0, 0)?;
+    define_primitive(&mut menv, "eval", 1, 1)?;
+
     Ok(())
 }
 
@@ -95,6 +98,9 @@ pub fn eval_primitive(
         "first" => eval_primitive_first,
         "rest" => eval_primitive_rest,
         "len" => eval_primitive_len,
+
+        "current-environment" => eval_primitive_current_environment,
+        "eval" => eval_primitive_eval,
 
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
@@ -328,4 +334,13 @@ fn eval_primitive_len(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runti
     let out = n.coll_len()?;
 
     Ok(Node::new(Val::Number(out as i32), loc))
+}
+
+fn eval_primitive_current_environment(env: SmartEnv, _args: Vec<Node>) -> Result<Node, RuntimeError> {
+    Ok(Node::new(Val::Environment(env), Loc::Unknown))
+}
+
+fn eval_primitive_eval(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let expr = args.remove(0);
+    trampoline::run(eval::eval_node, env, expr)
 }

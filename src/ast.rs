@@ -22,6 +22,7 @@ pub enum Val {
     List { children: Vec<Node> },
     Writer(WriterObj),
     Reader(ReaderObj),
+    Environment(SmartEnv),
 }
 
 impl Display for Val {
@@ -45,13 +46,30 @@ impl Display for Val {
             }
             Val::Boolean(false) => write!(f, "false"),
             Val::Boolean(true) => write!(f, "true"),
-            Val::Routine(RoutineObj{ routine_type: RoutineType::Function, name: None, .. }) => write!(f, "#function"),
-            Val::Routine(RoutineObj{ routine_type: RoutineType::Function, name: Some(s), .. }) => write!(f, "#function<{}>", s),
-            Val::Routine(RoutineObj{ routine_type: RoutineType::Macro, name: None, .. }) => write!(f, "#macro"),
-            Val::Routine(RoutineObj{ routine_type: RoutineType::Macro, name: Some(s), .. }) => write!(f, "#macro<{}>", s),
-            Val::Primitive(PrimitiveObj{ name, .. }) => write!(f, "#primitive<{}>", name),
+            Val::Routine(RoutineObj {
+                routine_type: RoutineType::Function,
+                name: None,
+                ..
+            }) => write!(f, "#function"),
+            Val::Routine(RoutineObj {
+                routine_type: RoutineType::Function,
+                name: Some(s),
+                ..
+            }) => write!(f, "#function<{}>", s),
+            Val::Routine(RoutineObj {
+                routine_type: RoutineType::Macro,
+                name: None,
+                ..
+            }) => write!(f, "#macro"),
+            Val::Routine(RoutineObj {
+                routine_type: RoutineType::Macro,
+                name: Some(s),
+                ..
+            }) => write!(f, "#macro<{}>", s),
+            Val::Primitive(PrimitiveObj { name, .. }) => write!(f, "#primitive<{}>", name),
             Val::Writer(..) => write!(f, "#writer"),
             Val::Reader(..) => write!(f, "#reader"),
+            Val::Environment(env) => write!(f, "#environment<{}>", env.borrow().name),
         }
     }
 }
@@ -107,6 +125,7 @@ impl Val {
             Val::Primitive(..) => "primitive",
             Val::Writer(..) => "writer",
             Val::Reader(..) => "reader",
+            Val::Environment(..) => "environment",
         };
 
         Ok(out.to_string())
@@ -154,7 +173,7 @@ impl Node {
         match self.val {
             Val::Nil => Ok(Node::new(
                 Val::List {
-                    children: Vec::new()
+                    children: Vec::new(),
                 },
                 self.loc,
             )),
