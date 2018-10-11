@@ -5,6 +5,7 @@ use back::env::{Env, SmartEnv};
 use back::eval;
 use back::runtime_error::{check_args, RuntimeError};
 use back::trampoline;
+use front;
 use loc::Loc;
 use std::cell::RefMut;
 use std::fs::File;
@@ -39,7 +40,9 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "len", 1, 1)?;
 
     define_primitive(&mut menv, "current-environment", 0, 0)?;
-    define_primitive(&mut menv, "eval", 1, 1)?;
+    define_primitive(&mut menv, "eval", 1, 2)?;
+    define_primitive(&mut menv, "read-string", 1, 1)?;
+    define_primitive(&mut menv, "readable-string", 1, 1)?;
 
     Ok(())
 }
@@ -101,6 +104,8 @@ pub fn eval_primitive(
 
         "current-environment" => eval_primitive_current_environment,
         "eval" => eval_primitive_eval,
+        "read-string" => eval_primitive_read_string,
+        "readable-string" => eval_primitive_readable_string,
 
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
@@ -345,5 +350,55 @@ fn eval_primitive_current_environment(
 
 fn eval_primitive_eval(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
     let expr = args.remove(0);
-    trampoline::run(eval::eval_node, env, expr)
+
+    let evaluation_env = if args.len() > 0 {
+        let n = args.remove(0);
+        match n.val {
+            Val::Environment(e) => e,
+            v => {
+                return Err(RuntimeError::UnexpectedValue(
+                    "environment".to_string(),
+                    v,
+                    n.loc,
+                ))
+            }
+        }
+    } else {
+        env
+    };
+
+    trampoline::run(eval::eval_node, evaluation_env, expr)
+}
+
+fn eval_primitive_read_string(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+    let arg = args.remove(0);
+
+    match arg.val {
+        Val::StringVal(s) => match front::parse("<eval>", &s) {
+            Ok(mut nodes) => Ok(nodes.remove(0)),
+            Err(mut errors) => {
+                let syntax_error = errors.remove(0);
+                Err(RuntimeError::SyntaxErrorDuringRead(
+                    s,
+                    syntax_error,
+                    arg.loc,
+                ))
+            }
+        },
+        v => Err(RuntimeError::UnexpectedValue(
+            "string".to_string(),
+            v,
+            arg.loc,
+        )),
+    }
+}
+
+fn eval_primitive_readable_string(
+    _env: SmartEnv,
+    mut args: Vec<Node>,
+) -> Result<Node, RuntimeError> {
+    let n = args.remove(0);
+    let s = format!("{}", n.val);
+
+    Ok(Node::new(Val::StringVal(s), n.loc))
 }

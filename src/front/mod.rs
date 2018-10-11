@@ -1,6 +1,6 @@
 mod parser;
 mod scanner;
-mod syntax_error;
+pub mod syntax_error;
 mod tokens;
 
 use ast::*;

@@ -1,5 +1,6 @@
 use ast::Node;
 use ast::Val;
+use front::syntax_error::SyntaxError;
 use loc::Loc;
 
 #[derive(Debug, PartialEq)]
@@ -39,6 +40,7 @@ pub enum RuntimeError {
     CannotConsOntoNonCollection(Val, Loc),
     CannotConsNonCharacterOntoString(Val, Loc),
     CannotGetLengthOfNonCollection(Val, Loc),
+    SyntaxErrorDuringRead(String, SyntaxError, Loc),
 }
 
 impl RuntimeError {
@@ -105,6 +107,7 @@ impl RuntimeError {
             CannotConsOntoNonCollection(val, _) => format!("Cannot cons onto a non-collection: {}", val),
             CannotConsNonCharacterOntoString(val, _) => format!("Cannot cons non-character onto a string: {}", val),
             CannotGetLengthOfNonCollection(val, _) => format!("Cannot get length of a non-collection: {}", val),
+            SyntaxErrorDuringRead(s, syntax_error, _) => format!("Unable to read string \"{}\": {}", s, syntax_error.display()),
         }
     }
 
@@ -135,6 +138,7 @@ impl RuntimeError {
             CannotConsOntoNonCollection(.., loc) => loc.clone(),
             CannotConsNonCharacterOntoString(.., loc) => loc.clone(),
             CannotGetLengthOfNonCollection(.., loc) => loc.clone(),
+            SyntaxErrorDuringRead(.., loc) => loc.clone(),
         }
     }
 }
