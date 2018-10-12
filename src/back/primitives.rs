@@ -289,7 +289,9 @@ fn eval_primitive_load(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runti
         .expect("something went wrong reading the file");
 
     let output = ::parse_eval_print(env, &filename, &contents);
-    println!("{}", output); // TODO: This doesn't actually deal with any errors while loading right now
+    if output != "nil".to_string() {
+        println!("{}", output);
+    }
 
     Ok(Node::new(Val::Nil, filename_node.loc))
 }
