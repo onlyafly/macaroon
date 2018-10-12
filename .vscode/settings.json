@@ -1,1 +1,4 @@
-{}
+{
+    "rust-client.channel": "stable",
+    "rust-client.updateOnStartup": true
+}
