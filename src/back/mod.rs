@@ -7,6 +7,7 @@ mod trampoline;
 
 use ast::{Node, ReaderObj, Val, WriterObj};
 use back::env::{Env, SmartEnv};
+use back::eval::NodeResult;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 use std::rc::Rc;
@@ -24,7 +25,7 @@ pub fn create_root_env(writer: WriterObj, reader: ReaderObj) -> Result<SmartEnv,
     Ok(env)
 }
 
-pub fn eval(env: SmartEnv, values: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn eval(env: SmartEnv, values: Vec<Node>) -> NodeResult {
     let mut output = Node::new(Val::Error("NO-INPUT".to_string()), Loc::Unknown); // TODO: should this be nil?
 
     for val in values {

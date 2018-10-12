@@ -8,7 +8,7 @@ use back::trampoline::{ContinuationResult, Flag};
 use loc::Loc;
 use std::rc::Rc;
 
-type EvalResult = Result<Node, RuntimeError>;
+pub type NodeResult = Result<Node, RuntimeError>;
 
 pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>, _: Flag) -> ContinuationResult {
     use ast::Val::*;
@@ -45,10 +45,7 @@ fn eval_each_node(env: SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, RuntimeE
     Ok(outputs)
 }
 
-pub fn eval_each_node_for_single_output(
-    env: SmartEnv,
-    nodes: Vec<Node>,
-) -> Result<Node, RuntimeError> {
+pub fn eval_each_node_for_single_output(env: SmartEnv, nodes: Vec<Node>) -> NodeResult {
     let mut output = Node::new(Val::Nil, Loc::Unknown);
     for node in nodes {
         output = trampoline::run(eval_node, Rc::clone(&env), node)?;
@@ -182,7 +179,7 @@ fn eval_invoke_primitive(
     dynamic_env: SmartEnv,
     unevaled_args: Vec<Node>,
     loc: Loc,
-) -> EvalResult {
+) -> NodeResult {
     let evaled_args = eval_each_node(Rc::clone(&dynamic_env), unevaled_args)?;
     eval_primitive(obj, dynamic_env, evaled_args, loc)
 }

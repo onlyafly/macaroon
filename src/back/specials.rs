@@ -238,7 +238,7 @@ pub fn eval_special_routine(
     routine_type: RoutineType,
 ) -> ContinuationResult {
     let param_list = args.remove(0);
-    let body = args.remove(0); // TODO: note that the body is only one node currently
+    let body = args.remove(0); // The body is only one node
 
     match param_list.val {
         Val::List { children } => Ok(trampoline::finish(Node::new(

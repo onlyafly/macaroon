@@ -1,0 +1,1 @@
+Runtime error (./testsuite/functions/fn-too-much-in-body.q:1): 'fn' expects 2 arg(s), but got 3

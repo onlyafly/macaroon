@@ -3,6 +3,7 @@
 use ast::{Node, PrimitiveObj, ReaderObj, Val, WriterObj};
 use back::env::{Env, SmartEnv};
 use back::eval;
+use back::eval::NodeResult;
 use back::runtime_error::{check_args, RuntimeError};
 use back::trampoline;
 use front;
@@ -71,7 +72,7 @@ pub fn eval_primitive(
     env: SmartEnv,
     mut args: Vec<Node>,
     loc: Loc,
-) -> Result<Node, RuntimeError> {
+) -> NodeResult {
     check_args(
         &primitive_obj.name,
         &loc,
@@ -118,7 +119,7 @@ pub fn eval_primitive(
     primitive_fn(env, args)
 }
 
-fn eval_primitive_not(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_not(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let one = args.remove(0);
 
     let one_bool = one.as_host_boolean()?;
@@ -129,7 +130,7 @@ fn eval_primitive_not(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runti
     Ok(result)
 }
 
-fn eval_primitive_add(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_add(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let one = args.remove(0);
     let two = args.remove(0);
 
@@ -142,7 +143,7 @@ fn eval_primitive_add(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runti
     Ok(result)
 }
 
-fn eval_primitive_subtract(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_subtract(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let one = args.remove(0);
     let two = args.remove(0);
 
@@ -155,7 +156,7 @@ fn eval_primitive_subtract(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, 
     Ok(result)
 }
 
-fn eval_primitive_equal(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_equal(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let a = args.remove(0);
     let b = args.remove(0);
 
@@ -164,7 +165,7 @@ fn eval_primitive_equal(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Run
     Ok(Node::new(Val::Boolean(output), a.loc))
 }
 
-fn eval_primitive_less_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_less_than(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let a = args.remove(0);
     let b = args.remove(0);
 
@@ -173,7 +174,7 @@ fn eval_primitive_less_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node,
     Ok(Node::new(Val::Boolean(output), a.loc))
 }
 
-fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let a = args.remove(0);
     let b = args.remove(0);
 
@@ -182,7 +183,7 @@ fn eval_primitive_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> Result<No
     Ok(Node::new(Val::Boolean(output), a.loc))
 }
 
-fn eval_primitive_panic(_env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_panic(_env: SmartEnv, args: Vec<Node>) -> NodeResult {
     let mut v = Vec::new();
     let mut loc = Loc::Unknown;
     for arg in args {
@@ -194,7 +195,7 @@ fn eval_primitive_panic(_env: SmartEnv, args: Vec<Node>) -> Result<Node, Runtime
     Err(RuntimeError::ApplicationPanic(output, loc))
 }
 
-fn eval_primitive_read_line(env: SmartEnv, _args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_read_line(env: SmartEnv, _args: Vec<Node>) -> NodeResult {
     match env.borrow().get("*reader*") {
         Some(node) => match node.val {
             Val::Reader(ReaderObj { reader_function }) => match reader_function() {
@@ -214,7 +215,7 @@ fn eval_primitive_read_line(env: SmartEnv, _args: Vec<Node>) -> Result<Node, Run
     }
 }
 
-fn eval_primitive_println(env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_println(env: SmartEnv, args: Vec<Node>) -> NodeResult {
     let mut v = Vec::new();
     let mut loc = Loc::Unknown;
     for arg in args {
@@ -241,7 +242,7 @@ fn eval_primitive_println(env: SmartEnv, args: Vec<Node>) -> Result<Node, Runtim
     Ok(Node::new(Val::Nil, loc))
 }
 
-fn eval_primitive_apply(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_apply(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let f = args.remove(0);
     let f_params_node = args.remove(0);
     let f_params = match f_params_node.val {
@@ -260,7 +261,7 @@ fn eval_primitive_apply(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runt
     Ok(output)
 }
 
-fn eval_primitive_typeof(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_typeof(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let arg = args.remove(0);
 
     let output = arg.type_name()?;
@@ -268,7 +269,7 @@ fn eval_primitive_typeof(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Ru
     Ok(Node::new(Val::Symbol(output), arg.loc))
 }
 
-fn eval_primitive_load(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_load(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let filename_node = args.remove(0);
 
     let filename = match filename_node.val {
@@ -296,7 +297,7 @@ fn eval_primitive_load(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runti
     Ok(Node::new(Val::Nil, filename_node.loc))
 }
 
-fn eval_primitive_str(_env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_str(_env: SmartEnv, args: Vec<Node>) -> NodeResult {
     let mut v = Vec::new();
     let mut loc = Loc::Unknown;
     for arg in args {
@@ -308,7 +309,7 @@ fn eval_primitive_str(_env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeEr
     Ok(Node::new(Val::StringVal(output), loc))
 }
 
-fn eval_primitive_concat(_env: SmartEnv, args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_concat(_env: SmartEnv, args: Vec<Node>) -> NodeResult {
     let mut output = Node::new(Val::Nil, Loc::Unknown);
     for mut arg in args {
         output = output.coll_append(arg)?;
@@ -317,7 +318,7 @@ fn eval_primitive_concat(_env: SmartEnv, args: Vec<Node>) -> Result<Node, Runtim
     Ok(output)
 }
 
-fn eval_primitive_cons(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_cons(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let elem = args.remove(0);
     let coll = args.remove(0);
 
@@ -326,15 +327,15 @@ fn eval_primitive_cons(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runt
     Ok(output)
 }
 
-fn eval_primitive_first(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_first(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(args.remove(0).coll_first()?)
 }
 
-fn eval_primitive_rest(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_rest(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(args.remove(0).coll_rest()?)
 }
 
-fn eval_primitive_len(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_len(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let n = args.remove(0);
     let loc = n.loc.clone();
 
@@ -343,14 +344,11 @@ fn eval_primitive_len(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runti
     Ok(Node::new(Val::Number(out as i32), loc))
 }
 
-fn eval_primitive_current_environment(
-    env: SmartEnv,
-    _args: Vec<Node>,
-) -> Result<Node, RuntimeError> {
+fn eval_primitive_current_environment(env: SmartEnv, _args: Vec<Node>) -> NodeResult {
     Ok(Node::new(Val::Environment(env), Loc::Unknown))
 }
 
-fn eval_primitive_eval(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_eval(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let expr = args.remove(0);
 
     let evaluation_env = if args.len() > 0 {
@@ -372,7 +370,7 @@ fn eval_primitive_eval(env: SmartEnv, mut args: Vec<Node>) -> Result<Node, Runti
     trampoline::run(eval::eval_node, evaluation_env, expr)
 }
 
-fn eval_primitive_read_string(_env: SmartEnv, mut args: Vec<Node>) -> Result<Node, RuntimeError> {
+fn eval_primitive_read_string(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let arg = args.remove(0);
 
     match arg.val {
@@ -395,10 +393,7 @@ fn eval_primitive_read_string(_env: SmartEnv, mut args: Vec<Node>) -> Result<Nod
     }
 }
 
-fn eval_primitive_readable_string(
-    _env: SmartEnv,
-    mut args: Vec<Node>,
-) -> Result<Node, RuntimeError> {
+fn eval_primitive_readable_string(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let n = args.remove(0);
     let s = format!("{}", n.val);
 

@@ -1,5 +1,6 @@
 use ast::Node;
 use back::env::SmartEnv;
+use back::eval::NodeResult;
 use back::runtime_error::RuntimeError;
 
 pub enum Flag {
@@ -36,27 +37,21 @@ pub fn finish(n: Node) -> Continuation {
     Continuation::Outcome(n)
 }
 
-pub fn run(t: Thunk, e: SmartEnv, n: Node) -> Result<Node, RuntimeError> {
+pub fn run(t: Thunk, e: SmartEnv, n: Node) -> NodeResult {
     run_with_everything(t, e, n, Vec::new(), Flag::None)
 }
 
-pub fn run_with_nodes(t: Thunk, e: SmartEnv, n: Node, ns: Vec<Node>) -> Result<Node, RuntimeError> {
+pub fn run_with_nodes(t: Thunk, e: SmartEnv, n: Node, ns: Vec<Node>) -> NodeResult {
     run_with_everything(t, e, n, ns, Flag::None)
 }
 
-pub fn run_with_flag(t: Thunk, e: SmartEnv, n: Node, flag: Flag) -> Result<Node, RuntimeError> {
+pub fn run_with_flag(t: Thunk, e: SmartEnv, n: Node, flag: Flag) -> NodeResult {
     run_with_everything(t, e, n, Vec::new(), flag)
 }
 
 // The trampoline iteratively calls a chain of thunks until there is no next thunk,
 // at which point it pulls the resulting Node out of the continuation and returns it.
-fn run_with_everything(
-    t: Thunk,
-    e: SmartEnv,
-    n: Node,
-    ns: Vec<Node>,
-    flag: Flag,
-) -> Result<Node, RuntimeError> {
+fn run_with_everything(t: Thunk, e: SmartEnv, n: Node, ns: Vec<Node>, flag: Flag) -> NodeResult {
     let mut current_t = t;
     let mut current_e = e;
     let mut current_n = n;
