@@ -35,6 +35,11 @@ pub enum RuntimeError {
         args_list: Vec<Node>,
         loc: Loc,
     },
+    TooManyFunctionParamsAfterRest {
+        function_name: Option<String>,
+        remaining_params: Vec<Node>,
+        loc: Loc,
+    },
     CannotAppendOnto(Val, Loc),
     CannotGetChildrenOfNonCollection(Val, Loc),
     CannotConsOntoNonCollection(Val, Loc),
@@ -102,6 +107,17 @@ impl RuntimeError {
                 Val::List{children: params_list.to_vec()},
                 Val::List{children: args_list.to_vec()},
             ),
+            TooManyFunctionParamsAfterRest {
+                function_name,
+                remaining_params,
+                ..
+            } => format!("Function{} should have exactly one parameter after '&rest', but found {}",
+                match function_name {
+                    Some(s) => format!(" '{}'", s),
+                    None => String::new(),
+                },
+                Val::List{children: remaining_params.to_vec()},
+            ),
             CannotAppendOnto(val, _) => format!("Cannot append onto: {}", val),
             CannotGetChildrenOfNonCollection(val, _) => format!("Cannot get children of a non-collection: {}", val),
             CannotConsOntoNonCollection(val, _) => format!("Cannot cons onto a non-collection: {}", val),
@@ -135,6 +151,7 @@ impl RuntimeError {
             CannotAppendOnto(.., loc) => loc.clone(),
             CannotGetChildrenOfNonCollection(.., loc) => loc.clone(),
             FunctionArgsDoNotMatchParams { loc, .. } => loc.clone(),
+            TooManyFunctionParamsAfterRest { loc, .. } => loc.clone(),
             CannotConsOntoNonCollection(.., loc) => loc.clone(),
             CannotConsNonCharacterOntoString(.., loc) => loc.clone(),
             CannotGetLengthOfNonCollection(.., loc) => loc.clone(),

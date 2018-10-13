@@ -193,12 +193,21 @@ pub fn eval_invoke_routine(
     let loc = fnode.loc;
 
     if let Val::Routine(robj) = fnode.val {
-        let params = robj.params;
+        let mut params = robj.params;
         let body = robj.body;
         let parent_lexical_env = robj.lexical_env;
 
-        // Validate params
-        if unevaled_args.len() != params.len() {
+        // Determine if there is a &rest param
+        let mut has_variable_params = false;
+        for param in &params {
+            if param.val == Val::Symbol("&rest".to_string()) {
+                has_variable_params = true;
+                break;
+            }
+        }
+
+        if !has_variable_params && (params.len() != unevaled_args.len()) {
+            // The args and params don't match
             return Err(RuntimeError::FunctionArgsDoNotMatchParams {
                 function_name: robj.name,
                 params_count: params.len(),
@@ -213,22 +222,43 @@ pub fn eval_invoke_routine(
         let lexical_env = Env::new(Some(parent_lexical_env));
 
         // Prepare the arguments for evaluation
-        let mut prepared_args = match robj.routine_type {
+        let mut args = match robj.routine_type {
             RoutineType::Macro => unevaled_args,
             RoutineType::Function => eval_each_node(Rc::clone(&dynamic_env), unevaled_args)?,
         };
 
         // Map arguments to parameters
-        for param in params {
-            let prepared_arg = if prepared_args.len() > 0 {
-                prepared_args.remove(0)
-            } else {
-                return Err(RuntimeError::Unknown("not enough args".to_string(), loc));
-            };
+        while params.len() > 0 {
+            let param = params.remove(0);
 
             match param.val {
+                Val::Symbol(ref name) if name == "&rest" => {
+                    if params.len() != 1 {
+                        return Err(RuntimeError::TooManyFunctionParamsAfterRest {
+                            function_name: robj.name,
+                            remaining_params: params,
+                            loc,
+                        });
+                    }
+
+                    let rest_param = params.remove(0);
+                    match rest_param.val {
+                        Val::Symbol(name) => {
+                            let l = Node::new(Val::List { children: args }, rest_param.loc);
+                            lexical_env.borrow_mut().define(&name, l)?;
+                            break;
+                        }
+                        v => return Err(RuntimeError::ParamsMustBeSymbols(v, loc)),
+                    }
+                }
                 Val::Symbol(name) => {
-                    lexical_env.borrow_mut().define(&name, prepared_arg)?;
+                    let arg = if args.len() > 0 {
+                        args.remove(0)
+                    } else {
+                        return Err(RuntimeError::Unknown("not enough args".to_string(), loc));
+                    };
+
+                    lexical_env.borrow_mut().define(&name, arg)?;
                 }
                 v => return Err(RuntimeError::ParamsMustBeSymbols(v, loc)),
             }
