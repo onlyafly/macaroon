@@ -69,6 +69,9 @@ impl<'a> Parser<'a> {
             }
 
             Token::StringLiteral(ref s) => Val::StringVal(s.clone()),
+            Token::Symbol(ref s) if s == "true" => Val::Boolean(true),
+            Token::Symbol(ref s) if s == "false" => Val::Boolean(false),
+            Token::Symbol(ref s) if s == "nil" => Val::Nil,
             Token::Symbol(ref s) => Val::Symbol(s.clone()),
             Token::SingleQuote => {
                 self.next_token(errors);

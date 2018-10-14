@@ -32,6 +32,7 @@ pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>, _: Flag) -> Continuati
         Node {
             val: StringVal(..), ..
         } => Ok(trampoline::finish(node)),
+        Node { val: Nil, .. } => Ok(trampoline::finish(node)),
         _ => Err(RuntimeError::UnableToEvalValue(node.val, node.loc)),
     }
 }

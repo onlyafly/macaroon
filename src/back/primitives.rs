@@ -45,6 +45,8 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "read-string", 1, 1)?;
     define_primitive(&mut menv, "readable-string", 1, 1)?;
 
+    define_primitive(&mut menv, "_host_inspect_", 1, 1)?;
+
     Ok(())
 }
 
@@ -107,6 +109,7 @@ pub fn eval_primitive(
         "eval" => eval_primitive_eval,
         "read-string" => eval_primitive_read_string,
         "readable-string" => eval_primitive_readable_string,
+        "_host_inspect_" => eval_primitive_host_inspect,
 
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
@@ -398,4 +401,11 @@ fn eval_primitive_readable_string(_env: SmartEnv, mut args: Vec<Node>) -> NodeRe
     let s = format!("{}", n.val);
 
     Ok(Node::new(Val::StringVal(s), n.loc))
+}
+
+fn eval_primitive_host_inspect(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+    let n = args.remove(0);
+    println!("{:?}", n);
+
+    Ok(Node::new(Val::Nil, n.loc))
 }

@@ -2,6 +2,7 @@
 
 (def a '(1))
 (def b '(1))
+
 (def c '(1))(def d '(1)) ; These are intentionally on the same line
 
 (list
