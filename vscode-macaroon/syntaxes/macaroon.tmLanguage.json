@@ -60,56 +60,75 @@
     ],
     "repository": {
         "comment": {
-            "begin": "(?<!\\\\);",
-            "beginCaptures": {
-                "0": {
-                    "name": "punctuation.definition.comment.clojure"
+            "patterns": [
+                {
+                    "name": "comment.block.macaroon",
+                    "begin": "#\\|",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.comment.macaroon"
+                        }
+                    },
+                    "end": "\\|#",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.comment.macaroon"
+                        }
+                    }
+                },
+                {
+                    "begin": "(?<!\\\\);",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.comment.macaroon"
+                        }
+                    },
+                    "end": "$",
+                    "name": "comment.line.semicolon.macaroon"
                 }
-            },
-            "end": "$",
-            "name": "comment.line.semicolon.clojure"
+            ]
         },
         "constants": {
             "patterns": [
                 {
                     "match": "(nil)(?=(\\s|\\)|\\]|\\}))",
-                    "name": "constant.language.nil.clojure"
+                    "name": "constant.language.nil.macaroon"
                 },
                 {
                     "match": "(true|false)",
-                    "name": "constant.language.boolean.clojure"
+                    "name": "constant.language.boolean.macaroon"
                 },
                 {
                     "match": "(-?\\d+/\\d+)",
-                    "name": "constant.numeric.ratio.clojure"
+                    "name": "constant.numeric.ratio.macaroon"
                 },
                 {
                     "match": "(-?\\d+[rR][0-9a-zA-Z]+)",
-                    "name": "constant.numeric.arbitrary-radix.clojure"
+                    "name": "constant.numeric.arbitrary-radix.macaroon"
                 },
                 {
                     "match": "(-?0[xX][0-9a-fA-F]+)",
-                    "name": "constant.numeric.hexadecimal.clojure"
+                    "name": "constant.numeric.hexadecimal.macaroon"
                 },
                 {
                     "match": "(-?0\\d+)",
-                    "name": "constant.numeric.octal.clojure"
+                    "name": "constant.numeric.octal.macaroon"
                 },
                 {
                     "match": "(-?\\d+\\.\\d+([eE][+-]?\\d+)?M)",
-                    "name": "constant.numeric.bigdecimal.clojure"
+                    "name": "constant.numeric.bigdecimal.macaroon"
                 },
                 {
                     "match": "(-?\\d+\\.\\d+([eE][+-]?\\d+)?)",
-                    "name": "constant.numeric.double.clojure"
+                    "name": "constant.numeric.double.macaroon"
                 },
                 {
                     "match": "(-?\\d+N)",
-                    "name": "constant.numeric.bigint.clojure"
+                    "name": "constant.numeric.bigint.macaroon"
                 },
                 {
                     "match": "(-?\\d+)",
-                    "name": "constant.numeric.long.clojure"
+                    "name": "constant.numeric.long.macaroon"
                 },
                 {
                     "include": "#keyword"
@@ -118,41 +137,41 @@
         },
         "keyword": {
             "match": "(?<=(\\s|\\(|\\[|\\{)):[a-zA-Z0-9\\#\\.\\-\\_\\:\\+\\=\\>\\<\\/\\!\\?\\*]+(?=(\\s|\\)|\\]|\\}|\\,))",
-            "name": "constant.keyword.clojure"
+            "name": "constant.keyword.macaroon"
         },
         "keyfn": {
             "patterns": [
                 {
                     "match": "(?<=(\\s|\\(|\\[|\\{))(if(-[-a-z\\?]*)?|when(-[-a-z]*)?|for(-[-a-z]*)?|cond|do|let(-[-a-z\\?]*)?|binding|loop|recur|fn|throw[a-z\\-]*|try|catch|finally|([a-z]*case))(?=(\\s|\\)|\\]|\\}))",
-                    "name": "storage.control.clojure"
+                    "name": "storage.control.macaroon"
                 },
                 {
                     "match": "(?<=(\\s|\\(|\\[|\\{))(declare-?|(in-)?ns|import|use|require|load|compile|(def[a-z\\-]*))(?=(\\s|\\)|\\]|\\}))",
-                    "name": "keyword.control.clojure"
+                    "name": "keyword.control.macaroon"
                 }
             ]
         },
         "dynamic-variables": {
             "match": "\\*[\\w\\.\\-\\_\\:\\+\\=\\>\\<\\!\\?\\d]+\\*",
-            "name": "meta.symbol.dynamic.clojure"
+            "name": "meta.symbol.dynamic.macaroon"
         },
         "map": {
             "begin": "(\\{)",
             "beginCaptures": {
                 "1": {
-                    "name": "punctuation.section.map.begin.clojure"
+                    "name": "punctuation.section.map.begin.macaroon"
                 }
             },
             "end": "(\\}(?=[\\}\\]\\)\\s]*(?:;|$)))|(\\})",
             "endCaptures": {
                 "1": {
-                    "name": "punctuation.section.map.end.trailing.clojure"
+                    "name": "punctuation.section.map.end.trailing.macaroon"
                 },
                 "2": {
-                    "name": "punctuation.section.map.end.clojure"
+                    "name": "punctuation.section.map.end.macaroon"
                 }
             },
-            "name": "meta.map.clojure",
+            "name": "meta.map.macaroon",
             "patterns": [
                 {
                     "include": "$self"
@@ -165,19 +184,19 @@
                     "begin": "(\\^\\{)",
                     "beginCaptures": {
                         "1": {
-                            "name": "punctuation.section.metadata.map.begin.clojure"
+                            "name": "punctuation.section.metadata.map.begin.macaroon"
                         }
                     },
                     "end": "(\\}(?=[\\}\\]\\)\\s]*(?:;|$)))|(\\})",
                     "endCaptures": {
                         "1": {
-                            "name": "punctuation.section.metadata.map.end.trailing.clojure"
+                            "name": "punctuation.section.metadata.map.end.trailing.macaroon"
                         },
                         "2": {
-                            "name": "punctuation.section.metadata.map.end.clojure"
+                            "name": "punctuation.section.metadata.map.end.macaroon"
                         }
                     },
-                    "name": "meta.metadata.map.clojure",
+                    "name": "meta.metadata.map.macaroon",
                     "patterns": [
                         {
                             "include": "$self"
@@ -187,7 +206,7 @@
                 {
                     "begin": "(\\^)",
                     "end": "(\\s)",
-                    "name": "meta.metadata.simple.clojure",
+                    "name": "meta.metadata.simple.macaroon",
                     "patterns": [
                         {
                             "include": "#keyword"
@@ -203,22 +222,22 @@
             "begin": "(['``]\\()",
             "beginCaptures": {
                 "1": {
-                    "name": "punctuation.section.expression.begin.clojure"
+                    "name": "punctuation.section.expression.begin.macaroon"
                 }
             },
             "end": "(\\))$|(\\)(?=[\\}\\]\\)\\s]*(?:;|$)))|(\\))",
             "endCaptures": {
                 "1": {
-                    "name": "punctuation.section.expression.end.trailing.clojure"
+                    "name": "punctuation.section.expression.end.trailing.macaroon"
                 },
                 "2": {
-                    "name": "punctuation.section.expression.end.trailing.clojure"
+                    "name": "punctuation.section.expression.end.trailing.macaroon"
                 },
                 "3": {
-                    "name": "punctuation.section.expression.end.clojure"
+                    "name": "punctuation.section.expression.end.macaroon"
                 }
             },
-            "name": "meta.quoted-expression.clojure",
+            "name": "meta.quoted-expression.macaroon",
             "patterns": [
                 {
                     "include": "$self"
@@ -229,16 +248,16 @@
             "begin": "#\"",
             "beginCaptures": {
                 "0": {
-                    "name": "punctuation.definition.regexp.begin.clojure"
+                    "name": "punctuation.definition.regexp.begin.macaroon"
                 }
             },
             "end": "\"",
             "endCaptures": {
                 "0": {
-                    "name": "punctuation.definition.regexp.end.clojure"
+                    "name": "punctuation.definition.regexp.end.macaroon"
                 }
             },
-            "name": "string.regexp.clojure",
+            "name": "string.regexp.macaroon",
             "patterns": [
                 {
                     "include": "#regexp_escaped_char"
@@ -247,25 +266,25 @@
         },
         "regexp_escaped_char": {
             "match": "\\\\.",
-            "name": "constant.character.escape.clojure"
+            "name": "constant.character.escape.macaroon"
         },
         "set": {
             "begin": "(\\#\\{)",
             "beginCaptures": {
                 "1": {
-                    "name": "punctuation.section.set.begin.clojure"
+                    "name": "punctuation.section.set.begin.macaroon"
                 }
             },
             "end": "(\\}(?=[\\}\\]\\)\\s]*(?:;|$)))|(\\})",
             "endCaptures": {
                 "1": {
-                    "name": "punctuation.section.set.end.trailing.clojure"
+                    "name": "punctuation.section.set.end.trailing.macaroon"
                 },
                 "2": {
-                    "name": "punctuation.section.set.end.clojure"
+                    "name": "punctuation.section.set.end.macaroon"
                 }
             },
-            "name": "meta.set.clojure",
+            "name": "meta.set.macaroon",
             "patterns": [
                 {
                     "include": "$self"
@@ -276,32 +295,32 @@
             "begin": "(\\()",
             "beginCaptures": {
                 "1": {
-                    "name": "punctuation.section.expression.begin.clojure"
+                    "name": "punctuation.section.expression.begin.macaroon"
                 }
             },
             "end": "(\\))$|(\\)(?=[\\}\\]\\)\\s]*(?:;|$)))|(\\))",
             "endCaptures": {
                 "1": {
-                    "name": "punctuation.section.expression.end.trailing.clojure"
+                    "name": "punctuation.section.expression.end.trailing.macaroon"
                 },
                 "2": {
-                    "name": "punctuation.section.expression.end.trailing.clojure"
+                    "name": "punctuation.section.expression.end.trailing.macaroon"
                 },
                 "3": {
-                    "name": "punctuation.section.expression.end.clojure"
+                    "name": "punctuation.section.expression.end.macaroon"
                 }
             },
-            "name": "meta.expression.clojure",
+            "name": "meta.expression.macaroon",
             "patterns": [
                 {
                     "begin": "(?<=\\()(ns|declare|def[\\w\\d._:+=><!?*-]*|[\\w._:+=><!?*-][\\w\\d._:+=><!?*-]*/def[\\w\\d._:+=><!?*-]*)\\s+",
                     "beginCaptures": {
                         "1": {
-                            "name": "keyword.control.clojure"
+                            "name": "keyword.control.macaroon"
                         }
                     },
                     "end": "(?=\\))",
-                    "name": "meta.definition.global.clojure",
+                    "name": "meta.definition.global.macaroon",
                     "patterns": [
                         {
                             "include": "#metadata"
@@ -311,7 +330,7 @@
                         },
                         {
                             "match": "([a-zA-Z\\.\\-\\_\\+\\=\\>\\<\\!\\?\\*][\\w\\.\\-\\_\\:\\+\\=\\>\\<\\!\\?\\*\\d]*)",
-                            "name": "entity.global.clojure"
+                            "name": "entity.global.macaroon"
                         },
                         {
                             "include": "$self"
@@ -340,7 +359,7 @@
                     "match": "(?<=\\()(.+?)(?=\\s|\\))",
                     "captures": {
                         "1": {
-                            "name": "entity.name.function.clojure"
+                            "name": "entity.name.function.macaroon"
                         }
                     },
                     "patterns": [
@@ -358,30 +377,30 @@
             "begin": "^(#!)",
             "beginCaptures": {
                 "1": {
-                    "name": "punctuation.definition.comment.shebang.clojure"
+                    "name": "punctuation.definition.comment.shebang.macaroon"
                 }
             },
             "end": "$",
-            "name": "comment.line.shebang.clojure"
+            "name": "comment.line.shebang.macaroon"
         },
         "string": {
             "begin": "(?<!\\\\)(\")",
             "beginCaptures": {
                 "1": {
-                    "name": "punctuation.definition.string.begin.clojure"
+                    "name": "punctuation.definition.string.begin.macaroon"
                 }
             },
             "end": "(\")",
             "endCaptures": {
                 "1": {
-                    "name": "punctuation.definition.string.end.clojure"
+                    "name": "punctuation.definition.string.end.macaroon"
                 }
             },
-            "name": "string.quoted.double.clojure",
+            "name": "string.quoted.double.macaroon",
             "patterns": [
                 {
                     "match": "\\\\.",
-                    "name": "constant.character.escape.clojure"
+                    "name": "constant.character.escape.macaroon"
                 }
             ]
         },
@@ -391,7 +410,7 @@
                     "match": "([a-zA-Z\\.\\-\\_\\+\\=\\>\\<\\!\\?\\*][\\w\\.\\-\\_\\:\\+\\=\\>\\<\\!\\?\\*\\d]*)/",
                     "captures": {
                         "1": {
-                            "name": "meta.symbol.namespace.clojure"
+                            "name": "meta.symbol.namespace.macaroon"
                         }
                     }
                 }
@@ -401,31 +420,31 @@
             "patterns": [
                 {
                     "match": "([a-zA-Z\\.\\-\\_\\+\\=\\>\\<\\!\\?\\*][\\w\\.\\-\\_\\:\\+\\=\\>\\<\\!\\?\\*\\d]*)",
-                    "name": "meta.symbol.clojure"
+                    "name": "meta.symbol.macaroon"
                 }
             ]
         },
         "var": {
             "match": "(?<=(\\s|\\(|\\[|\\{)\\#)'[a-zA-Z0-9\\.\\-\\_\\:\\+\\=\\>\\<\\/\\!\\?\\*]+(?=(\\s|\\)|\\]|\\}))",
-            "name": "meta.var.clojure"
+            "name": "meta.var.macaroon"
         },
         "vector": {
             "begin": "(\\[)",
             "beginCaptures": {
                 "1": {
-                    "name": "punctuation.section.vector.begin.clojure"
+                    "name": "punctuation.section.vector.begin.macaroon"
                 }
             },
             "end": "(\\](?=[\\}\\]\\)\\s]*(?:;|$)))|(\\])",
             "endCaptures": {
                 "1": {
-                    "name": "punctuation.section.vector.end.trailing.clojure"
+                    "name": "punctuation.section.vector.end.trailing.macaroon"
                 },
                 "2": {
-                    "name": "punctuation.section.vector.end.clojure"
+                    "name": "punctuation.section.vector.end.macaroon"
                 }
             },
-            "name": "meta.vector.clojure",
+            "name": "meta.vector.macaroon",
             "patterns": [
                 {
                     "include": "$self"
