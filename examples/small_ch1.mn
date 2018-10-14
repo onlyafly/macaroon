@@ -27,12 +27,13 @@
                      (s_eval-list (rest e) env)))))
 
 (defn s_eprogn (es env)
-    (if (list? es)
-        (if (list? (rest es))
+    ;DEBUG (println "s_eprogn:" es)
+    (if (not (empty? es))
+        (if (not (empty? (rest es)))
             (begin 
                 (evaluate (first es) env)
                 (s_eprogn (rest es) env))
-            (evaluate (first es)))
+            (evaluate (first es) env))
         nil
         ))
 
@@ -41,10 +42,15 @@
     (evaluate 1 ())
     1))
 
-(defmtest "Evaluate begin"
+(defmtest "Evaluate simple begin"
   (mt=
     (evaluate '(begin 1 2) ())
     2))
+
+(defmtest "Evaluate empty begin"
+  (mt=
+    (evaluate '(begin) ())
+    nil))
 
 #|
 (defmtest "Evaluate if #1"
