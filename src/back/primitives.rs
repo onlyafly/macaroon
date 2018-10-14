@@ -249,7 +249,7 @@ fn eval_primitive_apply(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let f = args.remove(0);
     let f_params_node = args.remove(0);
     let f_params = match f_params_node.val {
-        Val::List { children } => children,
+        Val::List(children) => children,
         v => {
             return Err(RuntimeError::UnexpectedValue(
                 "list".to_string(),

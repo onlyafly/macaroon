@@ -15,12 +15,7 @@ pub fn eval_special_list(env: SmartEnv, loc: Loc, args: Vec<Node>) -> Continuati
         evaled_args.push(evaled_child);
     }
 
-    Ok(trampoline::finish(Node::new(
-        Val::List {
-            children: evaled_args,
-        },
-        loc,
-    )))
+    Ok(trampoline::finish(Node::new(Val::List(evaled_args), loc)))
 }
 
 pub fn eval_special_quote(mut args: Vec<Node>) -> ContinuationResult {
@@ -54,9 +49,7 @@ pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
     let bindings_node = args.remove(0);
 
     match bindings_node.val {
-        Val::List {
-            children: mut bindings_vec,
-        } => {
+        Val::List(mut bindings_vec) => {
             let bindings_env = Env::new(Some(Rc::clone(&env)));
 
             while bindings_vec.len() > 1 {
@@ -129,7 +122,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
 
         if let Some(entry) = mutable_env.remove(&name) {
             match entry.val {
-                Val::List { mut children } => {
+                Val::List(mut children) => {
                     //TODO: get num from index_value instead of using zero
 
                     if index >= children.len() {
@@ -141,7 +134,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
                     }
 
                     children[index] = newval_node;
-                    mutable_env.update(&name, Node::new(Val::List { children }, loc.clone()))?;
+                    mutable_env.update(&name, Node::new(Val::List(children), loc.clone()))?;
                 }
                 _ => {
                     return Err(RuntimeError::CannotUpdateElementInValue(entry.val, loc));
@@ -241,7 +234,7 @@ pub fn eval_special_routine(
     let body = args.remove(0); // The body is only one node
 
     match param_list.val {
-        Val::List { children } => Ok(trampoline::finish(Node::new(
+        Val::List(children) => Ok(trampoline::finish(Node::new(
             Val::Routine(RoutineObj {
                 name: None,
                 params: children,
@@ -263,7 +256,7 @@ pub fn eval_special_macroexpand1(env: SmartEnv, mut args: Vec<Node>) -> Continua
     let unexpanded_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
 
     match unexpanded_node.val {
-        Val::List { .. } => {
+        Val::List(..) => {
             let output = trampoline::run_with_flag(
                 eval::eval_list,
                 env,

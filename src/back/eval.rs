@@ -11,24 +11,13 @@ use std::rc::Rc;
 pub type NodeResult = Result<Node, RuntimeError>;
 
 pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>, _: Flag) -> ContinuationResult {
-    use ast::Val::*;
     match node.val {
-        List { .. } => Ok(trampoline::bounce(eval_list, env, node)),
-        Symbol(name) => match env.borrow_mut().get(&name) {
+        Val::List(..) => Ok(trampoline::bounce(eval_list, env, node)),
+        Val::Symbol(name) => match env.borrow_mut().get(&name) {
             Some(node) => Ok(trampoline::finish(node)),
             None => Err(RuntimeError::UndefinedName(name, node.loc)),
         },
-        Number(..) => Ok(trampoline::finish(node)),
-        Character(..) => Ok(trampoline::finish(node)),
-        StringVal(..) => Ok(trampoline::finish(node)),
-        Nil => Ok(trampoline::finish(node)),
-        Boolean(..) => Ok(trampoline::finish(node)),
-        Primitive(..) => Ok(trampoline::finish(node)),
-        Routine(..) => Ok(trampoline::finish(node)),
-        Writer(..) => Ok(trampoline::finish(node)),
-        Reader(..) => Ok(trampoline::finish(node)),
-        Environment(..) => Ok(trampoline::finish(node)),
-        Error(..) => Ok(trampoline::finish(node)),
+        _ => Ok(trampoline::finish(node)),
     }
 }
 
@@ -52,7 +41,7 @@ pub fn eval_each_node_for_single_output(env: SmartEnv, nodes: Vec<Node>) -> Node
 pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>, flag: Flag) -> ContinuationResult {
     let loc = node.loc;
     let mut args = match node.val {
-        Val::List { children } => children,
+        Val::List(children) => children,
         _ => panic!("expected list"),
     };
 
@@ -240,7 +229,7 @@ pub fn eval_invoke_routine(
                     let rest_param = params.remove(0);
                     match rest_param.val {
                         Val::Symbol(name) => {
-                            let l = Node::new(Val::List { children: args }, rest_param.loc);
+                            let l = Node::new(Val::List(args), rest_param.loc);
                             lexical_env.borrow_mut().define(&name, l)?;
                             break;
                         }

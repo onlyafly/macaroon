@@ -80,7 +80,7 @@ impl<'a> Parser<'a> {
                     self.make_node(Val::Symbol("quote".to_string())),
                     quoted_value,
                 ];
-                Val::List { children }
+                Val::List(children)
             }
             Token::LeftParen => {
                 self.next_token(errors);
@@ -96,7 +96,7 @@ impl<'a> Parser<'a> {
                     self.next_token(errors);
                 }
 
-                Val::List { children }
+                Val::List(children)
             }
             Token::RightParen => {
                 errors.push(SyntaxError::UnbalancedParens(self.loc()));
