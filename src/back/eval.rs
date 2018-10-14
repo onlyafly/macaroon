@@ -46,7 +46,7 @@ pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>, flag: Flag) -> Continu
     };
 
     if args.len() == 0 {
-        return Err(RuntimeError::CannotEvalEmptyList(loc));
+        return Ok(trampoline::finish(Node::new(Val::List(vec![]), loc)));
     }
 
     let head_node = args.remove(0);
