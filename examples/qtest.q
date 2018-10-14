@@ -42,7 +42,7 @@
       (println "TEST FAILED. EXPECTED <" expected "> BUT GOT <" actual ">")
       false)))
 
-(defn qt-start ()
+(defn qtest-start ()
   (println "Running qtest tests...")
   (_qtest_runtests _qtest_tests)
   (println "Tests complete..."))

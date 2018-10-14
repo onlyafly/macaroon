@@ -29,4 +29,13 @@
       )
     ))
 
-(qt-start)
+(defqtest "Case macro"
+  (qt= (macroexpand1 '(case (+ 1 2) 1 'a 2 'b))
+       '(let (____case1 (+ 1 2))
+          (cond
+            (= ____case1 1) 'a
+            (= ____case2 2) 'b
+            ))
+       ))
+
+(qtest-start)

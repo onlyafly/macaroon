@@ -120,6 +120,12 @@
   (list 'cond condition consequent
               true      alternative))
 
+(defn )
+
+(defmacro case (v &rest args)
+  (list 'let (list '___case1 v)
+    (list 'cond)))
+
 ;;;;;;;;;;
 
 "Prelude version 2018-10-13"

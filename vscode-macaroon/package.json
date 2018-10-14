@@ -1,0 +1,40 @@
+{
+    "name": "vscode-quivi",
+    "displayName": "vscode-quivi",
+    "description": "VS Code support for Quivi",
+    "version": "0.0.1",
+    "publisher": "onlyafly",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlyafly/vscode-quivi.git"
+    },
+    "engines": {
+        "vscode": "^1.28.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "quivi",
+                "aliases": [
+                    "Quivi",
+                    "quivi"
+                ],
+                "extensions": [
+                    ".q",
+                    ".quivi"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "quivi",
+                "scopeName": "source.quivi",
+                "path": "./syntaxes/quivi2.tmLanguage.json"
+            }
+        ]
+    }
+}
