@@ -142,7 +142,7 @@ impl PartialOrd for Val {
     }
 }
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(Debug, Clone)]
 pub struct Node {
     pub val: Val,
     pub loc: Loc,
@@ -221,7 +221,7 @@ impl Node {
                 Ok(Node::new(Val::StringVal(out), loc))
             }
             Val::List { mut children } => {
-                children.push(elem);
+                children.insert(0, elem);
                 Ok(Node::new(Val::List { children }, loc))
             }
             v => Err(RuntimeError::CannotConsOntoNonCollection(v, loc)),
@@ -255,6 +255,14 @@ impl Node {
             }
             v => Err(RuntimeError::CannotAppendOnto(v, self.loc)),
         }
+    }
+}
+
+// By implementing manually, we ensure that the metadata (loc, etc) is not checked
+// for equality
+impl PartialEq for Node {
+    fn eq(&self, other: &Node) -> bool {
+        self.val == other.val
     }
 }
 
