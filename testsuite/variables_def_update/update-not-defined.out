@@ -1,1 +1,1 @@
-Runtime error (./testsuite/variables_def_update/update-not-defined.q:1): Cannot update an undefined name: x
+Runtime error (./testsuite/variables_def_update/update-not-defined.mn:1): Cannot update an undefined name: x

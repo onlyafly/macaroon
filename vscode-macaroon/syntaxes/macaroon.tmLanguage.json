@@ -6,8 +6,8 @@
         "Once accepted there, we are happy to receive an update request."
     ],
     "version": "1.0.0",
-    "name": "Quivi",
-    "scopeName": "source.quivi",
+    "name": "Macaroon",
+    "scopeName": "source.macaroon",
     "patterns": [
         {
             "include": "#comment"

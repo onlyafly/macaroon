@@ -1,1 +1,1 @@
-Syntax error (./testsuite/char_and_string_types/chars-error1.q:1): Unparsable character literal: \dude
+Syntax error (./testsuite/char_and_string_types/chars-error1.mn:1): Unparsable character literal: \dude

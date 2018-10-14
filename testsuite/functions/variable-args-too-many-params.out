@@ -1,1 +1,1 @@
-Runtime error (./testsuite/functions/variable-args-too-many-params.q:2): Function 'f' should have exactly one parameter after '&rest', but found (b c)
+Runtime error (./testsuite/functions/variable-args-too-many-params.mn:2): Function 'f' should have exactly one parameter after '&rest', but found (b c)

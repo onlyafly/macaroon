@@ -1,13 +1,6 @@
 # Todo
 
-Retain history in tool.
-
 Make tool support command line args.
-
-
-
-Create a Quivi VSCode extension:
-https://code.visualstudio.com/docs/extensionAPI/overview
 
 Fix pub mods to only expose what's needed.
 

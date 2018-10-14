@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/quivi.iml" filepath="$PROJECT_DIR$/quivi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/macaroon.iml" filepath="$PROJECT_DIR$/macaroon.iml" />
     </modules>
   </component>
 </project>

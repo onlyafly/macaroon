@@ -1,10 +1,10 @@
 // extern crate we're testing, same as any other code would do.
 extern crate colored;
-extern crate quivi;
+extern crate macaroon;
 
 use colored::*;
-use quivi::ast::{ReaderObj, WriterObj};
-use quivi::back;
+use macaroon::ast::{ReaderObj, WriterObj};
+use macaroon::back;
 use std::cell::RefCell;
 use std::error::Error;
 use std::ffi::OsStr;
@@ -30,7 +30,7 @@ fn test_suite() {
             for file_entry_result in fs::read_dir(folder_entry_path).unwrap() {
                 let path = file_entry_result.unwrap().path();
 
-                if Some(OsStr::new("q")) == path.extension() {
+                if Some(OsStr::new("mn")) == path.extension() {
                     let input_contents = read_text_contents(&path);
 
                     let buffer = Rc::new(RefCell::new(Vec::<u8>::new()));
@@ -41,7 +41,7 @@ fn test_suite() {
                         Err(_err) => panic!("Problem creating root env"),
                     };
 
-                    let interpreter_output = quivi::parse_eval_print(
+                    let interpreter_output = macaroon::parse_eval_print(
                         env,
                         path.to_str().unwrap(),
                         input_contents.trim_right(),
@@ -67,7 +67,7 @@ fn test_suite() {
     }
 
     if failures.len() > 0 {
-        println!("\n{}\n", "Quivi Test Suite Failures".magenta().bold());
+        println!("\n{}\n", "Macaroon Test Suite Failures".magenta().bold());
 
         let mut count: i32 = 1;
         for failure in failures {
@@ -92,7 +92,7 @@ fn test_suite() {
 
 fn read_text_contents(path: &PathBuf) -> String {
     // Create a path to the desired file
-    //let path = Path::new("testsuite/1.q");
+    //let path = Path::new("testsuite/1.mn");
     let display = path.display();
 
     // Open the path in read-only mode, returns `io::Result<File>`

@@ -1,4 +1,4 @@
-# quivi: The Quivi Programming Language
+# macaroon: The Macaroon Programming Language
 
 ## Set up your environment
 

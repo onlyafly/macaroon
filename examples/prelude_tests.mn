@@ -1,16 +1,16 @@
-(load "examples/prelude.q")
-(load "examples/qtest.q")
+(load "examples/prelude.mn")
+(load "examples/mtest.mn")
 
 ;;;;;;;;;; Tests
 
-(defqtest "Truthful values in 'if'"
-  (qt= (list
+(defmtest "Truthful values in 'if'"
+  (mt= (list
        (if (quote true) 1 2)
        (if true 1 2))
      '(1 1)))
 
-(defqtest "Recursion"
-  (qt=
+(defmtest "Recursion"
+  (mt=
     '(nil nil 5)
     (list
       (defn bar (exps)
@@ -29,8 +29,8 @@
       )
     ))
 
-(defqtest "Case macro"
-  (qt= (macroexpand1 '(case (+ 1 2) 1 'a 2 'b))
+(defmtest "Case macro"
+  (mt= (macroexpand1 '(case (+ 1 2) 1 'a 2 'b))
        '(let (____case1 (+ 1 2))
           (cond
             (= ____case1 1) 'a
@@ -38,4 +38,4 @@
             ))
        ))
 
-(qtest-start)
+(mtest-start)

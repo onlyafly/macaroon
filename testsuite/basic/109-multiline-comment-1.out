@@ -1,1 +1,1 @@
-Runtime error (./testsuite/basic/109-multiline-comment-1.q:3): Undefined name: foo
+Runtime error (./testsuite/basic/109-multiline-comment-1.mn:3): Undefined name: foo

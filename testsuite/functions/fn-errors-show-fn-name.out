@@ -1,1 +1,1 @@
-Runtime error (./testsuite/functions/fn-errors-show-fn-name.q:1): Function 'foo' expects 0 argument(s), but was given 1. Function parameter list: (). Arguments: (1)
+Runtime error (./testsuite/functions/fn-errors-show-fn-name.mn:1): Function 'foo' expects 0 argument(s), but was given 1. Function parameter list: (). Arguments: (1)

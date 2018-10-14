@@ -13,4 +13,4 @@ Cargo.lock
 **/*.rs.bk
 
 .DS_Store
-.quivi_history
+.macaroon_history

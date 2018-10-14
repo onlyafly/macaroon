@@ -1,4 +1,4 @@
-;; See tail-call-1.q for comparison
+;; See tail-call-1.mn for comparison
 
 (def f (fn (n)
     (for i n 10000

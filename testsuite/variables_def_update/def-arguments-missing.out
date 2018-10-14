@@ -1,1 +1,1 @@
-Runtime error (./testsuite/variables_def_update/def-arguments-missing.q:1): 'def' expects 2 arg(s), but got 0
+Runtime error (./testsuite/variables_def_update/def-arguments-missing.mn:1): 'def' expects 2 arg(s), but got 0

@@ -1,1 +1,1 @@
-Runtime error (./testsuite/special-forms/204-unknown-form.q:2): Undefined name: this-is-unknown
+Runtime error (./testsuite/special-forms/204-unknown-form.mn:2): Undefined name: this-is-unknown

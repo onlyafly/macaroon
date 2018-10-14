@@ -1,1 +1,1 @@
-Runtime error (./testsuite/primitives_collections/cons-on-strings-bad.q:1): Cannot cons non-character onto a string: 1
+Runtime error (./testsuite/primitives_collections/cons-on-strings-bad.mn:1): Cannot cons non-character onto a string: 1

@@ -1,12 +1,12 @@
 {
-    "name": "vscode-quivi",
-    "displayName": "vscode-quivi",
-    "description": "VS Code support for Quivi",
+    "name": "vscode-macaroon",
+    "displayName": "vscode-macaroon",
+    "description": "VS Code support for Macaroon",
     "version": "0.0.1",
     "publisher": "onlyafly",
     "repository": {
         "type": "git",
-        "url": "https://github.com/onlyafly/vscode-quivi.git"
+        "url": "https://github.com/onlyafly/vscode-macaroon.git"
     },
     "engines": {
         "vscode": "^1.28.0"
@@ -17,23 +17,23 @@
     "contributes": {
         "languages": [
             {
-                "id": "quivi",
+                "id": "macaroon",
                 "aliases": [
-                    "Quivi",
-                    "quivi"
+                    "Macaroon",
+                    "macaroon"
                 ],
                 "extensions": [
-                    ".q",
-                    ".quivi"
+                    ".mn",
+                    ".macaroon"
                 ],
                 "configuration": "./language-configuration.json"
             }
         ],
         "grammars": [
             {
-                "language": "quivi",
-                "scopeName": "source.quivi",
-                "path": "./syntaxes/quivi2.tmLanguage.json"
+                "language": "macaroon",
+                "scopeName": "source.macaroon",
+                "path": "./syntaxes/macaroon.tmLanguage.json"
             }
         ]
     }

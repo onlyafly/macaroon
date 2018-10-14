@@ -1,6 +1,6 @@
-# Quivi Language Support for Visual Studio Code
+# Macaroon Language Support for Visual Studio Code
 
-This extension add Quivi language support to VS Code.
+This extension add Macaroon language support to VS Code.
 
 ## Features
 
@@ -30,11 +30,11 @@ This will package your extension into a `.vsix` file and place it in the current
 
 ## Credits
 
-The quivi2.tmLanguage.json file is modified from the Clojure syntax file included in VSCode:
+The macaroon2.tmLanguage.json file is modified from the Clojure syntax file included in VSCode:
 
 [https://github.com/Microsoft/vscode/blob/master/extensions/clojure/syntaxes/clojure.tmLanguage.json](https://github.com/Microsoft/vscode/blob/master/extensions/clojure/syntaxes/clojure.tmLanguage.json)
 
-The quivi.tmLanguage file is modified from an earlier Scheme extension by Allen Huang.
+The macaroon.tmLanguage file is modified from an earlier Scheme extension by Allen Huang.
 
 [https://github.com/sjhuangx/vscode-scheme](https://github.com/sjhuangx/vscode-scheme)
 

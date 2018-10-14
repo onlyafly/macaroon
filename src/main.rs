@@ -1,8 +1,8 @@
-extern crate quivi;
+extern crate macaroon;
 extern crate rustyline;
 
-use quivi::ast::{ReaderObj, WriterObj};
-use quivi::back;
+use macaroon::ast::{ReaderObj, WriterObj};
+use macaroon::back;
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 use std::rc::Rc;
@@ -20,7 +20,7 @@ fn reader_function() -> Result<String, String> {
 }
 
 fn main() {
-    let history_path = ".quivi_history";
+    let history_path = ".macaroon_history";
 
     // `()` can be used when no completer is required
     let mut rl = Editor::<()>::new();
@@ -41,7 +41,7 @@ fn main() {
             Ok(line) => {
                 rl.add_history_entry(line.as_ref());
 
-                let output = quivi::parse_eval_print(Rc::clone(&env), "REPL", &line);
+                let output = macaroon::parse_eval_print(Rc::clone(&env), "REPL", &line);
                 println!("{}", output);
             }
             Err(ReadlineError::Interrupted) => {

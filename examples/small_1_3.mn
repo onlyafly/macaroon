@@ -1,5 +1,5 @@
-(load "examples/prelude.q")
-(load "examples/qtest.q")
+(load "examples/prelude.mn")
+(load "examples/mtest.mn")
 
 (defn evaluate (e env)
     (if (atom? e)
@@ -11,9 +11,9 @@
             TODO
             (else TODO))))
 
-(defqtest "Evaluate atom"
-  (qt=
+(defmtest "Evaluate atom"
+  (mt=
     (evaluate 1 ())
     1))
 
-(qtest-start)
+(mtest-start)
