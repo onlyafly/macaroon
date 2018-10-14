@@ -20,9 +20,11 @@ fn reader_function() -> Result<String, String> {
 }
 
 fn main() {
+    let history_path = ".quivi_history";
+
     // `()` can be used when no completer is required
     let mut rl = Editor::<()>::new();
-    if rl.load_history("history.txt").is_err() {
+    if rl.load_history(history_path).is_err() {
         println!("No previous history.");
     }
 
@@ -56,5 +58,6 @@ fn main() {
             }
         }
     }
-    //TODO rl.save_history("history.txt").unwrap();
+
+    rl.save_history(history_path).unwrap();
 }
