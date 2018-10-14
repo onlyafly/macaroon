@@ -245,7 +245,7 @@ impl Node {
         match self.val {
             Val::Nil => Ok(other),
             Val::StringVal(s) => {
-                let output = format!("{}{}", s, other.as_print_friendly_string()); // FIXME
+                let output = format!("{}{}", s, other.as_print_friendly_string());
                 Ok(Node::new(Val::StringVal(output), self.loc))
             }
             Val::List { mut children } => {

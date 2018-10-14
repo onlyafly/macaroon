@@ -30,11 +30,6 @@ impl Env {
 
     // Define a new variable, or update an existing one
     pub fn define(&mut self, k: &str, v: Node) -> Result<(), RuntimeError> {
-        /* FIXME
-        if self.map.contains_key(k) {
-            Err(RuntimeError::CannotRedefine(k.to_string(), v.loc))
-        } else {
-        */
         self.map.insert(k.to_string(), v);
         Ok(())
     }

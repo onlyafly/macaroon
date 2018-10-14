@@ -12,28 +12,23 @@ pub type NodeResult = Result<Node, RuntimeError>;
 
 pub fn eval_node(env: SmartEnv, node: Node, _: Vec<Node>, _: Flag) -> ContinuationResult {
     use ast::Val::*;
-    match node {
-        Node {
-            val: List { .. }, ..
-        } => Ok(trampoline::bounce(eval_list, env, node)),
-        Node {
-            val: Symbol(name),
-            loc,
-        } => match env.borrow_mut().get(&name) {
+    match node.val {
+        List { .. } => Ok(trampoline::bounce(eval_list, env, node)),
+        Symbol(name) => match env.borrow_mut().get(&name) {
             Some(node) => Ok(trampoline::finish(node)),
-            None => Err(RuntimeError::UndefinedName(name, loc)),
+            None => Err(RuntimeError::UndefinedName(name, node.loc)),
         },
-        Node {
-            val: Number(..), ..
-        } => Ok(trampoline::finish(node)),
-        Node {
-            val: Character(..), ..
-        } => Ok(trampoline::finish(node)),
-        Node {
-            val: StringVal(..), ..
-        } => Ok(trampoline::finish(node)),
-        Node { val: Nil, .. } => Ok(trampoline::finish(node)),
-        _ => Err(RuntimeError::UnableToEvalValue(node.val, node.loc)),
+        Number(..) => Ok(trampoline::finish(node)),
+        Character(..) => Ok(trampoline::finish(node)),
+        StringVal(..) => Ok(trampoline::finish(node)),
+        Nil => Ok(trampoline::finish(node)),
+        Boolean(..) => Ok(trampoline::finish(node)),
+        Primitive(..) => Ok(trampoline::finish(node)),
+        Routine(..) => Ok(trampoline::finish(node)),
+        Writer(..) => Ok(trampoline::finish(node)),
+        Reader(..) => Ok(trampoline::finish(node)),
+        Environment(..) => Ok(trampoline::finish(node)),
+        Error(..) => Ok(trampoline::finish(node)),
     }
 }
 
