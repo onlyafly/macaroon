@@ -120,11 +120,19 @@
   (list 'cond condition consequent
               true      alternative))
 
-(defn )
+(defn case_transform-args (variable args)
+  (cond
+    (and (= 2 (len args)) (= (first args) 'else)) (list 'else (frest args))
+    (< (len args) 2) ()
+    else (let (pred (first args)
+               then (first (rest args))
+               more (rest (rest args))
+               pair (list (list '= variable pred) then))
+           (concat pair (case_transform-args variable more)))))
 
 (defmacro case (v &rest args)
-  (list 'let (list '___case1 v)
-    (list 'cond)))
+  (list 'let (list '____case1 v)
+    (cons 'cond (case_transform-args '____case1 args))))
 
 ;;;;;;;;;;
 

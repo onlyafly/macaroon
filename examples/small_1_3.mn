@@ -1,19 +1,61 @@
 (load "examples/prelude.mn")
 (load "examples/mtest.mn")
 
+(defn frest (e) (first (rest e)))
+(defn frrest (e) (first (rest (rest e))))
+(defn frrrest (e) (first (rest (rest (rest e)))))
+(defn rrest (e) (rest (rest e)))
+
+(def the-false-value false)
+
 (defn evaluate (e env)
     (if (atom? e)
         (cond
             (symbol? e) (lookup e env)
             (or (number? e) (string? e) (char? e) (boolean? e)) e
             else (panic (concat "Cannot eval: " (str e))))
-        (case (first exp)
-            TODO
-            (else TODO))))
+        (case (first e)
+            'quote (frest e)
+            'if    (if (not (= (evaluate (frest e) env) the-false-value))
+                     (evaluate (frrest e) env)
+                     (evaluate (frrrest e) env))
+            'begin (s_eprogn (rest e) env)
+            'set!  (s_update! (frest e) env (evaluate (frrest e) env))
+            'fn    (s_make-function (frest e) (rrest e) env)
+            else   (s_invoke
+                     (evaluate (first e) env)
+                     (s_eval-list (rest e) env)))))
+
+(defn s_eprogn (es env)
+    (if (list? es)
+        (if (list? (rest es))
+            (begin 
+                (evaluate (first es) env)
+                (s_eprogn (rest es) env))
+            (evaluate (first es)))
+        nil
+        ))
 
 (defmtest "Evaluate atom"
   (mt=
     (evaluate 1 ())
     1))
+
+(defmtest "Evaluate begin"
+  (mt=
+    (evaluate '(begin 1 2) ())
+    2))
+
+#|
+(defmtest "Evaluate if #1"
+  (mt=
+    (evaluate '(if (= 45 45) 1 2) ())
+    2))
+
+(defmtest "Evaluate ="
+  (mt=
+    (evaluate '(= 45 45) ())
+    2))
+|#
 
 (mtest-start)

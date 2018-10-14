@@ -30,14 +30,6 @@ This will package your extension into a `.vsix` file and place it in the current
 
 ## Credits
 
-The macaroon2.tmLanguage.json file is modified from the Clojure syntax file included in VSCode:
+The macaroon.tmLanguage.json file is modified from the Clojure syntax file included in VSCode:
 
 [https://github.com/Microsoft/vscode/blob/master/extensions/clojure/syntaxes/clojure.tmLanguage.json](https://github.com/Microsoft/vscode/blob/master/extensions/clojure/syntaxes/clojure.tmLanguage.json)
-
-The macaroon.tmLanguage file is modified from an earlier Scheme extension by Allen Huang.
-
-[https://github.com/sjhuangx/vscode-scheme](https://github.com/sjhuangx/vscode-scheme)
-
-That file originates from egrachev's sublime-scheme to enable syntax on vscode:
-
-[https://github.com/egrachev/sublime-scheme/blob/master/Scheme.tmLanguage](https://github.com/egrachev/sublime-scheme/blob/master/Scheme.tmLanguage)

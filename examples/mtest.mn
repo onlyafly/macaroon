@@ -14,8 +14,14 @@
                result (testfn))
            (begin
              (cond
-               (= result true) (println ".")
-               else (println "TEST FAILED: " testname))
+               (= result 'PASS) (println ".")
+               else (println
+                      (concat
+                        "" \newline
+                        ">>>>>" \newline
+                        "TEST FAILED: '" testname "'" \newline
+                        result \newline
+                        "<<<<<")))
              (_mtest_runtests othertests)))))
 
 ;;;;;;;;;; External API
@@ -37,10 +43,10 @@
 
 (defn mt= (actual expected)
   (if (= actual expected)
-    true
-    (begin
-      (println "TEST FAILED. EXPECTED <" expected "> BUT GOT <" actual ">")
-      false)))
+    'PASS
+    (concat
+      "EXPECTED: <" expected ">" \newline
+      "ACTUAL: <" actual ">")))
 
 (defn mtest-start ()
   (println "Running mtest tests...")

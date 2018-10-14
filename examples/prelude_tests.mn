@@ -34,7 +34,17 @@
        '(let (____case1 (+ 1 2))
           (cond
             (= ____case1 1) 'a
-            (= ____case2 2) 'b
+            (= ____case1 2) 'b
+            ))
+       ))
+
+(defmtest "Case macro with else"
+  (mt= (macroexpand1 '(case (+ 1 2) 1 'a 2 'b else 'c))
+       '(let (____case1 (+ 1 2))
+          (cond
+            (= ____case1 1) 'a
+            (= ____case1 2) 'b
+            else            'c
             ))
        ))
 

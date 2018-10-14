@@ -1,6 +1,5 @@
 # MIT License
 
-Copyright (c) 2016 Allen Huang
 Copyright (c) 2015 - present Microsoft Corporation
 Copyright (c) 2018 - present Kevin Albrecht
 
