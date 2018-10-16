@@ -123,9 +123,19 @@ pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>, flag: Flag) -> Continu
         evaled_head.loc = loc.clone();
     }
 
+    // Prepare the arguments for passing to the procedure
+    let prepared_args = match &evaled_head.val {
+        Val::Routine(robj) => match robj.routine_type {
+            RoutineType::Macro => args,
+            RoutineType::Function => eval_each_node(Rc::clone(&env), args)?,
+        },
+        Val::Primitive(..) => eval_each_node(Rc::clone(&env), args)?,
+        _ => args,
+    };
+
     match evaled_head.val {
         Val::Routine(..) | Val::Primitive(..) => {
-            eval_invoke_procedure(env, evaled_head, args, flag)
+            eval_invoke_procedure(env, evaled_head, prepared_args, flag)
         }
         _ => Err(RuntimeError::UnableToEvalListStartingWith(
             format!("{}", evaled_head.val),
@@ -149,7 +159,7 @@ pub fn eval_invoke_procedure(
             flag,
         )),
         Val::Primitive(obj) => {
-            let out = eval_invoke_primitive(obj, Rc::clone(&env), args, head.loc)?;
+            let out = eval_primitive(obj, Rc::clone(&env), args, head.loc)?;
             Ok(trampoline::finish(out))
         }
         _ => Err(RuntimeError::CannotInvokeNonProcedure(
@@ -159,20 +169,10 @@ pub fn eval_invoke_procedure(
     }
 }
 
-fn eval_invoke_primitive(
-    obj: PrimitiveObj,
-    dynamic_env: SmartEnv,
-    unevaled_args: Vec<Node>,
-    loc: Loc,
-) -> NodeResult {
-    let evaled_args = eval_each_node(Rc::clone(&dynamic_env), unevaled_args)?;
-    eval_primitive(obj, dynamic_env, evaled_args, loc)
-}
-
 pub fn eval_invoke_routine(
     dynamic_env: SmartEnv,
     fnode: Node,
-    unevaled_args: Vec<Node>,
+    mut args: Vec<Node>,
     flag: Flag,
 ) -> ContinuationResult {
     let loc = fnode.loc;
@@ -191,26 +191,20 @@ pub fn eval_invoke_routine(
             }
         }
 
-        if !has_variable_params && (params.len() != unevaled_args.len()) {
+        if !has_variable_params && (params.len() != args.len()) {
             // The args and params don't match
             return Err(RuntimeError::FunctionArgsDoNotMatchParams {
                 function_name: robj.name,
                 params_count: params.len(),
-                args_count: unevaled_args.len(),
+                args_count: args.len(),
                 params_list: params,
-                args_list: unevaled_args,
+                args_list: args,
                 loc,
             });
         }
 
         // Create the lexical environment based on the procedure's lexical parent
         let lexical_env = Env::new(Some(parent_lexical_env));
-
-        // Prepare the arguments for evaluation
-        let mut args = match robj.routine_type {
-            RoutineType::Macro => unevaled_args,
-            RoutineType::Function => eval_each_node(Rc::clone(&dynamic_env), unevaled_args)?,
-        };
 
         // Map arguments to parameters
         while params.len() > 0 {

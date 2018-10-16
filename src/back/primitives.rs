@@ -247,19 +247,19 @@ fn eval_primitive_println(env: SmartEnv, args: Vec<Node>) -> NodeResult {
 
 fn eval_primitive_apply(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let f = args.remove(0);
-    let f_params_node = args.remove(0);
-    let f_params = match f_params_node.val {
+    let f_args_node = args.remove(0);
+    let f_args = match f_args_node.val {
         Val::List(children) => children,
         v => {
             return Err(RuntimeError::UnexpectedValue(
                 "list".to_string(),
                 v,
-                f_params_node.loc,
+                f_args_node.loc,
             ))
         }
     };
 
-    let output = trampoline::run_with_nodes(eval::eval_invoke_procedure, env, f, f_params)?;
+    let output = trampoline::run_with_nodes(eval::eval_invoke_procedure, env, f, f_args)?;
 
     Ok(output)
 }

@@ -1,3 +1,7 @@
+#|
+Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pieces
+|#
+
 (load "examples/prelude.mn")
 (load "examples/mtest.mn")
 
@@ -6,14 +10,19 @@
 (defn frrrest (e) (first (rest (rest (rest e)))))
 (defn rrest (e) (rest (rest e)))
 
+(defn wrong (&rest args)
+    (println "DEBUG wrong:" args)
+    (apply panic '(1 2 3))
+)
+
 (def the-false-value false)
 
 (defn evaluate (e env)
     (if (atom? e)
         (cond
-            (symbol? e) (lookup e env)
+            (symbol? e) (s_lookup e env)
             (or (number? e) (string? e) (char? e) (boolean? e)) e
-            else (panic (concat "Cannot eval: " (str e))))
+            else (wrong (concat "Cannot eval: " (str e))))
         (case (first e)
             'quote (frest e)
             'if    (if (not (= (evaluate (frest e) env) the-false-value))
@@ -24,7 +33,7 @@
             'fn    (s_make-function (frest e) (rrest e) env)
             else   (s_invoke
                      (evaluate (first e) env)
-                     (s_eval-list (rest e) env)))))
+                     (s_evlis (rest e) env)))))
 
 (defn s_eprogn (es env)
     ;DEBUG (println "s_eprogn:" es)
@@ -37,20 +46,38 @@
         nil
         ))
 
+;; TODO: Not yet tested
+(defn s_evlis (es env)
+    (if (empty? es)
+        ()
+        (cons (evaluate (first es) env)
+              (s_evlis (rest es) env))))
+
+(defn s_lookup (id env)
+    (if (empty? env)
+        (wrong "No such binding:" id)
+        (if (= (ffirst env) id)
+            (rest (first env))
+            (s_lookup id (rest env)))))
+
 (defmtest "Evaluate atom"
   (mt=
     (evaluate 1 ())
     1))
 
-(defmtest "Evaluate simple begin"
+(defmtest "Evaluate begin"
   (mt=
     (evaluate '(begin 1 2) ())
-    2))
-
-(defmtest "Evaluate empty begin"
+    2)
   (mt=
     (evaluate '(begin) ())
     nil))
+
+(defmtest "Evaluate a symbol"
+  (mt=
+    (evaluate 'foo ())
+    42)
+    )
 
 #|
 (defmtest "Evaluate if #1"

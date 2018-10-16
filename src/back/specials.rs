@@ -114,7 +114,7 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
 
     if let Val::Symbol(name) = name_node.val {
         let mut index_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
-        let index = index_node.val.as_host_number()? as usize;
+        let index = index_node.as_host_number()? as usize;
 
         let newval_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
 

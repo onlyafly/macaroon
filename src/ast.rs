@@ -75,42 +75,6 @@ impl Display for Val {
 }
 
 impl Val {
-    pub fn as_print_friendly_string(&self) -> String {
-        match self {
-            Val::StringVal(ref s) => format!("{}", s),
-            Val::Character(ref s) => format!("{}", s),
-            v => format!("{}", v), // Use Display's fmt for everything else
-        }
-    }
-
-    pub fn as_host_number(&self) -> Result<i32, RuntimeError> {
-        match self {
-            &Val::Number(i) => Ok(i),
-            _ => Err(RuntimeError::UnexpectedValue(
-                "number".to_string(),
-                self.clone(),
-                Loc::Unknown,
-            )),
-        }
-    }
-
-    pub fn as_host_boolean(&self) -> Result<bool, RuntimeError> {
-        match self {
-            &Val::Nil => Ok(false),
-            &Val::Boolean(b) => Ok(b),
-            _ => Ok(true),
-        }
-    }
-
-    /* TODO
-    pub fn as_host_vector(&self) -> Result<bool, RuntimeError> {
-        match self {
-            &Val::Nil => Ok(false),
-            &Val::Boolean(b) => Ok(b),
-            _ => Ok(true),
-        }
-    } */
-
     pub fn type_name(&self) -> Result<String, RuntimeError> {
         let out = match self {
             Val::Nil => "nil",
@@ -152,6 +116,42 @@ impl Node {
     pub fn new(val: Val, loc: Loc) -> Self {
         Node { val, loc }
     }
+
+    pub fn as_print_friendly_string(&self) -> String {
+        match self.val {
+            Val::StringVal(ref s) => format!("{}", s),
+            Val::Character(ref s) => format!("{}", s),
+            ref v => format!("{}", v), // Use Display's fmt for everything else
+        }
+    }
+
+    pub fn as_host_number(&self) -> Result<i32, RuntimeError> {
+        match self.val {
+            Val::Number(i) => Ok(i),
+            _ => Err(RuntimeError::UnexpectedValue(
+                "number".to_string(),
+                self.val.clone(),
+                self.loc.clone(),
+            )),
+        }
+    }
+
+    pub fn as_host_boolean(&self) -> Result<bool, RuntimeError> {
+        match self.val {
+            Val::Nil => Ok(false),
+            Val::Boolean(b) => Ok(b),
+            _ => Ok(true),
+        }
+    }
+
+    /* TODO
+    pub fn as_host_vector(&self) -> Result<bool, RuntimeError> {
+        match self {
+            &Val::Nil => Ok(false),
+            &Val::Boolean(b) => Ok(b),
+            _ => Ok(true),
+        }
+    } */
 
     pub fn coll_first(self) -> Result<Node, RuntimeError> {
         match self.val {
