@@ -5,15 +5,14 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
 (load "examples/prelude.mn")
 (load "examples/mtest.mn")
 
-(defn frest (e) (first (rest e)))
-(defn frrest (e) (first (rest (rest e))))
-(defn frrrest (e) (first (rest (rest (rest e)))))
-(defn rrest (e) (rest (rest e)))
+(defn get (l n)
+  (if (= n 0)
+    (first l)
+    (get (rest l) (- n 1))))
 
 (defn wrong (&rest args)
     (println "DEBUG wrong:" args)
-    (apply panic '(1 2 3))
-)
+    (apply panic args))
 
 (def the-false-value false)
 
@@ -25,12 +24,14 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
             else (wrong (concat "Cannot eval: " (str e))))
         (case (first e)
             'quote (frest e)
-            'if    (if (not (= (evaluate (frest e) env) the-false-value))
-                     (evaluate (frrest e) env)
-                     (evaluate (frrrest e) env))
+            'if    (if (not (= (evaluate (get e 1) env) the-false-value))
+                     (evaluate (get e 2) env)
+                     (evaluate (get e 3) env))
             'begin (s_eprogn (rest e) env)
-            'set!  (s_update! (frest e) env (evaluate (frrest e) env))
-            'fn    (s_make-function (frest e) (rrest e) env)
+            'set!  (s_update (get e 1) env (evaluate (get e 2) env))
+            'fn    (s_make-function (get e 1)
+                                    (rest (rest e))
+                                    env)
             else   (s_invoke
                      (evaluate (first e) env)
                      (s_evlis (rest e) env)))))
@@ -56,9 +57,18 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
 (defn s_lookup (id env)
     (if (empty? env)
         (wrong "No such binding:" id)
-        (if (= (ffirst env) id)
-            (rest (first env))
+        (if (= (get (first env) 0) id)
+            (get (first env) 1)
             (s_lookup id (rest env)))))
+
+(defn s_update (id env value)
+    (if (empty? env)
+        (wrong "No such binding:" id)
+        (if (= (get (first env) 0) id)
+            (begin
+                (update-element! (first env) 1 value)
+                value)
+            (s_update id (rest env) value))))
 
 (defmtest "Evaluate atom"
   (mt=
@@ -75,8 +85,14 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
 
 (defmtest "Evaluate a symbol"
   (mt=
-    (evaluate 'foo ())
+    (evaluate 'foo '((foo 42)))
     42)
+    )
+
+(defmtest "Evaluate: set!"
+  (mt=
+    (evaluate '(set! foo 1776) '((foo 42)))
+    1776)
     )
 
 #|
