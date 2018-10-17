@@ -58,7 +58,7 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
     (if (empty? env)
         (wrong "No such binding:" id)
         (if (= (get (first env) 0) id)
-            (get (first env) 1)
+            (get-cell (get (first env) 1))
             (s_lookup id (rest env)))))
 
 (defn s_update (id env value)
@@ -66,7 +66,7 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
         (wrong "No such binding:" id)
         (if (= (get (first env) 0) id)
             (begin
-                (update-element! (first env) 1 value)
+                (set-cell! (get (first env) 1) value)
                 value)
             (s_update id (rest env) value))))
 
@@ -85,14 +85,21 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
 
 (defmtest "Evaluate a symbol"
   (mt=
-    (evaluate 'foo '((foo 42)))
+    (evaluate 'foo (list (list 'foo (cell 42))))
     42)
     )
 
 (defmtest "Evaluate: set!"
   (mt=
-    (evaluate '(set! foo 1776) '((foo 42)))
+    (evaluate '(set! foo 1776) (list (list 'foo (cell 42))))
     1776)
+  (mt=
+    (evaluate
+        '(begin
+            (set! bar 5)
+            bar)
+        (list (list 'bar (cell 100))))
+    5)
     )
 
 #|

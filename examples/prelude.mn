@@ -112,6 +112,13 @@
         (= n false) true
         else false))
 
+;;;;;;;;;; List operations
+
+(defn frest (l)
+    (first (rest l)))
+
+;;;;;;;;;; Other
+
 ;; (if (= a b) (typeof a) (typeof b))
 ;; =>
 ;; (cond (= a b) (typeof a)

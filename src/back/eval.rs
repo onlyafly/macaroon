@@ -98,10 +98,6 @@ pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>, flag: Flag) -> Continu
                 check_args("update!", &loc, &args, 2, 2)?;
                 return specials::eval_special_update(env, args);
             }
-            "update-element!" => {
-                check_args("update-element!", &loc, &args, 3, 3)?;
-                return specials::eval_special_update_element(env, args);
-            }
             "begin" => {
                 check_args("begin", &loc, &args, 0, -1)?;
                 return specials::eval_special_begin(env, args);

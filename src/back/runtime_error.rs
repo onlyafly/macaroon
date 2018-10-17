@@ -14,6 +14,12 @@ pub enum RuntimeError {
     UnableToEvalValue(Val, Loc),
     UnableToEvalListStartingWith(String, Loc),
     UnexpectedValue(String, Val, Loc),
+    UnexpectedArgumentType {
+        procedure_name: String,
+        expected_type_name: String,
+        actual_val: Val,
+        loc: Loc,
+    },
     CannotUpdateElementInValue(Val, Loc),
     IndexOutOfBounds {
         index: usize,
@@ -67,6 +73,16 @@ impl RuntimeError {
             UnexpectedValue(expected_string, got_value, _) => format!(
                 "Unexpected value. Expected {} but got: {}",
                 expected_string, got_value,
+            ),
+            UnexpectedArgumentType {
+                procedure_name,
+                expected_type_name,
+                actual_val, ..
+            } => format!(
+                "Procedure '{}' expected argument of type '{}', but got: {}",
+                procedure_name,
+                expected_type_name,
+                actual_val,
             ),
             CannotUpdateElementInValue(val, _) => format!("Cannot update an element in: {}", val),
             IndexOutOfBounds { index, len, .. } => {
@@ -139,6 +155,7 @@ impl RuntimeError {
             UnableToEvalValue(_, l) => l.clone(),
             UnableToEvalListStartingWith(_, l) => l.clone(),
             UnexpectedValue(_, _, l) => l.clone(),
+            UnexpectedArgumentType { loc, .. } => loc.clone(),
             CannotUpdateElementInValue(_, l) => l.clone(),
             IndexOutOfBounds { loc, .. } => loc.clone(),
             NotEnoughArgs(.., loc) => loc.clone(),

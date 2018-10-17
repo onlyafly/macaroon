@@ -100,53 +100,12 @@ pub fn eval_special_update(env: SmartEnv, mut args: Vec<Node>) -> ContinuationRe
         env.borrow_mut().update(&name, val)?;
         Ok(trampoline::finish(Node::new(Val::Nil, loc)))
     } else {
-        Err(RuntimeError::UnexpectedValue(
-            "symbol".to_string(),
-            val,
+        Err(RuntimeError::UnexpectedArgumentType {
+            procedure_name: "update!".to_string(),
+            expected_type_name: "symbol".to_string(),
+            actual_val: val,
             loc,
-        ))
-    }
-}
-
-pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
-    let name_node = args.remove(0);
-    let loc = name_node.loc;
-
-    if let Val::Symbol(name) = name_node.val {
-        let mut index_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
-        let index = index_node.as_host_number()? as usize;
-
-        let newval_node = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
-
-        let mut mutable_env = env.borrow_mut();
-
-        if let Some(entry) = mutable_env.remove(&name) {
-            match entry.val {
-                Val::List(mut children) => {
-                    if index >= children.len() {
-                        return Err(RuntimeError::IndexOutOfBounds {
-                            index: index,
-                            len: children.len(),
-                            loc: loc,
-                        });
-                    }
-
-                    children[index] = newval_node;
-                    mutable_env.update(&name, Node::new(Val::List(children), loc.clone()))?;
-                }
-                _ => {
-                    return Err(RuntimeError::CannotUpdateElementInValue(entry.val, loc));
-                }
-            }
-        }
-
-        Ok(trampoline::finish(Node::new(Val::Nil, loc)))
-    } else {
-        Err(RuntimeError::UnexpectedValue(
-            "symbol".to_string(),
-            name_node.val,
-            loc,
-        ))
+        })
     }
 }
 
