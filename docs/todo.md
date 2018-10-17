@@ -1,5 +1,9 @@
 # Todo
 
+How to deal with pointer problem: Make most references to Node point to a Rc<RefCell<Node>> "SmartNode" instead.
+* List(Vec<Node>) becomes List(Vec<SmartNode>) instead
+* Env's hashmat has values that are SmartNodes instead of immutable nodes
+
 Make tool support command line args.
 
 Build a language server for formatting the code

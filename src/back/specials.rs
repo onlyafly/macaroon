@@ -123,8 +123,6 @@ pub fn eval_special_update_element(env: SmartEnv, mut args: Vec<Node>) -> Contin
         if let Some(entry) = mutable_env.remove(&name) {
             match entry.val {
                 Val::List(mut children) => {
-                    //TODO: get num from index_value instead of using zero
-
                     if index >= children.len() {
                         return Err(RuntimeError::IndexOutOfBounds {
                             index: index,

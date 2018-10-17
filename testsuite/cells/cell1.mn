@@ -1,0 +1,3 @@
+(def x (cell 1))
+(set-cell! x 2)
+(get-cell x)

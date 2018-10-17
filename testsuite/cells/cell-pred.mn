@@ -1,0 +1,2 @@
+(def x (cell 1))
+(typeof x)

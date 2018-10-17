@@ -1,0 +1,5 @@
+(def x (list (list 'a (cell 1))
+             (list 'b (cell 2))))
+(def y (rest (first x)))
+(set-cell! (first (rest (first x))) 10)
+(list x y)

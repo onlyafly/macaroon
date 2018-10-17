@@ -1,6 +1,6 @@
 /* Primitives are build-in functions */
 
-use ast::{Node, PrimitiveObj, ReaderObj, Val, WriterObj};
+use ast::{CellObj, Node, PrimitiveObj, ReaderObj, Val, WriterObj};
 use back::env::{Env, SmartEnv};
 use back::eval;
 use back::eval::NodeResult;
@@ -44,6 +44,10 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "eval", 1, 2)?;
     define_primitive(&mut menv, "read-string", 1, 1)?;
     define_primitive(&mut menv, "readable-string", 1, 1)?;
+
+    define_primitive(&mut menv, "cell", 1, 1)?;
+    define_primitive(&mut menv, "set-cell!", 2, 2)?;
+    define_primitive(&mut menv, "get-cell", 1, 1)?;
 
     define_primitive(&mut menv, "_host_inspect_", 1, 1)?;
 
@@ -109,6 +113,11 @@ pub fn eval_primitive(
         "eval" => eval_primitive_eval,
         "read-string" => eval_primitive_read_string,
         "readable-string" => eval_primitive_readable_string,
+
+        "cell" => eval_primitive_cell,
+        "set-cell!" => eval_primitive_set_cell,
+        "get-cell" => eval_primitive_get_cell,
+
         "_host_inspect_" => eval_primitive_host_inspect,
 
         _ => {
@@ -401,6 +410,35 @@ fn eval_primitive_readable_string(_env: SmartEnv, mut args: Vec<Node>) -> NodeRe
     let s = format!("{}", n.val);
 
     Ok(Node::new(Val::StringVal(s), n.loc))
+}
+
+fn eval_primitive_cell(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+    let n = args.remove(0);
+    let loc = n.loc.clone();
+    Ok(Node::new(Val::Cell(CellObj::new(n)), loc))
+}
+
+fn eval_primitive_set_cell(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+    let c = args.remove(0);
+    let n = args.remove(0);
+
+    match c.val {
+        Val::Cell(obj) => {
+            let mut x = obj.contents.borrow_mut();
+            *x = n;
+            Ok(Node::new(Val::Nil, c.loc))
+        }
+        v => Err(RuntimeError::UnexpectedValue("cell".to_string(), v, n.loc)),
+    }
+}
+
+fn eval_primitive_get_cell(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+    let n = args.remove(0);
+
+    match n.val {
+        Val::Cell(obj) => Ok(obj.contents.borrow().clone()),
+        v => Err(RuntimeError::UnexpectedValue("cell".to_string(), v, n.loc)),
+    }
 }
 
 fn eval_primitive_host_inspect(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {

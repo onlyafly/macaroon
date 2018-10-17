@@ -23,6 +23,7 @@ pub enum Val {
     Writer(WriterObj),
     Reader(ReaderObj),
     Environment(SmartEnv),
+    Cell(CellObj),
 }
 
 impl Display for Val {
@@ -70,6 +71,7 @@ impl Display for Val {
             Val::Writer(..) => write!(f, "#writer"),
             Val::Reader(..) => write!(f, "#reader"),
             Val::Environment(env) => write!(f, "#environment<{}>", env.borrow().name),
+            Val::Cell(obj) => write!(f, "(cell {})", obj),
         }
     }
 }
@@ -90,6 +92,7 @@ impl Val {
             Val::Writer(..) => "writer",
             Val::Reader(..) => "reader",
             Val::Environment(..) => "environment",
+            Val::Cell(..) => "cell",
         };
 
         Ok(out.to_string())
@@ -296,4 +299,23 @@ pub enum WriterObj {
 #[derive(PartialEq, Debug, Clone)]
 pub struct ReaderObj {
     pub reader_function: fn() -> Result<String, String>,
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct CellObj {
+    pub contents: Rc<RefCell<Node>>,
+}
+
+impl CellObj {
+    pub fn new(n: Node) -> Self {
+        CellObj {
+            contents: Rc::new(RefCell::new(n)),
+        }
+    }
+}
+
+impl Display for CellObj {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", self.contents.borrow_mut().val)
+    }
 }
