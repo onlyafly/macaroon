@@ -60,5 +60,10 @@
             "\"",
             "\""
         ]
-    ]
+    ],
+    "wordPattern": "[\\w\\-\\.:<>\\*][\\w\\d\\.\\\\/\\-\\?<>\\*!]+",
+    "indentationRules": {
+        "increaseIndentPattern": "^\\s*\\(.*[^)]\\s*$",
+        "decreaseIndentPattern": "$^", // line end then start - this will never match anything
+    }
 }

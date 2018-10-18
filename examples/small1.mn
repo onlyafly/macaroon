@@ -19,7 +19,7 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
 (defn evaluate (e env)
     (if (atom? e)
         (cond
-            (symbol? e) (s_lookup e env)
+            (symbol? e) (lookup e env)
             (or (number? e) (string? e) (char? e) (boolean? e)) e
             else (wrong (concat "Cannot eval: " (str e))))
         (case (first e)
@@ -29,11 +29,11 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
                      (evaluate (get e 3) env))
             'begin (eprogn (rest e) env)
             'set!  (update (get e 1)
-                             env
-                             (evaluate (get e 2) env))
+                           env
+                           (evaluate (get e 2) env))
             'fn    (make-function (get e 1)
-                                    (rest (rest e))
-                                    env)
+                                  (rest (rest e))
+                                  env)
             else   (invoke
                      (evaluate (first e) env)                
                      (s_evlis (rest e) env)))))
@@ -74,6 +74,12 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
 (defn make-entry (var val)
     (list var (cell val)))
 
+(defn entry-var (entry)
+    (first entry))
+
+(defn entry-val (entry)
+    (first (rest entry)))
+
 (defn extend (env vars vals)
     (cond
         (empty? vars)  (if (empty? vals)
@@ -88,16 +94,16 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
 (defn lookup (id env)
     (if (empty? env)
         (wrong "No such binding:" id)
-        (if (= (get (first env) 0) id)
-            (get-cell (get (first env) 1))
+        (if (= (entry-var (first env)) id)
+            (get-cell (entry-val (first env)))
             (lookup id (rest env)))))
 
 (defn update (id env value)
     (if (empty? env)
         (wrong "No such binding:" id)
-        (if (= (get (first env) 0) id)
+        (if (= (entry-var (first env)) id)
             (begin
-                (set-cell! (get (first env) 1) value)
+                (set-cell! (entry-val (first env)) value)
                 value)
             (update id (rest env) value))))
 

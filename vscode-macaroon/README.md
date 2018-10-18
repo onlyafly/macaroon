@@ -30,6 +30,10 @@ This will package your extension into a `.vsix` file and place it in the current
 
 ## Credits
 
+The language extension includes code from this Clojure extension:
+
+https://github.com/avli/clojureVSCode
+
 The macaroon.tmLanguage.json file is modified from the Clojure syntax file included in VSCode:
 
 [https://github.com/Microsoft/vscode/blob/master/extensions/clojure/syntaxes/clojure.tmLanguage.json](https://github.com/Microsoft/vscode/blob/master/extensions/clojure/syntaxes/clojure.tmLanguage.json)
