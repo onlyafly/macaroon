@@ -83,8 +83,8 @@
 (defn number? (n)
   (= (typeof n) 'number))
 
-(defn procedure? (n)
-  (= (typeof n) 'procedure))
+(defn function? (n)
+  (= (typeof n) 'function))
 
 (defn macro? (n)
   (= (typeof n) 'macro))

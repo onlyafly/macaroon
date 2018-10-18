@@ -27,48 +27,98 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
             'if    (if (not (= (evaluate (get e 1) env) the-false-value))
                      (evaluate (get e 2) env)
                      (evaluate (get e 3) env))
-            'begin (s_eprogn (rest e) env)
-            'set!  (s_update (get e 1) env (evaluate (get e 2) env))
-            'fn    (s_make-function (get e 1)
+            'begin (eprogn (rest e) env)
+            'set!  (update (get e 1)
+                             env
+                             (evaluate (get e 2) env))
+            'fn    (make-function (get e 1)
                                     (rest (rest e))
                                     env)
-            else   (s_invoke
-                     (evaluate (first e) env)
+            else   (invoke
+                     (evaluate (first e) env)                
                      (s_evlis (rest e) env)))))
 
-(defn s_eprogn (es env)
+(defn eprogn (es env)
     ;DEBUG (println "s_eprogn:" es)
     (if (not (empty? es))
         (if (not (empty? (rest es)))
             (begin 
                 (evaluate (first es) env)
-                (s_eprogn (rest es) env))
+                (eprogn (rest es) env))
             (evaluate (first es) env))
         nil
         ))
 
 ;; TODO: Not yet tested
-(defn s_evlis (es env)
+(defn evlis (es env)
     (if (empty? es)
         ()
         (cons (evaluate (first es) env)
-              (s_evlis (rest es) env))))
+              (evlis (rest es) env))))
 
-(defn s_lookup (id env)
+(defn routine? (n)
+  (case (typeof n)
+    'function true
+    'primitive true
+    else false))
+
+(defn invoke (f args)
+    (if (routine? f)
+        (f args)
+        (wrong "Not a function" f)))
+
+;----- Environment
+
+(def env.init ())
+
+(defn make-entry (var val)
+    (list var (cell val)))
+
+(defn extend (env vars vals)
+    (cond
+        (empty? vars)  (if (empty? vals)
+                           env
+                           (wrong "Too many values"))
+        (symbol? vars) (cons (make-entry vars vals) env)
+        (list? vars)   (if (empty? vals)
+                           (wrong "Too few values")
+                           (cons (make-entry (first vars) (first vals))
+                                 (extend env (rest vars) (rest vals))))))
+
+(defn lookup (id env)
     (if (empty? env)
         (wrong "No such binding:" id)
         (if (= (get (first env) 0) id)
             (get-cell (get (first env) 1))
-            (s_lookup id (rest env)))))
+            (lookup id (rest env)))))
 
-(defn s_update (id env value)
+(defn update (id env value)
     (if (empty? env)
         (wrong "No such binding:" id)
         (if (= (get (first env) 0) id)
             (begin
                 (set-cell! (get (first env) 1) value)
                 value)
-            (s_update id (rest env) value))))
+            (update id (rest env) value))))
+
+
+;-------------------- Unit Tests --------------------
+
+(defmtest "extend, with symbol"
+  (mt=
+    (extend () 'a '1)
+    (list (list 'a (cell 1)))
+    ))
+
+(defmtest "extend, with list"
+  (mt=
+    (extend () '(a b c) '(1 2 3))
+    (list (list 'a (cell 1))
+          (list 'b (cell 2))
+          (list 'c (cell 3)))
+    ))
+
+;-------------------- Integration Tests --------------------
 
 (defmtest "Evaluate atom"
   (mt=
@@ -102,12 +152,13 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
     5)
     )
 
-#|
-(defmtest "Evaluate if #1"
-  (mt=
-    (evaluate '(if (= 45 45) 1 2) ())
-    2))
 
+(defmtest "Evaluate if"
+  (mt=
+    (evaluate '(if true 1 2) ())
+    1))
+
+#|
 (defmtest "Evaluate ="
   (mt=
     (evaluate '(= 45 45) ())
