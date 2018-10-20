@@ -36,7 +36,7 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
                                   env)
             else   (invoke
                      (evaluate (first e) env)                
-                     (s_evlis (rest e) env)))))
+                     (evlis (rest e) env)))))
 
 (defn eprogn (es env)
     ;DEBUG (println "s_eprogn:" es)
@@ -67,9 +67,15 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
         (f args)
         (wrong "Not a function" f)))
 
+(defn make-function (vars body env)
+    (fn (vals)
+        (eprogn body (extend env.global vars vals))))
+
 ;----- Environment
 
 (def env.init ())
+
+(def env.global ())
 
 (defn make-entry (var val)
     (list var (cell val)))
@@ -163,6 +169,11 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
   (mt=
     (evaluate '(if true 1 2) ())
     1))
+
+(defmtest "Evaluate fn"
+    (mt=
+        (evaluate '((fn (a b) a) 1 2) ())
+        1))
 
 #|
 (defmtest "Evaluate ="
