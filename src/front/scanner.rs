@@ -104,13 +104,17 @@ impl<'a> Scanner<'a> {
         self.read_char(); // Skip '|'
 
         while let Some(ch) = self.read_char() {
-            if ch == '|' {
-                if let Some(&chnext) = self.peek_char() {
-                    if chnext == '#' {
-                        self.read_char(); // Consume '#'
-                        return self.next();
+            match ch {
+                '\n' | '\r' => self.line += 1,
+                '|' => {
+                    if let Some(&chnext) = self.peek_char() {
+                        if chnext == '#' {
+                            self.read_char(); // Consume '#'
+                            return self.next();
+                        }
                     }
                 }
+                _ => (),
             }
         }
 

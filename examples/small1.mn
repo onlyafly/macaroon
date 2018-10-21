@@ -1,25 +1,23 @@
-#|
-Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pieces
-|#
+;#|
+;Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pieces
+;|#
 
 (load "examples/prelude.mn")
 (load "examples/mtest.mn")
 
+;-------------------- REPL --------------------
+
 (defn repl ()
     (defn toplevel ()
-        (println (evaluate (read-string (read-line)) env.global))
-        (toplevel))
+        (let (line (read-line))
+            (cond
+                (= line ":q") (println "Exiting...")
+                else (begin
+                        (println (evaluate (read-string line) env.global))
+                        (toplevel)))))
     (toplevel))
 
-(defn get (l n)
-  (if (= n 0)
-    (first l)
-    (get (rest l) (- n 1))))
-
-(defn wrong (&rest args)
-    (apply panic args))
-
-(def the-false-value false)
+;-------------------- Evaluation --------------------
 
 (defn evaluate (e env)
     (if (atom? e)
@@ -62,12 +60,6 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
         ()
         (cons (evaluate (first es) env)
               (evlis (rest es) env))))
-
-(defn routine? (n)
-  (case (typeof n)
-    'function true
-    'primitive true
-    else false))
 
 (defn invoke (f args)
     (if (routine? f)
@@ -143,6 +135,24 @@ Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pi
 (defprimitive '+ + 2)
 (defprimitive 'eq? = 2)
 (defprimitive '< < 2)
+
+;-------------------- Helpers --------------------
+
+(defn get (l n)
+  (if (= n 0)
+    (first l)
+    (get (rest l) (- n 1))))
+
+(defn wrong (&rest args)
+    (apply panic args))
+
+(def the-false-value false)
+
+(defn routine? (n)
+  (case (typeof n)
+    'function true
+    'primitive true
+    else false))
 
 ;-------------------- Unit Tests --------------------
 
