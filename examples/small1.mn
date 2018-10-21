@@ -9,7 +9,7 @@
 
 (defn repl ()
     (defn toplevel ()
-        (let (line (read-line))
+        (let (line (trim-string (read-line)))
             (cond
                 (= line ":q") (println "Exiting...")
                 else (begin
@@ -56,7 +56,6 @@
         nil
         ))
 
-;; TODO: Not yet tested
 (defn evlis (es env)
     (if (empty? es)
         ()
@@ -121,7 +120,8 @@
 
 ;-------------------- Primitives --------------------
 
-(def the-false-value false)
+(def the-true-value 42)
+(def the-false-value 32123)
 
 (defn definitial (name val)
     (update! env.global (cons (make-entry name val)
@@ -136,14 +136,16 @@
                 (wrong "Incorrect arity" (list name args))))))
 
 (definitial 'null ())
-(definitial 't true)
+(definitial 't the-true-value)
 (definitial 'f the-false-value)
 (defprimitive 'cons cons 2)
 (defprimitive 'car first 1)
 (defprimitive 'cdr rest 1)
 (defprimitive '+ + 2)
 (defprimitive 'eq? = 2)
-(defprimitive '< < 2)
+(defprimitive '<
+    (fn (a b) (if (< a b) the-true-value the-false-value))
+    2)
 
 ;-------------------- Helpers --------------------
 

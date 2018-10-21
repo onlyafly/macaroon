@@ -39,6 +39,7 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "first", 1, 1)?;
     define_primitive(&mut menv, "rest", 1, 1)?;
     define_primitive(&mut menv, "len", 1, 1)?;
+    define_primitive(&mut menv, "trim-string", 1, 1)?;
 
     define_primitive(&mut menv, "current-environment", 0, 0)?;
     define_primitive(&mut menv, "eval", 1, 2)?;
@@ -108,6 +109,7 @@ pub fn eval_primitive(
         "first" => eval_primitive_first,
         "rest" => eval_primitive_rest,
         "len" => eval_primitive_len,
+        "trim-string" => eval_primitive_trim_string,
 
         "current-environment" => eval_primitive_current_environment,
         "eval" => eval_primitive_eval,
@@ -354,6 +356,19 @@ fn eval_primitive_len(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     let out = n.coll_len()?;
 
     Ok(Node::new(Val::Number(out as i32), loc))
+}
+
+fn eval_primitive_trim_string(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+    let node = args.remove(0);
+    match node.val {
+        Val::StringVal(s) => Ok(Node::new(Val::StringVal(s.trim().to_string()), node.loc)),
+        v => Err(RuntimeError::UnexpectedArgumentType {
+            procedure_name: "trim-string".to_string(),
+            expected_type_name: "string".to_string(),
+            actual_val: v,
+            loc: node.loc,
+        }),
+    }
 }
 
 fn eval_primitive_current_environment(env: SmartEnv, _args: Vec<Node>) -> NodeResult {
