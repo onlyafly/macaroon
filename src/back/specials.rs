@@ -77,9 +77,9 @@ pub fn eval_special_let(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
             }
 
             Ok(trampoline::bounce(
-                eval::eval_node,
+                eval::eval_each_node_in_list_for_single_output,
                 bindings_env,
-                args.remove(0),
+                Node::new(Val::List(args), Loc::Unknown),
             ))
         }
         _ => Err(RuntimeError::UnexpectedValue(
@@ -182,8 +182,11 @@ pub fn eval_special_for(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResul
 }
 
 pub fn eval_special_begin(env: SmartEnv, unevaled_args: Vec<Node>) -> ContinuationResult {
-    let output = eval::eval_each_node_for_single_output(env, unevaled_args)?;
-    Ok(trampoline::finish(output))
+    Ok(trampoline::bounce(
+        eval::eval_each_node_in_list_for_single_output,
+        env,
+        Node::new(Val::List(unevaled_args), Loc::Unknown),
+    ))
 }
 
 pub fn eval_special_routine(

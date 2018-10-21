@@ -30,12 +30,27 @@ fn eval_each_node(env: SmartEnv, nodes: Vec<Node>) -> Result<Vec<Node>, RuntimeE
     Ok(outputs)
 }
 
-pub fn eval_each_node_for_single_output(env: SmartEnv, nodes: Vec<Node>) -> NodeResult {
-    let mut output = Node::new(Val::Nil, Loc::Unknown);
-    for node in nodes {
-        output = trampoline::run(eval_node, Rc::clone(&env), node)?;
+pub fn eval_each_node_in_list_for_single_output(
+    env: SmartEnv,
+    list_node: Node,
+    _: Vec<Node>,
+    _: Flag,
+) -> ContinuationResult {
+    if let Val::List(mut nodes) = list_node.val {
+        if nodes.len() == 0 {
+            Ok(trampoline::finish(Node::new(Val::Nil, Loc::Unknown)))
+        } else {
+            while nodes.len() > 1 {
+                let node = nodes.remove(0);
+                trampoline::run(eval_node, Rc::clone(&env), node)?;
+            }
+
+            let final_node = nodes.remove(0);
+            Ok(trampoline::bounce(eval_node, env, final_node))
+        }
+    } else {
+        panic!("Unable to eval this non-list")
     }
-    Ok(output)
 }
 
 pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>, flag: Flag) -> ContinuationResult {
