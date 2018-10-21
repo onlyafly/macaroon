@@ -7,6 +7,9 @@
 
 ;-------------------- REPL --------------------
 
+(defn wrong (&rest args)
+    (apply panic args))
+
 (defn repl ()
     (defn toplevel ()
         (let (line (trim-string (read-line)))
@@ -72,9 +75,9 @@
                 result))
         (wrong "Not a function" f)))
 
-(defn make-function (vars body env)
+(defn make-function (vars body env.lexical)
     (fn (vals)
-        (eprogn body (extend env.global vars vals))))
+        (eprogn body (extend env.lexical vars vals))))
 
 ;-------------------- Environment --------------------
 
@@ -138,6 +141,7 @@
 (definitial 'null ())
 (definitial 't the-true-value)
 (definitial 'f the-false-value)
+(definitial 'list (fn (args) args))
 (defprimitive 'cons cons 2)
 (defprimitive 'car first 1)
 (defprimitive 'cdr rest 1)
@@ -146,6 +150,7 @@
 (defprimitive '<
     (fn (a b) (if (< a b) the-true-value the-false-value))
     2)
+(defprimitive 'apply invoke 2)
 
 ;-------------------- Helpers --------------------
 
@@ -224,6 +229,16 @@
         (evaluate '((fn (a b) a) 1 2) ())
         1))
 
+(defmtest "Evaluate lexical scoping"
+    (mt=
+        (evaluate
+            '((fn (x)
+                ((fn (y)
+                    (list x y)) 100)) 200)
+            env.global)
+        (list 200 100)
+        ))
+
 (defmtest "Evaluate null"
     (mt=
         (evaluate 'null env.global)
@@ -241,7 +256,17 @@
 (defmtest "Evaluate <"
     (mt=
         (evaluate '(< 1 0) env.global)
-        false))
+        the-false-value))
+
+(defmtest "Evaluate 'list'"
+    (mt=
+        (evaluate '(list 1 2 3 4) env.global)
+        (list 1 2 3 4)))
+
+(defmtest "Evaluate 'apply'"
+    (mt=
+        (evaluate '(apply + (list 1 2)) env.global)
+        3))
 
 #|
 (defmtest "Evaluate ="
