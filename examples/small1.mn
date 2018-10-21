@@ -19,6 +19,8 @@
 
 ;-------------------- Evaluation --------------------
 
+(def *trace* false)
+
 (defn evaluate (e env)
     (if (atom? e)
         (cond
@@ -63,7 +65,12 @@
 
 (defn invoke (f args)
     (if (routine? f)
-        (f args)
+        (begin
+            (if *trace*
+                (println "Tracing, args:" args))
+            (let (result (f args))
+                (if *trace* (println "Tracing, result:" result))
+                result))
         (wrong "Not a function" f)))
 
 (defn make-function (vars body env)
@@ -114,6 +121,8 @@
 
 ;-------------------- Primitives --------------------
 
+(def the-false-value false)
+
 (defn definitial (name val)
     (update! env.global (cons (make-entry name val)
                               env.global)))
@@ -145,8 +154,6 @@
 
 (defn wrong (&rest args)
     (apply panic args))
-
-(def the-false-value false)
 
 (defn routine? (n)
   (case (typeof n)

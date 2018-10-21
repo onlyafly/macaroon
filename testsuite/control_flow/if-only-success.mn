@@ -1,0 +1,3 @@
+(def x (if false (println "this should not happen")))
+(def y (if true 12345))
+(list x y)

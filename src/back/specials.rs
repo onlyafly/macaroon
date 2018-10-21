@@ -112,7 +112,11 @@ pub fn eval_special_update(env: SmartEnv, mut args: Vec<Node>) -> ContinuationRe
 pub fn eval_special_if(env: SmartEnv, mut args: Vec<Node>) -> ContinuationResult {
     let predicate = trampoline::run(eval::eval_node, Rc::clone(&env), args.remove(0))?;
     let true_branch = args.remove(0);
-    let false_branch = args.remove(0);
+    let false_branch = if args.len() > 0 {
+        args.remove(0)
+    } else {
+        Node::new(Val::Nil, Loc::Unknown)
+    };
 
     let branch = match predicate.as_host_boolean()? {
         true => true_branch,

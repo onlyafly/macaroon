@@ -79,7 +79,7 @@ pub fn eval_list(env: SmartEnv, node: Node, _: Vec<Node>, flag: Flag) -> Continu
                 return specials::eval_special_macroexpand1(env, args);
             }
             "if" => {
-                check_args("if", &loc, &args, 3, 3)?;
+                check_args("if", &loc, &args, 2, 3)?;
                 return specials::eval_special_if(env, args);
             }
             "cond" => {
