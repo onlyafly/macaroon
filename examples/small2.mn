@@ -1,5 +1,5 @@
 ;#|
-;Lisp interpreter adapted from Chapter 1 of Christian Queinnec's Lisp in Small Pieces
+;Lisp2 interpreter adapted from Chapter 2 of Christian Queinnec's Lisp in Small Pieces
 ;|#
 
 (load "examples/prelude.mn")
@@ -16,7 +16,7 @@
             (cond
                 (= line ":q") (println "Exiting...")
                 else (begin
-                        (println (evaluate (read-string line) env.global))
+                        (println (f.evaluate (read-string line) env.global))
                         (toplevel)))))
     (toplevel))
 
@@ -24,7 +24,7 @@
 
 (def *trace* false)
 
-(defn evaluate (e env)
+(defn f.evaluate (e env fenv)
     (if (atom? e)
         (cond
             (symbol? e) (lookup e env)
@@ -34,37 +34,56 @@
             (wrong "Cannot eval empty list")
             (case (first e)
                 'quote (frest e)
-                'if    (if (not (= (evaluate (get e 1) env) the-false-value))
-                        (evaluate (get e 2) env)
-                        (evaluate (get e 3) env))
-                'begin (eprogn (rest e) env)
+                'if    (if (not (= the-false-value
+                                   (f.evaluate (get e 1) env fenv)))
+                           (f.evaluate (get e 2) env fenv)
+                           (f.evaluate (get e 3) env fenv))
+                'begin (f.eprogn (rest e) env)
                 'set!  (update (get e 1)
                             env
-                            (evaluate (get e 2) env))
-                'fn    (make-function (get e 1)
-                                    (rest (rest e))
-                                    env)
-                else   (invoke
-                        (evaluate (first e) env)                
-                        (evlis (rest e) env))))))
+                            (f.evaluate (get e 2) env fenv))
+                'fn    (f.make-function
+                            (get e 1)
+                            (rest (rest e))
+                            env
+                            fenv)
+                'function (cond (symbol? (get e 1)) (lookup (get e 1) fenv)
+                                else (wrong "Incorrect function" (get e 1)))
+                else   (f.evaluate-application
+                            (first e)
+                            (f.evlis (rest e) env fenv)
+                            env
+                            fenv)))))
 
-(defn eprogn (es env)
-    ;DEBUG (println "s_eprogn:" es)
-    (if (not (empty? es))
-        (if (not (empty? (rest es)))
-            (begin 
-                (evaluate (first es) env)
-                (eprogn (rest es) env))
-            (evaluate (first es) env))
+(defn f.eprogn (es env fenv)
+    (if (empty? es)
         nil
-        ))
+        (if (empty? (rest es))
+            (f.evaluate (first es) env fenv)
+            (begin 
+                (f.evaluate (first es) env fenv)
+                (f.eprogn (rest es) env fenv)))))
 
-(defn evlis (es env)
+(defn f.evlis (es env fenv)
     (if (empty? es)
         ()
-        (cons (evaluate (first es) env)
-              (evlis (rest es) env))))
+        (cons (f.evaluate (first es) env fenv)
+              (f.evlis (rest es) env fenv))))
 
+;; Receives the unevaluated function-term, the evaluated arguments, and the two environments
+(defn f.evaluate-application (f args env fenv)
+    (cond
+        (symbol? f)
+            (invoke (lookup f fenv) args)
+        (and (not (empty? f)) (= (first f) 'fn))
+            (f.eprogn
+                (rest (rest f))
+                (extend env (first (rest f)) args)
+                fenv)
+        else   
+            (wrong "Incorrect functional term" f)))
+
+; TODO remove
 (defn invoke (f args)
     (if (routine? f)
         (begin
@@ -75,15 +94,17 @@
                 result))
         (wrong "Not a function" f)))
 
-(defn make-function (vars body env.lexical)
+(defn f.make-function (vars body env.lexical fenv)
     (fn (vals)
-        (eprogn body (extend env.lexical vars vals))))
+        (f.eprogn body (extend env.lexical vars vals) fenv)))
 
 ;-------------------- Environment --------------------
 
 (def env.init ())
+(def fenv.init ())
 
 (def env.global env.init)
+(def fenv.global fenv.init)
 
 (defn make-entry (var val)
     (list var (cell val)))
@@ -142,10 +163,17 @@
 (definitial 't the-true-value)
 (definitial 'f the-false-value)
 (definitial 'list (fn (args) args))
+(definitial 'funcall
+    (fn (args)
+        (if (> (len args) 1)
+            (invoke (first args) (rest args))
+            (wrong "Incorrect arity" 'funcall))))
+
 (defprimitive 'cons cons 2)
 (defprimitive 'car first 1)
 (defprimitive 'cdr rest 1)
 (defprimitive '+ + 2)
+(defprimitive '- - 2)
 (defprimitive 'eq? = 2)
 (defprimitive '<
     (fn (a b) (if (< a b) the-true-value the-false-value))
@@ -185,6 +213,9 @@
     ))
 
 ;-------------------- Integration Tests --------------------
+
+(defn evaluate (exp env)
+    (f.evaluate exp env f.env.global))
 
 (defmtest "Evaluate atom"
   (mt=
@@ -263,17 +294,17 @@
         (evaluate '(list 1 2 3 4) env.global)
         (list 1 2 3 4)))
 
+(defmtest "Evaluate functions as values"
+    (mt=
+        (evaluate '(funcall (if t (function +) (function -)) 3 4) env.global)
+        7))
+
+#|
 (defmtest "Evaluate 'apply'"
     (mt=
         (evaluate '(apply + (list 1 2)) env.global)
         3))
 
-(defmtest "Evaluate functions as values"
-    (mt=
-        (evaluate '((if t + -) 3 4) env.global)
-        7))
-
-#|
 (defmtest "Evaluate ="
   (mt=
     (evaluate '(= 45 45) ())
