@@ -6,7 +6,9 @@ How to deal with pointer problem: Make most references to Node point to a Rc<Ref
 
 Make tool support command line args.
 
-eliminate nil?
+eliminate nil
+
+exceptions
 
 Build a language server for formatting the code
 https://code.visualstudio.com/docs/extensionAPI/language-support

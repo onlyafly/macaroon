@@ -1,6 +1,7 @@
-;#|
-;Lisp2 interpreter adapted from Chapter 2 of Christian Queinnec's Lisp in Small Pieces
-;|#
+#|
+Lisp-2 interpreter adapted from Chapter 2 of Christian Queinnec's Lisp in Small Pieces.
+This interpreter implements a Lisp-2 dialect. 
+|#
 
 (load "examples/prelude.mn")
 (load "examples/mtest.mn")
@@ -8,7 +9,7 @@
 ;-------------------- REPL --------------------
 
 (defn wrong (&rest args)
-    (apply panic args))
+    (apply println args))
 
 (defn repl ()
     (defn toplevel ()
@@ -16,7 +17,7 @@
             (cond
                 (= line ":q") (println "Exiting...")
                 else (begin
-                        (println (f.evaluate (read-string line) env.global))
+                        (println (f.evaluate (read-string line) env.global fenv.global))
                         (toplevel)))))
     (toplevel))
 
@@ -38,7 +39,7 @@
                                    (f.evaluate (get e 1) env fenv)))
                            (f.evaluate (get e 2) env fenv)
                            (f.evaluate (get e 3) env fenv))
-                'begin (f.eprogn (rest e) env)
+                'begin (f.eprogn (rest e) env fenv)
                 'set!  (update (get e 1)
                             env
                             (f.evaluate (get e 2) env fenv))
@@ -147,12 +148,16 @@
 (def the-true-value 42)
 (def the-false-value 32123)
 
+(defn definitial.f (name val)
+    (update! fenv.global (cons (make-entry name val)
+                               fenv.global)))
+
 (defn definitial (name val)
     (update! env.global (cons (make-entry name val)
-                              env.global)))
+                               env.global)))
 
 (defn defprimitive (name val arity)
-    (definitial
+    (definitial.f
         name
         (fn (args)
             (if (= arity (len args))
@@ -162,8 +167,8 @@
 (definitial 'null ())
 (definitial 't the-true-value)
 (definitial 'f the-false-value)
-(definitial 'list (fn (args) args))
-(definitial 'funcall
+(definitial.f 'list (fn (args) args))
+(definitial.f 'funcall
     (fn (args)
         (if (> (len args) 1)
             (invoke (first args) (rest args))
@@ -186,9 +191,6 @@
   (if (= n 0)
     (first l)
     (get (rest l) (- n 1))))
-
-(defn wrong (&rest args)
-    (apply panic args))
 
 (defn routine? (n)
   (case (typeof n)
@@ -215,7 +217,7 @@
 ;-------------------- Integration Tests --------------------
 
 (defn evaluate (exp env)
-    (f.evaluate exp env f.env.global))
+    (f.evaluate exp env fenv.global))
 
 (defmtest "Evaluate atom"
   (mt=
@@ -277,7 +279,7 @@
 
 (defmtest "Evaluate cons"
     (mt=
-        (evaluate 'cons env.global)
+        (evaluate '(function cons) env.global)
         (list 1))
     (mt=
         (evaluate '(cons 1 (quote ())) env.global)

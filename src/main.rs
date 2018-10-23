@@ -1,6 +1,8 @@
+extern crate clap;
 extern crate macaroon;
 extern crate rustyline;
 
+use clap::{App, Arg};
 use macaroon::ast::{ReaderObj, WriterObj};
 use macaroon::back;
 use rustyline::error::ReadlineError;
@@ -20,6 +22,22 @@ fn reader_function() -> Result<String, String> {
 }
 
 fn main() {
+    let matches = App::new("macaroon")
+        .version("0.1.0")
+        .about("Macaroon Interpreter")
+        .author("Kevin Albrecht <onlyafly@gmail.com>")
+        .arg(
+            Arg::with_name("INPUT")
+                .help("*.mn file to interpret")
+                .required(false)
+                .index(1),
+        ).arg(
+            Arg::with_name("x")
+                .short("x")
+                .multiple(false)
+                .help("Executes a script without entering the REPL"),
+        ).get_matches();
+
     let history_path = ".macaroon_history";
 
     // `()` can be used when no completer is required
@@ -34,6 +52,21 @@ fn main() {
         Ok(env) => env,
         Err(_) => panic!("Problem creating root environment"),
     };
+
+    if let Some(input_file) = matches.value_of("INPUT") {
+        println!("Loading file: {}", input_file);
+        let output = macaroon::parse_eval_print(
+            Rc::clone(&env),
+            "REPL",
+            &format!("(load \"{}\")", input_file),
+        );
+        println!("{}", output);
+    }
+
+    // If the -x flag is set, executes a script without entering the REPL
+    if matches.occurrences_of("x") == 1 {
+        return;
+    }
 
     loop {
         let readline = rl.readline("> ");
