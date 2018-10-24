@@ -51,6 +51,7 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
     define_primitive(&mut menv, "get-cell", 1, 1)?;
 
     define_primitive(&mut menv, "_host_inspect_", 1, 1)?;
+    define_primitive(&mut menv, "_host_backtrace_", 0, 0)?;
 
     Ok(())
 }
@@ -121,6 +122,7 @@ pub fn eval_primitive(
         "get-cell" => eval_primitive_get_cell,
 
         "_host_inspect_" => eval_primitive_host_inspect,
+        "_host_backtrace_" => eval_primitive_host_backtrace,
 
         _ => {
             return Err(RuntimeError::UndefinedPrimitive(
@@ -461,4 +463,15 @@ fn eval_primitive_host_inspect(_env: SmartEnv, mut args: Vec<Node>) -> NodeResul
     println!("{:?}", n);
 
     Ok(Node::new(Val::Nil, n.loc))
+}
+
+fn eval_primitive_host_backtrace(_env: SmartEnv, _args: Vec<Node>) -> NodeResult {
+    extern crate backtrace;
+    let bt = backtrace::Backtrace::new();
+
+    // do_some_work();
+
+    println!("{:?}", bt);
+
+    Ok(Node::new(Val::Nil, Loc::Unknown))
 }

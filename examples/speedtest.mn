@@ -1,9 +1,11 @@
 (load "examples/prelude.mn")
 
 (defn start (n acc)
-    (println n)
+    ;(println n)
     (if (< n 0)
-        acc
-        (+ (start (- n 1) (+ 1 acc)) 0)))
+        (begin
+            (_host_backtrace_)
+            acc)
+        (start (- n 1) (+ 1 acc))))
 
-(start 100000 0)
+;(start 1 0)
