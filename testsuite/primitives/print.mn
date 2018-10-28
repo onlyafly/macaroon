@@ -1,0 +1,3 @@
+(print "foo")
+(print "bar")
+(println "baz")

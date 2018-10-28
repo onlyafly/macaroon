@@ -27,6 +27,7 @@ pub fn init_env_with_primitives(env: &SmartEnv) -> Result<(), RuntimeError> {
 
     def_prim(&mut menv, "panic", prim_panic, 0, -1)?;
     def_prim(&mut menv, "read-line", prim_read_line, 0, 0)?;
+    def_prim(&mut menv, "print", prim_print, 0, -1)?;
     def_prim(&mut menv, "println", prim_println, 0, -1)?;
     def_prim(&mut menv, "not", prim_not, 1, 1)?;
     def_prim(&mut menv, "apply", prim_apply, 2, 2)?;
@@ -179,14 +180,27 @@ fn prim_read_line(env: SmartEnv, _args: Vec<Node>) -> NodeResult {
     }
 }
 
+fn prim_print(env: SmartEnv, args: Vec<Node>) -> NodeResult {
+    prim_print_or_println(env, args, false)
+}
+
 fn prim_println(env: SmartEnv, args: Vec<Node>) -> NodeResult {
+    prim_print_or_println(env, args, true)
+}
+
+fn prim_print_or_println(env: SmartEnv, args: Vec<Node>, add_newline: bool) -> NodeResult {
     let mut v = Vec::new();
     let mut loc = Loc::Unknown;
     for arg in args {
         loc = arg.loc.clone();
         v.push(arg.as_print_friendly_string());
     }
-    let output = format!("{}\n", &v.join(" "));
+
+    let output = if add_newline {
+        format!("{}\n", &v.join(" "))
+    } else {
+        format!("{}", &v.join(" "))
+    };
 
     match env.borrow().get("*writer*") {
         Some(node) => match node.val {

@@ -8,21 +8,19 @@
   (cond
     (= tests '()) nil
     else (let (test (first tests)
-               othertests (rest tests)
-               testname (first test)
-               testfn (first (rest test))
-               result (testfn))
+               more-tests (rest tests)
+               test-name (first test)
+               test-fn (first (rest test))
+               result (test-fn))
            (begin
              (cond
-               (= result 'PASS) (println ".")
+               (= result 'PASS) (print ".")
                else (println
                       (concat
-                        "" \newline
-                        ">>>>>" \newline
-                        "TEST FAILED: '" testname "'" \newline
-                        result \newline
-                        "<<<<<")))
-             (_mtest_runtests othertests)))))
+                        "" \newline \newline
+                        "Test '" test-name "' failed:" \newline
+                        result \newline)))
+             (_mtest_runtests more-tests)))))
 
 ;;;;;;;;;; External API
 
@@ -45,10 +43,11 @@
   (if (= actual expected)
     'PASS
     (concat
-      "EXPECTED: <" expected ">" \newline
-      "ACTUAL: <" actual ">")))
+      "    expected: <" expected ">" \newline
+      "    actual:   <" actual ">")))
 
 (defn mtest-start ()
-  (println "Running mtest tests...")
+  (println "***** Running tests (mtest) *****")
   (_mtest_runtests _mtest_tests)
-  (println "Tests complete..."))
+  (println "")
+  (println "***** Completed test run (mtest) *****"))
