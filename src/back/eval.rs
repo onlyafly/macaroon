@@ -1,6 +1,5 @@
 use ast::*;
 use back::env::{Env, SmartEnv};
-use back::primitives::eval_primitive;
 use back::runtime_error::{check_args, RuntimeError};
 use back::specials;
 use back::trampoline;
@@ -170,7 +169,8 @@ pub fn eval_invoke_procedure(
             flag,
         )),
         Val::Primitive(obj) => {
-            let out = eval_primitive(obj, Rc::clone(&env), args, head.loc)?;
+            check_args(&obj.name, &head.loc, &args, obj.min_arity, obj.max_arity)?;
+            let out = (obj.f)(Rc::clone(&env), args)?;
             Ok(trampoline::finish(out))
         }
         _ => Err(RuntimeError::CannotInvokeNonProcedure(

@@ -1,5 +1,5 @@
 pub mod env;
-mod eval;
+pub mod eval;
 mod primitives;
 pub mod runtime_error;
 mod specials;

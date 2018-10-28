@@ -1,4 +1,5 @@
 use back::env::SmartEnv;
+use back::eval::NodeResult;
 use back::runtime_error::RuntimeError;
 use loc::Loc;
 use std::cell::RefCell;
@@ -282,9 +283,12 @@ pub struct RoutineObj {
     pub routine_type: RoutineType,
 }
 
+pub type PrimitiveFnPointer = fn(SmartEnv, Vec<Node>) -> NodeResult;
+
 #[derive(PartialEq, Debug, Clone)]
 pub struct PrimitiveObj {
     pub name: String,
+    pub f: PrimitiveFnPointer,
     pub min_arity: isize,
     pub max_arity: isize,
 }
