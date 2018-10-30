@@ -84,7 +84,7 @@ fn def_prim(
     )
 }
 
-fn prim_not(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_not(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let one = args.remove(0);
 
     let one_bool = one.as_host_boolean()?;
@@ -95,7 +95,7 @@ fn prim_not(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(result)
 }
 
-fn prim_add(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_add(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let one = args.remove(0);
     let two = args.remove(0);
 
@@ -108,7 +108,7 @@ fn prim_add(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(result)
 }
 
-fn prim_subtract(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_subtract(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let one = args.remove(0);
     let two = args.remove(0);
 
@@ -121,7 +121,7 @@ fn prim_subtract(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(result)
 }
 
-fn prim_equal(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_equal(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let a = args.remove(0);
     let b = args.remove(0);
 
@@ -130,7 +130,7 @@ fn prim_equal(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(Node::new(Val::Boolean(output), a.loc))
 }
 
-fn prim_less_than(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_less_than(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let a = args.remove(0);
     let b = args.remove(0);
 
@@ -139,7 +139,7 @@ fn prim_less_than(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(Node::new(Val::Boolean(output), a.loc))
 }
 
-fn prim_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_greater_than(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let a = args.remove(0);
     let b = args.remove(0);
 
@@ -148,7 +148,7 @@ fn prim_greater_than(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(Node::new(Val::Boolean(output), a.loc))
 }
 
-fn prim_panic(_env: SmartEnv, args: Vec<Node>) -> NodeResult {
+fn prim_panic(_env: SmartEnv, _head: Node, args: Vec<Node>) -> NodeResult {
     let mut v = Vec::new();
     let mut loc = Loc::Unknown;
     for arg in args {
@@ -160,7 +160,7 @@ fn prim_panic(_env: SmartEnv, args: Vec<Node>) -> NodeResult {
     Err(RuntimeError::ApplicationPanic(output, loc))
 }
 
-fn prim_read_line(env: SmartEnv, _args: Vec<Node>) -> NodeResult {
+fn prim_read_line(env: SmartEnv, _head: Node, _args: Vec<Node>) -> NodeResult {
     match env.borrow().get("*reader*") {
         Some(node) => match node.val {
             Val::Reader(ReaderObj { reader_function }) => match reader_function() {
@@ -180,15 +180,20 @@ fn prim_read_line(env: SmartEnv, _args: Vec<Node>) -> NodeResult {
     }
 }
 
-fn prim_print(env: SmartEnv, args: Vec<Node>) -> NodeResult {
-    prim_print_or_println(env, args, false)
+fn prim_print(env: SmartEnv, head: Node, args: Vec<Node>) -> NodeResult {
+    prim_print_or_println(env, head, args, false)
 }
 
-fn prim_println(env: SmartEnv, args: Vec<Node>) -> NodeResult {
-    prim_print_or_println(env, args, true)
+fn prim_println(env: SmartEnv, head: Node, args: Vec<Node>) -> NodeResult {
+    prim_print_or_println(env, head, args, true)
 }
 
-fn prim_print_or_println(env: SmartEnv, args: Vec<Node>, add_newline: bool) -> NodeResult {
+fn prim_print_or_println(
+    env: SmartEnv,
+    _head: Node,
+    args: Vec<Node>,
+    add_newline: bool,
+) -> NodeResult {
     let mut v = Vec::new();
     let mut loc = Loc::Unknown;
     for arg in args {
@@ -220,7 +225,7 @@ fn prim_print_or_println(env: SmartEnv, args: Vec<Node>, add_newline: bool) -> N
     Ok(Node::new(Val::Nil, loc))
 }
 
-fn prim_apply(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_apply(env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let f = args.remove(0);
     let f_args_node = args.remove(0);
     let f_args = match f_args_node.val {
@@ -239,7 +244,7 @@ fn prim_apply(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(output)
 }
 
-fn prim_typeof(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_typeof(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let arg = args.remove(0);
 
     let output = arg.type_name()?;
@@ -247,7 +252,7 @@ fn prim_typeof(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(Node::new(Val::Symbol(output), arg.loc))
 }
 
-fn prim_load(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_load(env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let filename_node = args.remove(0);
 
     let filename = match filename_node.val {
@@ -275,7 +280,7 @@ fn prim_load(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(Node::new(Val::Nil, filename_node.loc))
 }
 
-fn prim_str(_env: SmartEnv, args: Vec<Node>) -> NodeResult {
+fn prim_str(_env: SmartEnv, _head: Node, args: Vec<Node>) -> NodeResult {
     let mut v = Vec::new();
     let mut loc = Loc::Unknown;
     for arg in args {
@@ -287,7 +292,7 @@ fn prim_str(_env: SmartEnv, args: Vec<Node>) -> NodeResult {
     Ok(Node::new(Val::StringVal(output), loc))
 }
 
-fn prim_concat(_env: SmartEnv, args: Vec<Node>) -> NodeResult {
+fn prim_concat(_env: SmartEnv, _head: Node, args: Vec<Node>) -> NodeResult {
     let mut output = Node::new(Val::Nil, Loc::Unknown);
     for mut arg in args {
         output = output.coll_append(arg)?;
@@ -296,7 +301,7 @@ fn prim_concat(_env: SmartEnv, args: Vec<Node>) -> NodeResult {
     Ok(output)
 }
 
-fn prim_cons(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_cons(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let elem = args.remove(0);
     let coll = args.remove(0);
 
@@ -305,15 +310,53 @@ fn prim_cons(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(output)
 }
 
-fn prim_first(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
-    Ok(args.remove(0).coll_first()?)
+fn prim_first(_env: SmartEnv, head: Node, mut args: Vec<Node>) -> NodeResult {
+    let n = args.remove(0);
+    match n.val {
+        Val::Nil => Ok(n),
+        Val::StringVal(s) => match s.chars().next() {
+            Some(c) => Ok(Node::new(Val::Character(c.to_string()), n.loc)),
+            None => Ok(Node::new(Val::Nil, n.loc)),
+        },
+        Val::List(mut children) => if children.len() == 0 {
+            Ok(Node::new(Val::Nil, n.loc))
+        } else {
+            Ok(children.remove(0))
+        },
+        v => Err(RuntimeError::CannotGetChildrenOfNonCollection(
+            "first".to_string(),
+            v,
+            head.loc,
+        )),
+    }
 }
 
-fn prim_rest(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
-    Ok(args.remove(0).coll_rest()?)
+fn prim_rest(_env: SmartEnv, head: Node, mut args: Vec<Node>) -> NodeResult {
+    let n = args.remove(0);
+    match n.val {
+        Val::Nil => Ok(Node::new(Val::List(Vec::new()), n.loc)),
+        Val::StringVal(s) => {
+            let mut cs = s.chars();
+            cs.next();
+            Ok(Node::new(Val::StringVal(cs.as_str().to_string()), n.loc))
+        }
+        Val::List(mut children) => {
+            if children.len() == 0 {
+                Ok(Node::new(Val::List(children), n.loc))
+            } else {
+                children.remove(0);
+                Ok(Node::new(Val::List(children), n.loc))
+            }
+        }
+        v => Err(RuntimeError::CannotGetChildrenOfNonCollection(
+            "rest".to_string(),
+            v,
+            head.loc,
+        )),
+    }
 }
 
-fn prim_len(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_len(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let n = args.remove(0);
     let loc = n.loc.clone();
 
@@ -322,7 +365,7 @@ fn prim_len(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     Ok(Node::new(Val::Number(out as i32), loc))
 }
 
-fn prim_trim_string(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_trim_string(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let node = args.remove(0);
     match node.val {
         Val::StringVal(s) => Ok(Node::new(Val::StringVal(s.trim().to_string()), node.loc)),
@@ -335,11 +378,11 @@ fn prim_trim_string(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     }
 }
 
-fn prim_current_environment(env: SmartEnv, _args: Vec<Node>) -> NodeResult {
+fn prim_current_environment(env: SmartEnv, _head: Node, _args: Vec<Node>) -> NodeResult {
     Ok(Node::new(Val::Environment(env), Loc::Unknown))
 }
 
-fn prim_eval(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_eval(env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let expr = args.remove(0);
 
     let evaluation_env = if args.len() > 0 {
@@ -361,7 +404,7 @@ fn prim_eval(env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     trampoline::run(eval::eval_node, evaluation_env, expr)
 }
 
-fn prim_read_string(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_read_string(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let arg = args.remove(0);
 
     match arg.val {
@@ -384,20 +427,20 @@ fn prim_read_string(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     }
 }
 
-fn prim_readable_string(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_readable_string(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let n = args.remove(0);
     let s = format!("{}", n.val);
 
     Ok(Node::new(Val::StringVal(s), n.loc))
 }
 
-fn prim_cell(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_cell(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let n = args.remove(0);
     let loc = n.loc.clone();
     Ok(Node::new(Val::Cell(CellObj::new(n)), loc))
 }
 
-fn prim_set_cell(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_set_cell(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let c = args.remove(0);
     let n = args.remove(0);
 
@@ -411,7 +454,7 @@ fn prim_set_cell(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     }
 }
 
-fn prim_get_cell(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_get_cell(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let n = args.remove(0);
 
     match n.val {
@@ -420,14 +463,14 @@ fn prim_get_cell(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
     }
 }
 
-fn prim_host_inspect(_env: SmartEnv, mut args: Vec<Node>) -> NodeResult {
+fn prim_host_inspect(_env: SmartEnv, _head: Node, mut args: Vec<Node>) -> NodeResult {
     let n = args.remove(0);
     println!("{:?}", n);
 
     Ok(Node::new(Val::Nil, n.loc))
 }
 
-fn prim_host_backtrace(_env: SmartEnv, _args: Vec<Node>) -> NodeResult {
+fn prim_host_backtrace(_env: SmartEnv, _head: Node, _args: Vec<Node>) -> NodeResult {
     extern crate backtrace;
     let bt = backtrace::Backtrace::new();
 

@@ -1,0 +1,1 @@
+Runtime error (./testsuite/primitives_collections/rest-errors.mn:3): Cannot get children via 'rest' of a non-collection: 5

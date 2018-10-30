@@ -168,9 +168,9 @@ pub fn eval_invoke_procedure(
             args,
             flag,
         )),
-        Val::Primitive(obj) => {
+        Val::Primitive(ref obj) => {
             check_args(&obj.name, &head.loc, &args, obj.min_arity, obj.max_arity)?;
-            let out = (obj.f)(Rc::clone(&env), args)?;
+            let out = (obj.f)(Rc::clone(&env), head.clone(), args)?;
             Ok(trampoline::finish(out))
         }
         _ => Err(RuntimeError::CannotInvokeNonProcedure(

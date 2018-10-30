@@ -157,42 +157,6 @@ impl Node {
         }
     } */
 
-    pub fn coll_first(self) -> Result<Node, RuntimeError> {
-        match self.val {
-            Val::Nil => Ok(self),
-            Val::StringVal(s) => match s.chars().next() {
-                Some(c) => Ok(Node::new(Val::Character(c.to_string()), self.loc)),
-                None => Ok(Node::new(Val::Nil, self.loc)),
-            },
-            Val::List(mut children) => if children.len() == 0 {
-                Ok(Node::new(Val::Nil, self.loc))
-            } else {
-                Ok(children.remove(0))
-            },
-            v => Err(RuntimeError::CannotGetChildrenOfNonCollection(v, self.loc)),
-        }
-    }
-
-    pub fn coll_rest(self) -> Result<Node, RuntimeError> {
-        match self.val {
-            Val::Nil => Ok(Node::new(Val::List(Vec::new()), self.loc)),
-            Val::StringVal(s) => {
-                let mut cs = s.chars();
-                cs.next();
-                Ok(Node::new(Val::StringVal(cs.as_str().to_string()), self.loc))
-            }
-            Val::List(mut children) => {
-                if children.len() == 0 {
-                    Ok(Node::new(Val::List(children), self.loc))
-                } else {
-                    children.remove(0);
-                    Ok(Node::new(Val::List(children), self.loc))
-                }
-            }
-            v => Err(RuntimeError::CannotGetChildrenOfNonCollection(v, self.loc)),
-        }
-    }
-
     pub fn coll_len(self) -> Result<usize, RuntimeError> {
         match self.val {
             Val::Nil => Ok(0),
@@ -231,7 +195,11 @@ impl Node {
                 .map(|c| Node::new(Val::Character(format!("{}", c)), loc.clone()))
                 .collect()),
             Val::List(children) => Ok(children),
-            v => Err(RuntimeError::CannotGetChildrenOfNonCollection(v, loc)),
+            v => Err(RuntimeError::CannotGetChildrenOfNonCollection(
+                "append".to_string(),
+                v,
+                loc,
+            )),
         }
     }
 
@@ -283,7 +251,7 @@ pub struct RoutineObj {
     pub routine_type: RoutineType,
 }
 
-pub type PrimitiveFnPointer = fn(SmartEnv, Vec<Node>) -> NodeResult;
+pub type PrimitiveFnPointer = fn(SmartEnv, Node, Vec<Node>) -> NodeResult;
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct PrimitiveObj {

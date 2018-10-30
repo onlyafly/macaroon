@@ -9,7 +9,7 @@ This interpreter implements a Lisp-2 dialect.
 ;-------------------- REPL --------------------
 
 (defn wrong (&rest args)
-    (apply println args))
+    (apply println (cons "SMALL ERROR:" args)))
 
 (defn repl ()
     (defn toplevel ()
@@ -50,6 +50,27 @@ This interpreter implements a Lisp-2 dialect.
                             fenv)
                 'function (cond (symbol? (get e 1)) (lookup (get e 1) fenv)
                                 else (wrong "Incorrect function" (get e 1)))
+                'flet (let (body (rest (rest e))
+                            bindings (to-pairs (get e 1))
+                            vars (map first bindings))
+                        (begin
+                            (println "FLET;e" e)
+                            (println "FLET;body" body)
+                            (println "FLET;bindings" bindings)
+                            (println "FLET;vars" vars)
+                        (f.eprogn
+                            body
+                            env
+                            (extend
+                                fenv
+                                vars                                
+                                (map (fn (binding)
+                                        (f.make-function
+                                            (get binding 0)
+                                            (get binding 1)
+                                            env
+                                            fenv))
+                                    bindings)))))
                 else   (f.evaluate-application
                             (first e)
                             (f.evlis (rest e) env fenv)
@@ -219,12 +240,12 @@ This interpreter implements a Lisp-2 dialect.
 (defn evaluate (exp env)
     (f.evaluate exp env fenv.global))
 
-(defmtest "Evaluate atom"
+(defmtest "atom"
   (mt=
     (evaluate 1 ())
     1))
 
-(defmtest "Evaluate begin"
+(defmtest "begin"
   (mt=
     (evaluate '(begin 1 2) ())
     2)
@@ -232,13 +253,13 @@ This interpreter implements a Lisp-2 dialect.
     (evaluate '(begin) ())
     nil))
 
-(defmtest "Evaluate a symbol"
+(defmtest "symbol value"
   (mt=
     (evaluate 'foo (list (list 'foo (cell 42))))
     42)
     )
 
-(defmtest "Evaluate: set!"
+(defmtest "set!"
   (mt=
     (evaluate '(set! foo 1776) (list (list 'foo (cell 42))))
     1776)
@@ -252,17 +273,17 @@ This interpreter implements a Lisp-2 dialect.
     )
 
 
-(defmtest "Evaluate if"
+(defmtest "if"
   (mt=
     (evaluate '(if true 1 2) ())
     1))
 
-(defmtest "Evaluate fn"
+(defmtest "fn"
     (mt=
         (evaluate '((fn (a b) a) 1 2) ())
         1))
 
-(defmtest "Evaluate lexical scoping"
+(defmtest "lexical scoping"
     (mt=
         (evaluate
             '((fn (x)
@@ -272,12 +293,12 @@ This interpreter implements a Lisp-2 dialect.
         (list 200 100)
         ))
 
-(defmtest "Evaluate null"
+(defmtest "null"
     (mt=
         (evaluate 'null env.global)
         ()))
 
-(defmtest "Evaluate cons"
+(defmtest "cons"
     (mt=
         (evaluate '(function cons) env.global)
         (list 1))
@@ -286,20 +307,39 @@ This interpreter implements a Lisp-2 dialect.
         (list 1))
     )
 
-(defmtest "Evaluate <"
+(defmtest "<"
     (mt=
         (evaluate '(< 1 0) env.global)
         the-false-value))
 
-(defmtest "Evaluate 'list'"
+(defmtest "list"
     (mt=
         (evaluate '(list 1 2 3 4) env.global)
         (list 1 2 3 4)))
 
-(defmtest "Evaluate functions as values"
+(defmtest "functions as values"
     (mt=
         (evaluate '(funcall (if t (function +) (function -)) 3 4) env.global)
         7))
+
+    #|
+(defmtest "flet simple"
+    (mt=
+        (evaluate
+            '(flet (foo (fn (a) (+ a 1)))
+                (foo 10))
+            env.global)
+        11))
+    |#
+
+(defmtest "flet simple"
+    (mt=
+        (evaluate
+            '(flet (foo +)
+                (foo 5 6)
+                (foo 7 8))
+            env.global)
+        43))
 
 #|
 (defmtest "Evaluate 'apply'"

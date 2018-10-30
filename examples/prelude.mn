@@ -117,6 +117,13 @@
 (defn frest (l)
     (first (rest l)))
 
+(defn to-pairs (l)
+  (if (< (len l) 2)
+    ()
+    (cons
+      (list (first l) (first (rest l)))
+      (to-pairs (rest (rest l))))))
+
 ;;;;;;;;;; Other
 
 ;; (if (= a b) (typeof a) (typeof b))
