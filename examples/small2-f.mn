@@ -54,12 +54,6 @@ This interpreter implements a Lisp-2 dialect.
                             bindings (to-pairs (get e 1))
                             vars (map first bindings)
                             vals (map (fn (b) (get b 1)) bindings))
-                        (begin
-                            (println "FLET;e" e)
-                            (println "FLET;body" body)
-                            (println "FLET;bindings" bindings)
-                            (println "FLET;vars" vars)
-                            (println "FLET;vals" vals)
                         (f.eprogn
                             body
                             env
